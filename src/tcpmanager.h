@@ -14,12 +14,29 @@ public:
     CTcpManager(QObject *parent = 0);
     ~CTcpManager();
 
+    /**
+     * @brief Send a message to the KO-Gateway
+     * @param p_sAction Type of message
+     * @param p_sGA Group Adress, e.g. 2/2/15
+     * @param p_sValue Value to set, e.g. 1
+     */
     void send( const QString & p_sAction, const QString  & p_sGA, const QString & p_sValue );
 
-    void initConnection( const QString &p_sHostAddress, const quint16 &p_unPort );
+    /**
+     * @brief Initialization of connection to HS
+     * @param p_sHostAddress Host address of Homeserver, e.g. 192.168.1.2
+     * @param p_unPort Port of KO-Gateway on HS, usually 7003
+     * @param p_sPass Password for KO-Gateway, defined in Experte software
+     */
+    void initConnection( const QString &p_sHostAddress, const quint16 &p_unPort, const QString & p_sPass = "" );
 
 signals:
-    void signal_receivedMessage( const QString  & p_sGA, const QString & p_sValueg );
+    /**
+     * @brief Signal emitted by incomming message
+     * @param p_sGA Updated Group Adress, e.g. 2/2/1
+     * @param p_sValue New value, e.g. 0
+     */
+    void signal_receivedMessage( const QString  & p_sGA, const QString & p_sValue );
 
 public slots:
     void slot_startRead( void );

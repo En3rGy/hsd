@@ -189,7 +189,7 @@ void CTcpManager::splitString(const QString &p_sIncoming, QString &p_sType, QStr
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpManager::initConnection(const QString &p_sHostAddress, const quint16 &p_unPort)
+void CTcpManager::initConnection(const QString &p_sHostAddress, const quint16 &p_unPort, const QString &p_sPass)
 {
     if ( m_pTcpSocket == NULL )
     {
@@ -205,6 +205,7 @@ void CTcpManager::initConnection(const QString &p_sHostAddress, const quint16 &p
         qDebug() << "Connection established" ;
 
         QByteArray grArray;
+        grArray.append( p_sPass );
         grArray.append( m_sMsgEndChar );
 
         qDebug() << "Sending initialization message." ;
