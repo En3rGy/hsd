@@ -7,12 +7,12 @@
 class QTcpSocket;
 class QTcpServer;
 
-class CTcpManager : public QObject
+class CTcpClient : public QObject
 {
     Q_OBJECT
 public:
-    CTcpManager(QObject *parent = 0);
-    ~CTcpManager();
+    CTcpClient(QObject *parent = 0);
+    ~CTcpClient();
 
     /**
      * @brief Send a message to the KO-Gateway

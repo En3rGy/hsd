@@ -1,4 +1,4 @@
-#include "tcpmanager.h"
+#include "tcpclient.h"
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QVector>
@@ -6,39 +6,36 @@
 #include <QTextCodec>
 
 
-const QChar   CTcpManager::m_sMsgEndChar    = '\0';
-const QString CTcpManager::m_sSeperatorChar = "|";
+const QChar   CTcpClient::m_sMsgEndChar    = '\0';
+const QString CTcpClient::m_sSeperatorChar = "|";
 
 
 //////////////////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-CTcpManager::CTcpManager(QObject *parent) :
+CTcpClient::CTcpClient(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
   , m_pTcpServer( NULL )
 {
     QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
-
-    m_pTcpServer = new QTcpServer( this );
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-CTcpManager::~CTcpManager()
+CTcpClient::~CTcpClient()
 {
     m_pTcpSocket->close();
-    m_pTcpServer->close();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpManager::send(const QString & p_sAction , const QString &p_sGA, const QString &p_sValue)
+void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QString &p_sValue)
 {
     if ( m_pTcpSocket == NULL )
     {
@@ -80,7 +77,7 @@ void CTcpManager::send(const QString & p_sAction , const QString &p_sGA, const Q
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpManager::slot_startRead()
+void CTcpClient::slot_startRead()
 {
     QByteArray grDatagram;
 
@@ -105,7 +102,7 @@ void CTcpManager::slot_startRead()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-int CTcpManager::convertGA(const QString &p_sGA)
+int CTcpClient::convertGA(const QString &p_sGA)
 {
     QVector<QString> grGAVec;
     QString sTemp;
@@ -141,7 +138,7 @@ int CTcpManager::convertGA(const QString &p_sGA)
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-QString CTcpManager::convertGA(const int &p_nGA)
+QString CTcpClient::convertGA(const int &p_nGA)
 {
     // int nConvert = nX * 2048 + nY * 256 + nZ;
 
@@ -158,7 +155,7 @@ QString CTcpManager::convertGA(const int &p_nGA)
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpManager::splitString(const QString &p_sIncoming, QString &p_sType, QString &p_sGA, QString &p_sValue)
+void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QString &p_sGA, QString &p_sValue)
 {
     QVector<QString> grGAVec;
     QString sTemp;
@@ -189,7 +186,7 @@ void CTcpManager::splitString(const QString &p_sIncoming, QString &p_sType, QStr
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpManager::initConnection(const QString &p_sHostAddress, const quint16 &p_unPort, const QString &p_sPass)
+void CTcpClient::initConnection(const QString &p_sHostAddress, const quint16 &p_unPort, const QString &p_sPass)
 {
     if ( m_pTcpSocket == NULL )
     {

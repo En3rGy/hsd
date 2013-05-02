@@ -16,7 +16,9 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-    tcpmanager.cpp
+    tcpclient.cpp \
+    tcpserver.cpp
 
 HEADERS += \
-    tcpmanager.h
+    tcpclient.h \
+    tcpserver.h

@@ -1,5 +1,5 @@
 #include <QCoreApplication>
-#include "tcpmanager.h"
+#include "tcpclient.h"
 #include <QDebug>
 #include <string>
 #include <iostream>
@@ -10,24 +10,24 @@ int main(int argc, char *argv[])
     {
         QCoreApplication a(argc, argv);
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.0.1" );
+        a.setApplicationVersion( "0.0.2" );
 
-        CTcpManager grTcpManager;
+        CTcpClient grTcpClient;
 
         if ( argc == 1 )
         {
-            grTcpManager.initConnection( "192.168.143.11", 7003 );
-            grTcpManager.send( "1", "2/2/15", "1" );
+            grTcpClient.initConnection( "192.168.143.11", 7003 );
+            grTcpClient.send( "1", "2/2/15", "1" );
         }
         else if ( argc == 5 )
         {
-            grTcpManager.initConnection( "192.168.143.11", 7003 );
-            grTcpManager.send( argv[1], argv[2], argv[3] );
+            grTcpClient.initConnection( "192.168.143.11", 7003 );
+            grTcpClient.send( argv[1], argv[2], argv[3] );
         }
         else if ( argc == 6 )
         {
-            grTcpManager.initConnection( "192.168.143.11", 7003 );
-            grTcpManager.send( argv[1], argv[2], argv[3] );
+            grTcpClient.initConnection( "192.168.143.11", 7003 );
+            grTcpClient.send( argv[1], argv[2], argv[3] );
         }
         else
         {
