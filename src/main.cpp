@@ -18,16 +18,22 @@ int main(int argc, char *argv[])
         {
             grTcpClient.initConnection( "192.168.143.11", 7003 );
             grTcpClient.send( "1", "2/2/15", "1" );
-        }
-        else if ( argc == 5 )
-        {
-            grTcpClient.initConnection( "192.168.143.11", 7003 );
-            grTcpClient.send( argv[1], argv[2], argv[3] );
+
+            return EXIT_SUCCESS;
         }
         else if ( argc == 6 )
         {
-            grTcpClient.initConnection( "192.168.143.11", 7003 );
-            grTcpClient.send( argv[1], argv[2], argv[3] );
+            grTcpClient.initConnection( argv[1], atoi( argv[2] ) );
+            grTcpClient.send( argv[3], argv[4], argv[5] );
+
+            return EXIT_SUCCESS;
+        }
+        else if ( argc == 7 )
+        {
+            grTcpClient.initConnection( argv[1], atoi( argv[2] ), argv[3] );
+            grTcpClient.send( argv[4], argv[5], argv[6] );
+
+            return EXIT_SUCCESS;
         }
         else
         {
@@ -38,6 +44,8 @@ int main(int argc, char *argv[])
             qDebug() << "\t[action]\t Action to be performed";
             qDebug() << "\t[GA]\t Group adress to be called";
             qDebug() << "\t[value]\t Value to be set";
+
+            return EXIT_SUCCESS;
         }
 
 

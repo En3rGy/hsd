@@ -17,7 +17,6 @@ const QString CTcpClient::m_sSeperatorChar = "|";
 CTcpClient::CTcpClient(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
-  , m_pTcpServer( NULL )
 {
     QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
 }
@@ -28,7 +27,10 @@ CTcpClient::CTcpClient(QObject *parent) :
 
 CTcpClient::~CTcpClient()
 {
-    m_pTcpSocket->close();
+    if ( m_pTcpSocket != NULL )
+    {
+        m_pTcpSocket->close();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -62,10 +64,15 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
     grArray.append( m_sMsgEndChar );
 
     int nRet = m_pTcpSocket->write( grArray );
+    if ( m_pTcpSocket->waitForBytesWritten() == false )
+    {
+        qDebug() << "Timoeout while sending";
+        return;
+    }
 
     if ( nRet == -1 )
     {
-        qDebug() << "Error reported while sending" ;
+        qDebug() << m_pTcpSocket->errorString();
     }
     else
     {

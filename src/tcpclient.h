@@ -48,7 +48,6 @@ private:
     void splitString( const QString & p_sIncoming, QString & p_sType, QString & p_sGA, QString & p_sValue );
 
     QTcpSocket * m_pTcpSocket;
-    QTcpServer * m_pTcpServer;
     qint16       m_nPort;
 
     static const QChar   m_sMsgEndChar;
