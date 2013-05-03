@@ -17,8 +17,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     tcpclient.cpp \
-    tcpserver.cpp
+    tcpserver.cpp \
+    model.cpp \
+    koxml.cpp
 
 HEADERS += \
     tcpclient.h \
-    tcpserver.h
+    tcpserver.h \
+    model.h \
+    koxml.h

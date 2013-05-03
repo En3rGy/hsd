@@ -4,7 +4,9 @@
 #include <QVector>
 #include <QHostAddress>
 #include <QTextCodec>
-
+#include <QSettings>
+#include <koxml.h>
+#include <model.h>
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -17,7 +19,10 @@ const QString CTcpClient::m_sSeperatorChar = "|";
 CTcpClient::CTcpClient(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
+  , m_pWebRequestTcpSocket( NULL )
+  , m_pSettings( NULL )
 {
+    m_pSettings = new QSettings();
     QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
 }
 
@@ -31,6 +36,8 @@ CTcpClient::~CTcpClient()
     {
         m_pTcpSocket->close();
     }
+
+    delete m_pSettings;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -103,6 +110,29 @@ void CTcpClient::slot_startRead()
     qDebug() << "Received GA: " << sGA << "Value: " << sValue;
 
     emit signal_receivedMessage( sGA, sValue );
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+void CTcpClient::slot_webRequestReadFinished()
+{
+    m_grWebRequestData.append( m_pWebRequestTcpSocket->readAll() );
+    //m_grWebRequestData = m_pWebRequestTcpSocket->readAll();
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+void CTcpClient::slot_webRequestClosed()
+{
+    m_pWebRequestTcpSocket->close();
+    // Interprete XmlFile
+    CKoXml::getInstance()->setXml( m_grWebRequestData );
+
+    m_grWebRequestData.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +223,7 @@ void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QStri
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::initConnection(const QString &p_sHostAddress, const quint16 &p_unPort, const QString &p_sPass)
+void CTcpClient::initConnection( const QString &p_sPass)
 {
     if ( m_pTcpSocket == NULL )
     {
@@ -201,9 +231,9 @@ void CTcpClient::initConnection(const QString &p_sHostAddress, const quint16 &p_
         connect( m_pTcpSocket, SIGNAL( readyRead()), this, SLOT( slot_startRead() ) );
     }
 
-    QHostAddress grHostAddress( p_sHostAddress );
+    QHostAddress grHostAddress( m_pSettings->value( CModel::g_sKey_HSIP, "192.168.143.11" ).value< QString >() );
 
-    m_pTcpSocket->connectToHost( grHostAddress, p_unPort );
+    m_pTcpSocket->connectToHost( grHostAddress, m_pSettings->value( CModel::g_sKey_HSGwPort, "7003" ).value< uint >() );
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
         qDebug() << "Connection established" ;
@@ -227,5 +257,51 @@ void CTcpClient::initConnection(const QString &p_sHostAddress, const quint16 &p_
     else
     {
         qDebug() << m_pTcpSocket->errorString() ;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+void CTcpClient::getGaXml()
+{
+    // Load Xml file form HS
+    QString sHsIp       = m_pSettings->value( CModel::g_sKey_HSIP, "192.168.143.11" ).value< QString >();
+    QString sHsPort     = m_pSettings->value( CModel::g_sKey_HSWebPort, "80" ).value< QString >();
+    QString sWebRequest = "GET /hscl?sys/cobjects.xml HTTP/1.0\r\n\r\n";
+
+    if ( m_pWebRequestTcpSocket == NULL )
+    {
+        m_pWebRequestTcpSocket = new QTcpSocket( this );
+        connect( m_pWebRequestTcpSocket, SIGNAL( readChannelFinished()), this, SLOT( slot_webRequestReadFinished()) );
+        connect( m_pWebRequestTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_webRequestClosed() ) );
+    }
+
+    if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
+    {
+        qDebug() << "Web request ongoing";
+        return;
+    }
+
+    m_pWebRequestTcpSocket->connectToHost( sHsIp, sHsPort.toInt() );
+    if ( m_pWebRequestTcpSocket->waitForConnected( 2000 ) == true )
+    {
+        qDebug() << sWebRequest.toAscii();
+        m_pWebRequestTcpSocket->write( sWebRequest.toAscii() );
+
+        if ( m_pWebRequestTcpSocket->waitForBytesWritten() == true )
+        {
+        }
+        else
+        {
+            qDebug() << m_pWebRequestTcpSocket->errorString();
+            return;
+        }
+    }
+    else
+    {
+        qDebug() << m_pWebRequestTcpSocket->errorString();
+        return;
     }
 }

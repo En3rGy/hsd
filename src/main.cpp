@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <string>
 #include <iostream>
+#include <QSettings>
 
 int main(int argc, char *argv[])
 {
@@ -12,34 +13,44 @@ int main(int argc, char *argv[])
         a.setApplicationName( "hsd" );
         a.setApplicationVersion( "0.0.2" );
 
+       QSettings::setPath( QSettings::IniFormat, QSettings::SystemScope, "hsd.ini" );
+
         CTcpClient grTcpClient;
 
-        if ( argc == 1 )
+        if ( argc == 2 )
         {
-            grTcpClient.initConnection( "192.168.143.11", 7003 );
-            grTcpClient.send( "1", "2/2/15", "1" );
+            if ( QString( argv[ 1 ] ) == "-t")
+            {
+                grTcpClient.getGaXml();
+                grTcpClient.initConnection();
+                grTcpClient.send( "1", "2/2/15", "1" );
+
+                return EXIT_SUCCESS;
+            }
+            else if ( QString( argv[ 1 ] ) == "-ga" )
+            {
+                grTcpClient.getGaXml();
+            }
+        }
+        else if ( argc == 4 )
+        {
+            grTcpClient.getGaXml();
+            grTcpClient.initConnection();
+            grTcpClient.send( argv[1], argv[2], argv[3] );
 
             return EXIT_SUCCESS;
         }
-        else if ( argc == 6 )
+        else if ( argc == 5 )
         {
-            grTcpClient.initConnection( argv[1], atoi( argv[2] ) );
-            grTcpClient.send( argv[3], argv[4], argv[5] );
-
-            return EXIT_SUCCESS;
-        }
-        else if ( argc == 7 )
-        {
-            grTcpClient.initConnection( argv[1], atoi( argv[2] ), argv[3] );
-            grTcpClient.send( argv[4], argv[5], argv[6] );
+            grTcpClient.getGaXml();
+            grTcpClient.initConnection( argv[1] );
+            grTcpClient.send( argv[2], argv[3], argv[4] );
 
             return EXIT_SUCCESS;
         }
         else
         {
-            qDebug() << "hsd [ip] [port] [opt:pass] [action] [GA] [value]";
-            qDebug() << "\t[ip]\t IP adress of homeserver";
-            qDebug() << "\t[port]\t Port of homeserver KO-Gateway";
+            qDebug() << "hsd [opt:pass] [action] [GA] [value]";
             qDebug() << "\t[opt:pass]\t Password of homeserver KO-Gateway (optional)";
             qDebug() << "\t[action]\t Action to be performed";
             qDebug() << "\t[GA]\t Group adress to be called";

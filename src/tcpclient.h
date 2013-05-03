@@ -3,9 +3,11 @@
 
 #include <QObject>
 #include <QString>
+#include <QByteArray>
 
 class QTcpSocket;
 class QTcpServer;
+class QSettings;
 
 class CTcpClient : public QObject
 {
@@ -28,7 +30,9 @@ public:
      * @param p_unPort Port of KO-Gateway on HS, usually 7003
      * @param p_sPass Password for KO-Gateway, defined in Experte software
      */
-    void initConnection( const QString &p_sHostAddress, const quint16 &p_unPort, const QString & p_sPass = "" );
+    void initConnection( const QString & p_sPass = "" );
+
+    void getGaXml( void );
 
 signals:
     /**
@@ -40,6 +44,8 @@ signals:
 
 public slots:
     void slot_startRead( void );
+    void slot_webRequestReadFinished( void );
+    void slot_webRequestClosed( void );
 
 private:
     static int     convertGA( const QString & p_sGA );
@@ -48,7 +54,10 @@ private:
     void splitString( const QString & p_sIncoming, QString & p_sType, QString & p_sGA, QString & p_sValue );
 
     QTcpSocket * m_pTcpSocket;
+    QTcpSocket * m_pWebRequestTcpSocket;
     qint16       m_nPort;
+    QByteArray   m_grWebRequestData;
+    QSettings  * m_pSettings;
 
     static const QChar   m_sMsgEndChar;
     static const QString m_sSeperatorChar;

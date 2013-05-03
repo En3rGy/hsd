@@ -2,6 +2,8 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QVector>
+#include <QSettings>
+
 
 CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
