@@ -8,6 +8,8 @@ QT       += core network
 
 QT       -= gui
 
+DESTDIR = ../bin
+
 TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
