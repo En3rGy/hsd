@@ -11,7 +11,8 @@ public:
 
     static const QString g_sKey_HSIP;
     static const QString g_sKey_HSWebPort;
-    static const QString g_sKey_HSGwPort; ///< Port of KO-Gateway
+    static const QString g_sKey_HSGwPort; ///< Port of HS KO-Gateway
+    static const QString g_sKey_HsdPort;  ///< Port of HSD IP interface
     
 signals:
     

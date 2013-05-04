@@ -1,5 +1,5 @@
-#ifndef TCPMANAGER_H
-#define TCPMANAGER_H
+#ifndef TCPCLIENT_H
+#define TCPCLIENT_H
 
 #include <QObject>
 #include <QString>
@@ -63,4 +63,4 @@ private:
     static const QString m_sSeperatorChar;
 };
 
-#endif // UDPMANAGER_H
+#endif // TCPCLIENT_H

@@ -3,13 +3,17 @@
 #include <QTcpServer>
 #include <QVector>
 #include <QSettings>
+#include <QDebug>
+#include "model.h"
 
 
 CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
   , m_pTcpServer( NULL )
+  , m_pSettings( NULL )
 {
+    m_pSettings  = new QSettings();
     m_pTcpServer = new QTcpServer( this );
 
     connect( m_pTcpServer, SIGNAL( newConnection()), SLOT( solt_newConnection()) );
@@ -32,6 +36,12 @@ void CTcpServer::listen( const uint p_nPort )
     m_pTcpServer->listen( QHostAddress::Any, m_nPort );
 }
 
+void CTcpServer::listen()
+{
+    m_nPort = m_pSettings->value( CModel::g_sKey_HsdPort, 6720 ).value< qint16 >();
+    listen( m_nPort );
+}
+
 void CTcpServer::solt_newConnection()
 {
     m_pTcpSocket = m_pTcpServer->nextPendingConnection();
@@ -41,12 +51,20 @@ void CTcpServer::solt_newConnection()
 
 void CTcpServer::slot_startRead()
 {
-     QByteArray grDatagram;
-     grDatagram = m_pTcpSocket->readAll();
+    QByteArray grDatagram;
+    grDatagram = m_pTcpSocket->readAll();
 
-     QString sString( grDatagram.data() );
+    QString sString( grDatagram.data() );
 
-     emit signal_receivedMessage( sString );
+    qDebug() << "IN: " << grDatagram.length() << grDatagram;
 
-     m_pTcpSocket->close();
+    if ( grDatagram.data() == QByteArray( "\0" ) )
+    {
+        qDebug() << "Out:" << grDatagram.length() << grDatagram;
+        m_pTcpSocket->write( grDatagram );
+    }
+
+    emit signal_receivedMessage( sString );
+
+    // m_pTcpSocket->close();
 }

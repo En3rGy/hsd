@@ -1,11 +1,12 @@
-#ifndef TCPMANAGER_H
-#define TCPMANAGER_H
+#ifndef TCPSERVER_H
+#define TCPSERVER_H
 
 #include <QObject>
 #include <QString>
 
 class QTcpSocket;
 class QTcpServer;
+class QSettings;
 
 class CTcpServer : public QObject
 {
@@ -15,6 +16,7 @@ public:
     ~CTcpServer();
 
     void listen( const uint p_nPort );
+    void listen( void );
 
 signals:
     void signal_receivedMessage( QString );
@@ -27,6 +29,7 @@ private:
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     qint16       m_nPort;
+    QSettings  * m_pSettings;
 };
 
-#endif // UDPMANAGER_H
+#endif // TCPSERVER_H

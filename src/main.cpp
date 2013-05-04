@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include "tcpclient.h"
+#include "tcpserver.h"
 #include <QDebug>
 #include <string>
 #include <iostream>
@@ -13,8 +14,9 @@ int main(int argc, char *argv[])
         a.setApplicationName( "hsd" );
         a.setApplicationVersion( "0.0.2" );
 
-       QSettings::setPath( QSettings::IniFormat, QSettings::SystemScope, "hsd.ini" );
+        QSettings::setPath( QSettings::IniFormat, QSettings::SystemScope, "hsd.ini" );
 
+        CTcpServer grTcpServer;
         CTcpClient grTcpClient;
 
         if ( argc == 2 )
@@ -31,6 +33,11 @@ int main(int argc, char *argv[])
             {
                 grTcpClient.getGaXml();
             }
+            else if ( QString( argv[ 1 ] ) == "-s" )
+            {
+                grTcpServer.listen();
+            }
+
         }
         else if ( argc == 4 )
         {
@@ -55,6 +62,9 @@ int main(int argc, char *argv[])
             qDebug() << "\t[action]\t Action to be performed";
             qDebug() << "\t[GA]\t Group adress to be called";
             qDebug() << "\t[value]\t Value to be set";
+            qDebug() << "-t\t Test";
+            qDebug() << "-ga\t Receive GAs from HS";
+            qDebug() << "-s\t Start server";
 
             return EXIT_SUCCESS;
         }
