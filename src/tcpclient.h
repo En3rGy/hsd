@@ -47,6 +47,8 @@ public slots:
     void slot_webRequestReadFinished( void );
     void slot_webRequestClosed( void );
 
+    void slot_setEibAdress( const QString & p_sEibAddr, const int & p_nVal );
+
 private:
     static int     convertGA( const QString & p_sGA );
     static QString convertGA( const int & p_nGA );

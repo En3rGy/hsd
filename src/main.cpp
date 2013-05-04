@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <QSettings>
+#include <QObject>
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +19,11 @@ int main(int argc, char *argv[])
 
         CTcpServer grTcpServer;
         CTcpClient grTcpClient;
+
+        QObject::connect ( & grTcpServer,
+                  SIGNAL(signal_setEibAdress(QString,int)),
+                  & grTcpClient,
+                  SLOT( slot_setEibAdress(QString,int)));
 
         if ( argc == 2 )
         {
@@ -36,6 +42,7 @@ int main(int argc, char *argv[])
             else if ( QString( argv[ 1 ] ) == "-s" )
             {
                 grTcpServer.listen();
+                grTcpClient.initConnection();
             }
 
         }

@@ -20,12 +20,16 @@ public:
 
 signals:
     void signal_receivedMessage( QString );
+    void signal_setEibAdress( const QString & p_sEibAddr, const int & p_nVal );
 
 public slots:
     void solt_newConnection( void );
     void slot_startRead( void );
 
 private:
+    QString printASCII( QByteArray & p_grByteArray );
+    QString hex2eib( QByteArray & p_grHexAddr );
+
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     qint16       m_nPort;

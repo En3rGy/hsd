@@ -135,6 +135,11 @@ void CTcpClient::slot_webRequestClosed()
     m_grWebRequestData.clear();
 }
 
+void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
+{
+    send( "1", p_sEibAddr, QString::number( p_nVal ) );
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////////////////
