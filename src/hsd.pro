@@ -21,10 +21,12 @@ SOURCES += main.cpp \
     tcpclient.cpp \
     tcpserver.cpp \
     model.cpp \
-    koxml.cpp
+    koxml.cpp \
+    hsd.cpp
 
 HEADERS += \
     tcpclient.h \
     tcpserver.h \
     model.h \
-    koxml.h
+    koxml.h \
+    hsd.h
