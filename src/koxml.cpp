@@ -88,5 +88,11 @@ CKoXmlGC::~CKoXmlGC()
 QString CKoXml::getGaName(const QString &p_sGA)
 {
     cobject grValue = m_ssGA2NameMap.value( p_sGA );
-    return grValue.sGa;
+
+    if ( grValue.sName.isEmpty() == true )
+    {
+        return QObject::tr( "Unknown" );
+    }
+
+    return grValue.sName;
 }

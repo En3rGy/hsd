@@ -107,7 +107,7 @@ void CTcpClient::slot_startRead()
     splitString( sString, sType, sIntGA, sValue );
     sGA = convertGA( sIntGA.toInt() );
 
-    qDebug() << "Received GA: " << sGA << "Value: " << sValue;
+    qDebug() << "Received HS GA update:" << sGA << "\tValue:" << sValue;
 
     emit signal_receivedMessage( sGA, sValue );
 }
@@ -119,7 +119,6 @@ void CTcpClient::slot_startRead()
 void CTcpClient::slot_webRequestReadFinished()
 {
     m_grWebRequestData.append( m_pWebRequestTcpSocket->readAll() );
-    //m_grWebRequestData = m_pWebRequestTcpSocket->readAll();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +128,7 @@ void CTcpClient::slot_webRequestReadFinished()
 void CTcpClient::slot_webRequestClosed()
 {
     m_pWebRequestTcpSocket->close();
+
     // Interprete XmlFile
     CKoXml::getInstance()->setXml( m_grWebRequestData );
 

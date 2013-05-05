@@ -28,9 +28,9 @@ public slots:
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:
-    QString    printASCII( QByteArray & p_grByteArray );
-    QString    hex2eib( QByteArray & p_grHexAddr );
-    QByteArray eib2hex( const QString & p_sEibAddr );
+    static QString    printASCII( QByteArray & p_grByteArray );
+    static QString    hex2eib( QByteArray & p_grHexAddr );
+    static QByteArray eib2hex( const QString & p_sEibAddr );
 
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;

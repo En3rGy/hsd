@@ -6,7 +6,11 @@
 #include <QDebug>
 #include <QBitArray>
 #include "model.h"
+#include "koxml.h"
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
@@ -20,10 +24,18 @@ CTcpServer::CTcpServer(QObject *parent) :
     connect( m_pTcpServer, SIGNAL( newConnection()), SLOT( solt_newConnection()) );
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 CTcpServer::~CTcpServer()
 {
     m_pTcpServer->close();
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 void CTcpServer::listen( const uint p_nPort )
 {
@@ -37,11 +49,19 @@ void CTcpServer::listen( const uint p_nPort )
     m_pTcpServer->listen( QHostAddress::Any, m_nPort );
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 void CTcpServer::listen()
 {
     m_nPort = m_pSettings->value( CModel::g_sKey_HsdPort, 6720 ).value< qint16 >();
     listen( m_nPort );
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 void CTcpServer::solt_newConnection()
 {
@@ -50,11 +70,14 @@ void CTcpServer::solt_newConnection()
     connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 void CTcpServer::slot_startRead()
 {
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
-    qDebug() << "Received request: " << printASCII( grDatagram );
 
     // check if 1st 2 byte contain package length
     if ( grDatagram.size() > 2 )
@@ -79,7 +102,7 @@ void CTcpServer::slot_startRead()
         if ( ( grDatagram.data()[0] == CModel::g_uzEibAck[0] ) &&
              ( grDatagram.data()[1] == CModel::g_uzEibAck[1] ) )
         {
-                qDebug() << "Request Connection";
+                qDebug() << "Received connection request. Granted.";
                 m_pTcpSocket->write( QByteArray( ( const char * ) CModel::g_uzEibAck, 2 ) );
         }
         break;
@@ -91,7 +114,7 @@ void CTcpServer::slot_startRead()
              ( grDatagram.data()[3] == CModel::g_uzEibOpenGroupCon[3] ) &&
              ( grDatagram.data()[4] == CModel::g_uzEibOpenGroupCon[4] ) )
         {
-            qDebug() << "Request openGroupSocket";
+            qDebug() << "Received openGroupSocket request. Granted.";
             const char szOpenGroupSocketAck [2] = { 0x00, 0x26 };
             m_pTcpSocket->write( QByteArray( szOpenGroupSocketAck, 2 ) );
         }
@@ -106,52 +129,24 @@ void CTcpServer::slot_startRead()
             grEibAdr.append( grDatagram.data()[3]);
             QString sEibAddr = hex2eib( grEibAdr );
 
-            if ( (uchar) grDatagram.data()[5] == CModel::g_uzEibOff ) // off
-            {
-                qDebug() << "Set GA" << sEibAddr << "\toff";
-                emit signal_setEibAdress( sEibAddr, 0 );
-            }
-            else if ( (uchar) grDatagram.data()[5] == CModel::g_uzEibOn ) // on
-            {
-                qDebug() << "Set GA" << sEibAddr << "\ton";
-                emit signal_setEibAdress( sEibAddr, 1 );
-            }
+            uchar szData = grDatagram.at( 5 );
+            szData = szData & 0x7f; // 0x7f = 0111 1111
+            qDebug() << "Received write request" << sEibAddr << ( int ) szData << ". Forwarded.";
+
+            emit signal_setEibAdress( sEibAddr, ( int ) szData );
         }
-        break;
-
-    case 8: // re-send request, e.g. 00 06 00 27 11 0f 00 80
-        if ( ( grDatagram.data()[0] == 0x00 ) &&
-             ( grDatagram.data()[1] == 0x06 ) )
-            if ( ( grDatagram.data()[2] == CModel::g_uzEibGroupPacket[0] ) &&
-                 ( grDatagram.data()[3] == CModel::g_uzEibGroupPacket[1] ) )
-            {
-                QByteArray grEibAdr;
-                grEibAdr.append( grDatagram.data()[4]);
-                grEibAdr.append( grDatagram.data()[5]);
-                QString sEibAddr = hex2eib( grEibAdr );
-
-                if ( (uchar) grDatagram.data()[7] == CModel::g_uzEibOff ) // off
-                {
-                    qDebug() << "Set GA" << sEibAddr << "\toff";
-                    emit signal_setEibAdress( sEibAddr, 0 );
-                }
-                else if ( (uchar) grDatagram.data()[7] == CModel::g_uzEibOn ) // on
-                {
-                    qDebug() << "Set GA" << sEibAddr << "\ton";
-                    emit signal_setEibAdress( sEibAddr, 1 );
-                }
-            }
-
         break;
 
     default:
         qDebug() << "Received unknown request: " << printASCII( grDatagram );
     }
 
-
-
     emit signal_receivedMessage( sString );
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sValue)
 {
@@ -166,9 +161,9 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    uchar szMsg [ 6 ]; //, e.g. 00 27 11 0f 00 80
-    szMsg[ 0 ] = CModel::g_uzEibGroupPacket[ 0 ];
-    szMsg[ 1 ] = CModel::g_uzEibGroupPacket[ 1 ];
+    uchar uszMsg [ 6 ]; //, e.g. 00 27 11 0f 00 80
+    uszMsg[ 0 ] = CModel::g_uzEibGroupPacket[ 0 ];
+    uszMsg[ 1 ] = CModel::g_uzEibGroupPacket[ 1 ];
 
     QByteArray grEibGroupHex = eib2hex( p_sEibGroup );
 
@@ -177,42 +172,35 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    szMsg[ 2 ] = ( uchar ) grEibGroupHex.at( 0 );
-    szMsg[ 3 ] = ( uchar ) grEibGroupHex.at( 1 );
+    uszMsg[ 2 ] = ( uchar ) grEibGroupHex.at( 0 );
+    uszMsg[ 3 ] = ( uchar ) grEibGroupHex.at( 1 );
 
-    szMsg[ 4 ] = 0x00;
+    uszMsg[ 4 ] = 0x00;
 
     bool   bOK;
     double dVal = p_sValue.toDouble( & bOK );
-
     if ( bOK == false )
     {
         qDebug() << "Value is not a number. Discarding EIB/KNX update.";
         return;
     }
+    int nVal = ( int ) dVal;
 
-    if ( dVal == 0.0 )
-    {
-        szMsg[ 5 ] = CModel::g_uzEibOff;
-    }
-    else if ( dVal == 1.0 )
-    {
-        szMsg[ 5 ] = CModel::g_uzEibOn;
-    }
-    else
-    {
-        qDebug() << "Can only interpret on/off. Discarding EIB/KNX update.";
-        return;
-    }
+    uszMsg[ 5 ] = nVal;
+    uszMsg[ 5 ] = uszMsg[ 5 ] | 0x80; // per definition
 
     QByteArray grMsgArray;
-    grMsgArray.append( (char * ) & szMsg, sizeof( szMsg ) );
+    grMsgArray.append( (char * ) & uszMsg, sizeof( uszMsg ) );
 
     /// @todo FHEM crashes by receiving this message; Find correct messge format.
     // qDebug() << "Sending " << printASCII( grMsgArray );
     // m_pTcpSocket->write( grMsgArray );
 
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 QString CTcpServer::printASCII(QByteArray & p_grByteArray)
 {
@@ -224,6 +212,10 @@ QString CTcpServer::printASCII(QByteArray & p_grByteArray)
 
     return sResult;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 QString CTcpServer::hex2eib( QByteArray & p_grHexAddr )
 {
@@ -253,6 +245,10 @@ QString CTcpServer::hex2eib( QByteArray & p_grHexAddr )
     QString sGA = sMainAddr + sSeparator + sMiddleAddr + sSeparator + sUnderAddr;
     return sGA;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 QByteArray CTcpServer::eib2hex(const QString &p_sEibAddr)
 {
@@ -305,3 +301,7 @@ QByteArray CTcpServer::eib2hex(const QString &p_sEibAddr)
 
     return grRetValue;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
