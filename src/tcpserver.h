@@ -25,10 +25,11 @@ signals:
 public slots:
     void solt_newConnection( void );
     void slot_startRead( void );
+    void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:
-    QString printASCII( QByteArray & p_grByteArray );
-    QString hex2eib( QByteArray & p_grHexAddr );
+    QString    printASCII( QByteArray & p_grByteArray );
+    QString    hex2eib( QByteArray & p_grHexAddr );
     QByteArray eib2hex( const QString & p_sEibAddr );
 
     QTcpSocket * m_pTcpSocket;

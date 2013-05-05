@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
 
         QSettings::setPath( QSettings::IniFormat, QSettings::SystemScope, "../etc/hsd.ini" );
 
+        CHsd grHsd;
+        grHsd.startService();
 
         return a.exec();
     }

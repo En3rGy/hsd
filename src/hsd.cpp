@@ -11,10 +11,15 @@ CHsd::CHsd(QObject *parent) :
     m_pTcpClient = new CTcpClient( this );
 
 
-    QObject::connect ( m_pTcpServer,
-                       SIGNAL(signal_setEibAdress(QString,int)),
-                       m_pTcpClient,
-                       SLOT( slot_setEibAdress(QString,int)));
+    connect ( m_pTcpServer,
+              SIGNAL(signal_setEibAdress(QString,int)),
+              m_pTcpClient,
+              SLOT( slot_setEibAdress(QString,int)));
+
+    connect( m_pTcpClient,
+             SIGNAL( signal_receivedMessage(QString,QString)),
+             m_pTcpServer,
+             SLOT( slot_groupWrite(QString,QString)) );
 }
 
 CHsd::~CHsd()

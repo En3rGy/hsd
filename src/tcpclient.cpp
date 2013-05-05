@@ -292,7 +292,6 @@ void CTcpClient::getGaXml()
     m_pWebRequestTcpSocket->connectToHost( sHsIp, sHsPort.toInt() );
     if ( m_pWebRequestTcpSocket->waitForConnected( 2000 ) == true )
     {
-        qDebug() << sWebRequest.toAscii();
         m_pWebRequestTcpSocket->write( sWebRequest.toAscii() );
 
         if ( m_pWebRequestTcpSocket->waitForBytesWritten() == true )

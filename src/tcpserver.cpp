@@ -56,6 +56,21 @@ void CTcpServer::slot_startRead()
     grDatagram = m_pTcpSocket->readAll();
     qDebug() << "Received request: " << printASCII( grDatagram );
 
+    // check if 1st 2 byte contain package length
+    if ( grDatagram.size() > 2 )
+    {
+        uchar uszSize [ 2 ];
+        uszSize[ 0 ] = grDatagram.at( 0 );
+        uszSize[ 1 ] = grDatagram.at( 1 );
+
+        int nSize = ( int ) uszSize;
+
+        if ( grDatagram.size() - 2 == nSize )
+        {
+            grDatagram = grDatagram.remove( 0, 2 );
+        }
+    }
+
     QString sString( grDatagram.data() );
 
     switch ( grDatagram.length() )
@@ -138,6 +153,67 @@ void CTcpServer::slot_startRead()
     emit signal_receivedMessage( sString );
 }
 
+void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sValue)
+{
+    if ( m_pTcpSocket == NULL )
+    {
+        return;
+    }
+
+    if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
+    {
+        qDebug() << "No client connected to hsd server. Discarding incomming EIB/KNX update.";
+        return;
+    }
+
+    uchar szMsg [ 6 ]; //, e.g. 00 27 11 0f 00 80
+    szMsg[ 0 ] = CModel::g_uzEibGroupPacket[ 0 ];
+    szMsg[ 1 ] = CModel::g_uzEibGroupPacket[ 1 ];
+
+    QByteArray grEibGroupHex = eib2hex( p_sEibGroup );
+
+    if ( grEibGroupHex.length() != 2 )
+    {
+        return;
+    }
+
+    szMsg[ 2 ] = ( uchar ) grEibGroupHex.at( 0 );
+    szMsg[ 3 ] = ( uchar ) grEibGroupHex.at( 1 );
+
+    szMsg[ 4 ] = 0x00;
+
+    bool   bOK;
+    double dVal = p_sValue.toDouble( & bOK );
+
+    if ( bOK == false )
+    {
+        qDebug() << "Value is not a number. Discarding EIB/KNX update.";
+        return;
+    }
+
+    if ( dVal == 0.0 )
+    {
+        szMsg[ 5 ] = CModel::g_uzEibOff;
+    }
+    else if ( dVal == 1.0 )
+    {
+        szMsg[ 5 ] = CModel::g_uzEibOn;
+    }
+    else
+    {
+        qDebug() << "Can only interpret on/off. Discarding EIB/KNX update.";
+        return;
+    }
+
+    QByteArray grMsgArray;
+    grMsgArray.append( (char * ) & szMsg, sizeof( szMsg ) );
+
+    /// @todo FHEM crashes by receiving this message; Find correct messge format.
+    // qDebug() << "Sending " << printASCII( grMsgArray );
+    // m_pTcpSocket->write( grMsgArray );
+
+}
+
 QString CTcpServer::printASCII(QByteArray & p_grByteArray)
 {
     QString sResult;
@@ -182,8 +258,8 @@ QByteArray CTcpServer::eib2hex(const QString &p_sEibAddr)
 {
     // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
     // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
-
     // 0hhh hmmm
+
 
     QVector < QString > grAddrVec;
     QString sTemp;
@@ -205,9 +281,27 @@ QByteArray CTcpServer::eib2hex(const QString &p_sEibAddr)
     }
     grAddrVec.push_back( sTemp );
 
-    //char szHexAddr [2];
+    if ( grAddrVec.size() != 3 )
+    {
+        qDebug() << "ERROR: " << p_sEibAddr << "not of kind a/b/c. Aborting." << Q_FUNC_INFO;
+        return QByteArray();
+    }
 
-    /// @todo Implement
+    uchar szHexAddr [2];
 
-    return QByteArray();
+    uchar szHAddr = grAddrVec.at( 0 ).toUInt();
+    uchar szMAddr = grAddrVec.at( 1 ).toUInt();
+    uchar szUAddr = grAddrVec.at( 2 ).toUInt();
+
+    // 0000 0000 == 0x00
+    // 1111 1111 == 0xff
+
+    szHAddr = szHAddr << 3;
+    szHexAddr[ 0 ] = szHAddr | szMAddr;
+    szHexAddr[ 1 ] = szUAddr;
+
+    QByteArray grRetValue;
+    grRetValue.append( (char * ) & szHexAddr, sizeof( szHexAddr ) );
+
+    return grRetValue;
 }
