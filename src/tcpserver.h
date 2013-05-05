@@ -29,6 +29,7 @@ public slots:
 private:
     QString printASCII( QByteArray & p_grByteArray );
     QString hex2eib( QByteArray & p_grHexAddr );
+    QByteArray eib2hex( const QString & p_sEibAddr );
 
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;

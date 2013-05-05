@@ -177,3 +177,37 @@ QString CTcpServer::hex2eib( QByteArray & p_grHexAddr )
     QString sGA = sMainAddr + sSeparator + sMiddleAddr + sSeparator + sUnderAddr;
     return sGA;
 }
+
+QByteArray CTcpServer::eib2hex(const QString &p_sEibAddr)
+{
+    // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
+    // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
+
+    // 0hhh hmmm
+
+    QVector < QString > grAddrVec;
+    QString sTemp;
+
+    int nVecIndex = 0;
+
+    for ( int i = 0; i < p_sEibAddr.length(); i++ )
+    {
+        if ( p_sEibAddr.at( i ) != '/' )
+        {
+            sTemp += QString( p_sEibAddr.at( i ) );
+        }
+        else
+        {
+            grAddrVec.push_back( sTemp );
+            nVecIndex++;
+            sTemp.clear();
+        }
+    }
+    grAddrVec.push_back( sTemp );
+
+    //char szHexAddr [2];
+
+    /// @todo Implement
+
+    return QByteArray();
+}
