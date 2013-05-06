@@ -161,41 +161,119 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    uchar uszMsg [ 6 ]; //, e.g. 00 27 11 0f 00 80
-    uszMsg[ 0 ] = CModel::g_uzEibGroupPacket[ 0 ];
-    uszMsg[ 1 ] = CModel::g_uzEibGroupPacket[ 1 ];
+//    uchar uszMsg [ 8 ]; //, e.g. 00 27 11 0f 00 80
+
+//    uszMsg[ 0 ] = 0x00;
+//    uszMsg[ 1 ] = 0x06;
+
+
+//    uszMsg[ 2 ] = CModel::g_uzEibGroupPacket[ 0 ];
+//    uszMsg[ 3 ] = CModel::g_uzEibGroupPacket[ 1 ];
+
+//    QByteArray grEibGroupHex = eib2hex( p_sEibGroup );
+
+//    if ( grEibGroupHex.length() != 2 )
+//    {
+//        return;
+//    }
+
+//    uszMsg[ 4 ] = ( uchar ) grEibGroupHex.at( 0 );
+//    uszMsg[ 5 ] = ( uchar ) grEibGroupHex.at( 1 );
+
+//    uszMsg[ 6 ] = 0x00;
+
+//    bool   bOK;
+//    double dVal = p_sValue.toDouble( & bOK );
+//    if ( bOK == false )
+//    {
+//        qDebug() << "Value is not a number. Discarding EIB/KNX update.";
+//        return;
+//    }
+//    int nVal = ( int ) dVal;
+
+//    uszMsg[ 7 ] = nVal;
+//    uszMsg[ 7 ] = uszMsg[ 7 ] | 0x80; // per definition
+
+//    QByteArray grMsgArray;
+//    grMsgArray.append( (char * ) & uszMsg, sizeof( uszMsg ) );
+
+//++++++++++++++++++++++++++++++++++++++++++
+
+    QByteArray grMsg;
+
+    grMsg.append( char( 0x00 ) );
+    grMsg.append( char( 0x00 ) );
 
     QByteArray grEibGroupHex = eib2hex( p_sEibGroup );
-
     if ( grEibGroupHex.length() != 2 )
     {
         return;
     }
 
-    uszMsg[ 2 ] = ( uchar ) grEibGroupHex.at( 0 );
-    uszMsg[ 3 ] = ( uchar ) grEibGroupHex.at( 1 );
+    grMsg.append( char( 0x00 ) ); // source address
+    grMsg.append( char( 0x00 ) ); // source address
 
-    uszMsg[ 4 ] = 0x00;
+    grMsg.append( grEibGroupHex );
 
     bool   bOK;
-    double dVal = p_sValue.toDouble( & bOK );
+    p_sValue.toDouble( & bOK );
     if ( bOK == false )
     {
         qDebug() << "Value is not a number. Discarding EIB/KNX update.";
         return;
     }
-    int nVal = ( int ) dVal;
 
-    uszMsg[ 5 ] = nVal;
-    uszMsg[ 5 ] = uszMsg[ 5 ] | 0x80; // per definition
-
-    QByteArray grMsgArray;
-    grMsgArray.append( (char * ) & uszMsg, sizeof( uszMsg ) );
+    grMsg.append( p_sValue );
 
     /// @todo FHEM crashes by receiving this message; Find correct messge format.
-    // qDebug() << "Sending " << printASCII( grMsgArray );
-    // m_pTcpSocket->write( grMsgArray );
+    qDebug() << "Sending " << printASCII( grMsg );
+    m_pTcpSocket->write( grMsg );
 
+
+//# decode: unmarshall a string with an EIB message into a hash
+//# The hash has the follwing fields:
+//#	- type: APCI (symbolic value): ('read' => 0, 'reply' => 1, 'write' => 2,)
+//#	- src: source address
+//#	- dst: destiniation address
+//#	- data: array of integers; one for each byte of data
+//sub decode_eibd($)
+//{
+//    my ($buf) = @_;
+//    my $drl = 0xe1; # dummy value
+//    my %msg;
+//    my @data;
+//    my ($src, $dst,$bytes) = unpack("nnxa*", $buf);
+//    my $apci;
+
+//    $apci = vec($bytes, 3, 2);
+//	# mask out apci bits, so we can use the whole byte as data:
+//    vec($bytes, 3, 2) = 0;
+//    if ($apci >= 0 && $apci <= $#apcicodes) {
+//		$msg{'type'} = $apcicodes[$apci];
+//    }
+//    else {
+//		$msg{'type'} = 'apci ' . $apci;
+//    }
+
+//    $msg{'src'} = tul_addr2hex($src,0);
+//    $msg{'dst'} = tul_addr2hex($dst,1);
+
+//    @data = unpack ("C" . length($bytes), $bytes);
+//    my $datalen = @data;
+//    Log(5, "decode_eibd byte len: " . length($bytes) . " array size: $datalen");
+
+//    # in case of data len > 1, the first byte (the one with apci) seems not to be used
+//    # and only the following byte are of interest.
+//    if($datalen>1) {
+//    	shift @data;
+//    }
+
+//    $msg{'data'} = \@data;
+//    return \%msg;
+//}
+
+
+//++++++++++++++++++++++++++++++++++++++++++
 }
 
 //////////////////////////////////////////////////////////////
@@ -205,9 +283,16 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 QString CTcpServer::printASCII(QByteArray & p_grByteArray)
 {
     QString sResult;
+    QString sBuffer;
     for ( int i = 0; i < p_grByteArray.length(); i++ )
     {
-        sResult += QString::number( uchar( p_grByteArray.at( i ) ), 16 ) + " ";
+        sBuffer = QString::number( uchar( p_grByteArray.at( i ) ), 16 );
+        if ( sBuffer.length() == 1 )
+        {
+            sBuffer = "0" + sBuffer;
+        }
+
+        sResult += sBuffer + " ";
     }
 
     return sResult;
