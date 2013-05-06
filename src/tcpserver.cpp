@@ -161,119 +161,49 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-//    uchar uszMsg [ 8 ]; //, e.g. 00 27 11 0f 00 80
-
-//    uszMsg[ 0 ] = 0x00;
-//    uszMsg[ 1 ] = 0x06;
-
-
-//    uszMsg[ 2 ] = CModel::g_uzEibGroupPacket[ 0 ];
-//    uszMsg[ 3 ] = CModel::g_uzEibGroupPacket[ 1 ];
-
-//    QByteArray grEibGroupHex = eib2hex( p_sEibGroup );
-
-//    if ( grEibGroupHex.length() != 2 )
-//    {
-//        return;
-//    }
-
-//    uszMsg[ 4 ] = ( uchar ) grEibGroupHex.at( 0 );
-//    uszMsg[ 5 ] = ( uchar ) grEibGroupHex.at( 1 );
-
-//    uszMsg[ 6 ] = 0x00;
-
-//    bool   bOK;
-//    double dVal = p_sValue.toDouble( & bOK );
-//    if ( bOK == false )
-//    {
-//        qDebug() << "Value is not a number. Discarding EIB/KNX update.";
-//        return;
-//    }
-//    int nVal = ( int ) dVal;
-
-//    uszMsg[ 7 ] = nVal;
-//    uszMsg[ 7 ] = uszMsg[ 7 ] | 0x80; // per definition
-
-//    QByteArray grMsgArray;
-//    grMsgArray.append( (char * ) & uszMsg, sizeof( uszMsg ) );
-
-//++++++++++++++++++++++++++++++++++++++++++
-
     QByteArray grMsg;
 
-    grMsg.append( char( 0x00 ) );
-    grMsg.append( char( 0x00 ) );
+    // my ($head, $src, $dst,$data) = unpack("nnnxa*", $buf);
+    // quint16 $head == 0x0027
+    // quint16 $src == hex eib address
+    // quint16 $dst == hex eib address
+    // quint8 = 0 == '\0'
+    // $data = 0x?0... | DATA, having ? = ACPI ('read' => 0, 'reply' => 1, 'write' => 2)
 
-    QByteArray grEibGroupHex = eib2hex( p_sEibGroup );
-    if ( grEibGroupHex.length() != 2 )
+    grMsg.append( char ( 0x00 ) ); // quint16
+    grMsg.append( char ( 0x27 ) );
+
+    // litte end 0000 0000 0010 0111
+    // big end   1110 0100 0000 0000
+
+    /// @todo fhem crashes not beeing able to identify 0x0027???
+
+    QByteArray grDest = eib2hex( p_sEibGroup );
+    if ( grDest.length() != 2 )
     {
         return;
     }
 
-    grMsg.append( char( 0x00 ) ); // source address
-    grMsg.append( char( 0x00 ) ); // source address
+    grMsg.append( grDest /*szSrc*/ );
+    grMsg.append( grDest );
 
-    grMsg.append( grEibGroupHex );
+    grMsg.append( '\0' );
+    grMsg.append( 0x02 ); // ACPI write
 
     bool   bOK;
-    p_sValue.toDouble( & bOK );
+    double dVal = p_sValue.toDouble( & bOK );
     if ( bOK == false )
     {
         qDebug() << "Value is not a number. Discarding EIB/KNX update.";
         return;
     }
 
-    grMsg.append( p_sValue );
+    grMsg.append( 0x01 );   // value / data
 
     /// @todo FHEM crashes by receiving this message; Find correct messge format.
     qDebug() << "Sending " << printASCII( grMsg );
     m_pTcpSocket->write( grMsg );
 
-
-//# decode: unmarshall a string with an EIB message into a hash
-//# The hash has the follwing fields:
-//#	- type: APCI (symbolic value): ('read' => 0, 'reply' => 1, 'write' => 2,)
-//#	- src: source address
-//#	- dst: destiniation address
-//#	- data: array of integers; one for each byte of data
-//sub decode_eibd($)
-//{
-//    my ($buf) = @_;
-//    my $drl = 0xe1; # dummy value
-//    my %msg;
-//    my @data;
-//    my ($src, $dst,$bytes) = unpack("nnxa*", $buf);
-//    my $apci;
-
-//    $apci = vec($bytes, 3, 2);
-//	# mask out apci bits, so we can use the whole byte as data:
-//    vec($bytes, 3, 2) = 0;
-//    if ($apci >= 0 && $apci <= $#apcicodes) {
-//		$msg{'type'} = $apcicodes[$apci];
-//    }
-//    else {
-//		$msg{'type'} = 'apci ' . $apci;
-//    }
-
-//    $msg{'src'} = tul_addr2hex($src,0);
-//    $msg{'dst'} = tul_addr2hex($dst,1);
-
-//    @data = unpack ("C" . length($bytes), $bytes);
-//    my $datalen = @data;
-//    Log(5, "decode_eibd byte len: " . length($bytes) . " array size: $datalen");
-
-//    # in case of data len > 1, the first byte (the one with apci) seems not to be used
-//    # and only the following byte are of interest.
-//    if($datalen>1) {
-//    	shift @data;
-//    }
-
-//    $msg{'data'} = \@data;
-//    return \%msg;
-//}
-
-
-//++++++++++++++++++++++++++++++++++++++++++
 }
 
 //////////////////////////////////////////////////////////////
