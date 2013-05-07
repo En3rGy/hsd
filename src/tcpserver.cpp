@@ -131,6 +131,14 @@ void CTcpServer::slot_startRead()
 
             uchar szData = grDatagram.at( 5 );
             szData = szData & 0x7f; // 0x7f = 0111 1111
+
+            // If you need to send data with a data type bigger than 6 bit:
+            // byte data[] = new byte[2 + <size of datatype in bytes>];
+            // data[0] = 0;
+            // data[1] =0x80;
+            // data[2]=<first byte of datatype>;
+            // data[3]=<second byte of datatype>;
+
             qDebug() << "Received write request" << sEibAddr << ( int ) szData << ". Forwarded.";
 
             emit signal_setEibAdress( sEibAddr, ( int ) szData );
@@ -138,6 +146,28 @@ void CTcpServer::slot_startRead()
         break;
 
     default:
+        if ( grDatagram.size() > 6 )
+        {
+            if ( ( grDatagram.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
+                 ( grDatagram.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
+            {
+                QByteArray grEibAdr;
+                grEibAdr.append( grDatagram.data()[2]);
+                grEibAdr.append( grDatagram.data()[3]);
+                QString sEibAddr = hex2eib( grEibAdr );
+
+                // Should be: grDatagram.at( 5 ) == 0x80;
+
+                QByteArray grDataArr = grDatagram.mid( 6, grDatagram.size() - 6 );
+
+                qDebug() << "Received write request" << sEibAddr << printASCII( grDataArr ) << ". Forwarded.";
+
+                emit signal_setEibAdress( sEibAddr, ( int ) grDataArr.data() );
+                return;
+            }
+        }
+
+
         qDebug() << "Received unknown request: " << printASCII( grDatagram );
     }
 
