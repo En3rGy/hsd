@@ -100,6 +100,70 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     }
 }
 
+const CEibdMsg::enuMsgType &CEibdMsg::getType() const
+{
+    return m_eMsgType;
+}
+
+const QString &CEibdMsg::getDestAddress() const
+{
+    return m_sDstAddr;
+}
+
+const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
+{
+    if ( p_pHasValue != NULL )
+    {
+        * p_pHasValue = ! m_grValue.isNull();
+    }
+    return m_grValue;
+}
+
+QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
+{
+    QByteArray grResponse;
+
+    switch( m_eMsgType )
+    {
+    case enuMsgType_connect:
+    {
+        grResponse.append( ( const char * ) CModel::g_uzEibAck, 2 );
+        if ( p_pHasResponse != NULL )
+        {
+            * p_pHasResponse = true;
+        }
+        break;
+    }
+    case enuMsgType_openGroupSocket:
+    {
+        const char szOpenGroupSocketAck [2] = { 0x00, 0x26 };
+        grResponse.append( QByteArray( szOpenGroupSocketAck, 2 ) );
+        if ( p_pHasResponse != NULL )
+        {
+            * p_pHasResponse = true;
+        }
+        break;
+    }
+    case enuMsgType_simpleWrite:
+    {
+        if ( p_pHasResponse != NULL )
+        {
+            * p_pHasResponse = false;
+        }
+        break;
+    }
+    default:
+    {
+        if ( p_pHasResponse != NULL )
+        {
+            * p_pHasResponse = false;
+        }
+    }
+    }
+
+    return grResponse;
+}
+
 //////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////

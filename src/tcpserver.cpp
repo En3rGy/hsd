@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <QBitArray>
+#include "eibdmsg.h"
 #include "model.h"
 #include "koxml.h"
 
@@ -78,6 +79,8 @@ void CTcpServer::slot_startRead()
 {
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
+
+    CEibdMsg grMsg( grDatagram );
 
     // check if 1st 2 byte contain package length
     if ( grDatagram.size() > 2 )
