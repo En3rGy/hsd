@@ -231,8 +231,8 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
     grMsg.append( 0x01 );   // value / data
 
     /// @todo FHEM crashes by receiving this message; Find correct messge format.
-    qDebug() << "Sending " << printASCII( grMsg );
-    m_pTcpSocket->write( grMsg );
+    //qDebug() << "Sending " << printASCII( grMsg );
+    //m_pTcpSocket->write( grMsg );
 
 }
 
