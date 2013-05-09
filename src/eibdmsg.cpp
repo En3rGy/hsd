@@ -19,11 +19,13 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         return;
     }
 
-    uchar uszSize [ 2 ];
-    uszSize[ 0 ] = p_grByteArray.at( 0 );
-    uszSize[ 1 ] = p_grByteArray.at( 1 );
+//    uchar uszSize [ 2 ];
+//    uszSize[ 0 ] = p_grByteArray.at( 0 );
+//    uszSize[ 1 ] = p_grByteArray.at( 1 );
 
-    int nSize = ( int ) uszSize;
+    int nSize = p_grByteArray.mid( 0, 2 ).toInt();
+
+    qDebug() << "Message size" << p_grByteArray.size() << "Submitted size" << nSize;
 
     if ( p_grByteArray.size() - 2 == nSize )
     {

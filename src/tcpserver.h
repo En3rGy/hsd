@@ -24,6 +24,7 @@ signals:
 public slots:
     void solt_newConnection( void );
     void slot_startRead( void );
+    void slot_disconnected( void );
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:

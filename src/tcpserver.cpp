@@ -69,6 +69,7 @@ void CTcpServer::solt_newConnection()
     m_pTcpSocket = m_pTcpServer->nextPendingConnection();
 
     connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
+    connect( m_pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
 }
 
 //////////////////////////////////////////////////////////////
@@ -79,8 +80,6 @@ void CTcpServer::slot_startRead()
 {
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
-
-    qDebug() << "Received message:" << CEibdMsg::printASCII( grDatagram );
 
     CEibdMsg grMsg( grDatagram );
 
@@ -115,6 +114,11 @@ void CTcpServer::slot_startRead()
     }
 }
 
+void CTcpServer::slot_disconnected()
+{
+    qDebug() << "Disconnected from client";
+}
+
 //////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////
@@ -136,7 +140,7 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 
 
     /// @todo FHEM crashes by receiving this message; Find correct messge format.
-    //qDebug() << "Sending " << printASCII( grMsg );
+    //qDebug() << "Sending " << CEibdMsg::printASCII( grMsg );
     //m_pTcpSocket->write( grMsg );
 
 }
