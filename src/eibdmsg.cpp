@@ -19,18 +19,12 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         return;
     }
 
-//    uchar uszSize [ 2 ];
-//    uszSize[ 0 ] = p_grByteArray.at( 0 );
-//    uszSize[ 1 ] = p_grByteArray.at( 1 );
-
-    int nSize = p_grByteArray.mid( 0, 2 ).toInt();
-
-    qDebug() << "Message size" << p_grByteArray.size() << "Submitted size" << nSize;
+    QString sSize = QString::number( p_grByteArray.at( 1 ) );
+    int nSize = ( int ) sSize.toDouble();
 
     if ( p_grByteArray.size() - 2 == nSize )
     {
         grMsg.append( p_grByteArray.mid( 2, p_grByteArray.size() - 2 ) );
-        qDebug() << "Received message length bytes" << nSize;
     }
     else
     {
