@@ -40,11 +40,10 @@ public:
     /// @return An empty byte array in case of no neccessary response .
     QByteArray getResponse( bool * p_pHasResponse = NULL );
 
-protected:
     /// @brief Converts a byte array to a string showing the hex values
     /// @param[in] p_grByteArray byte array to print
     /// @return Hex code of byte array, e.g. "03 ff 00 8a"
-    QString printASCII(const QByteArray &p_grByteArray);
+    static QString printASCII(const QByteArray &p_grByteArray);
 
     /// @brief Converting a hex EIB/KNX address to string
     ///
@@ -55,8 +54,16 @@ protected:
     ///
     /// @param p_grHexAddr 2 byte representation of a/b/c address.
     /// @return QString with KNX adress, e.g. "2/4/15"
-    QString hex2eib( QByteArray & p_grHexAddr );
+    static QString hex2eib( QByteArray & p_grHexAddr );
 
+    /// @brief Converting a EIB/KNX address to hex representation
+    /// @param p_sEibAddr EIB/KNX address, e.g. 1.4.15 or 4/2/100
+    /// @return 2 byte hex representation of KNX/EIB address
+    static QByteArray eib2hex(const QString &p_sEibAddr);
+
+    static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData );
+
+protected:
     enuMsgType m_eMsgType;
     QString    m_sSrcAddr; ///< EIB address of message sender.
     QString    m_sDstAddr; ///< EIB address of message receiver.

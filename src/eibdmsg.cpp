@@ -2,6 +2,7 @@
 
 #include "eibdmsg.h"
 #include "model.h"
+#include <QStringList>
 
 CEibdMsg::CEibdMsg()
 {
@@ -57,46 +58,51 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         }
         break;
 
-    case 6: // set request, e.g. 00 27 09 0f 00 80
-        if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
-             ( grMsg.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
+    default:
+        if ( grMsg.size() >= 6 )  // set request, e.g. 00 27 09 0f 00 80
         {
-            m_eMsgType = enuMsgType_simpleWrite;
 
-            QByteArray grEibAdr;
-            grEibAdr.append( grMsg.data()[2]);
-            grEibAdr.append( grMsg.data()[3]);
-            m_sDstAddr = hex2eib( grEibAdr );
-
-            uchar szData = grMsg.at( 5 );
-            szData = szData & 0x7f; // 0x7f = 0111 1111
-
-            // If you need to send data with a data type bigger than 6 bit:
-            // byte data[] = new byte[2 + <size of datatype in bytes>];
-            // data[0] = 0;
-            // data[1] =0x80;
-            // data[2]=<first byte of datatype>;
-            // data[3]=<second byte of datatype>;
-
-            QByteArray grData;
-            grData.append( grMsg.mid( 5, grMsg.size() - 5 ) );
-
-            if ( grData.size() == 2 )
+            if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
+                 ( grMsg.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
             {
+                m_eMsgType = enuMsgType_simpleWrite;
+
+                QByteArray grEibAdr;
+                grEibAdr.append( grMsg.data()[2]);
+                grEibAdr.append( grMsg.data()[3]);
+                m_sDstAddr = hex2eib( grEibAdr );
+
                 uchar szData = grMsg.at( 5 );
                 szData = szData & 0x7f; // 0x7f = 0111 1111
-                m_grValue = ( int ) szData;
-            }
-            else if ( grData.size() > 2 )
-            {
-                grData.remove( 0, 2 );
-                m_grValue = grData;
-            }
-        }
-        break;
 
-    default:
-        qDebug() << "Received unknown message: " << printASCII( grMsg );
+                // If you need to send data with a data type bigger than 6 bit:
+                // byte data[] = new byte[2 + <size of datatype in bytes>];
+                // data[0] = 0;
+                // data[1] =0x80;
+                // data[2]=<first byte of datatype>;
+                // data[3]=<second byte of datatype>;
+
+                QByteArray grData;
+                grData.append( grMsg.mid( 5, grMsg.size() - 5 ) );
+
+                qDebug() << "Data field" << printASCII( grData );
+
+                if ( grData.size() == 2 )
+                {
+                    uchar szData = grMsg.at( 5 );
+                    szData = szData & 0x7f; // 0x7f = 0111 1111
+                    m_grValue.setValue( ( int ) szData );
+                }
+                else if ( grData.size() > 2 )
+                {
+                    grData.remove( 0, 2 );
+                    m_grValue.setValue( grData );
+                }
+            }
+            break;
+
+            qDebug() << "Received unknown message: " << printASCII( grMsg );
+        }
     }
 }
 
@@ -164,6 +170,39 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
     return grResponse;
 }
 
+QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData)
+{
+    // my ($head, $src, $dst,$data) = unpack("nnnxa*", $buf);
+    // quint16 $head == 0x0027
+    // quint16 $src == hex eib address
+    // quint16 $dst == hex eib address
+    // quint8 = 0 == '\0'
+    // $data = 0x?0... | DATA, having ? = ACPI ('read' => 0, 'reply' => 1, 'write' => 2)
+
+    QByteArray grMsg;
+
+    grMsg.append( CModel::g_uzEibGroupPacket[ 0 ] ); // quint16
+    grMsg.append( CModel::g_uzEibGroupPacket[ 1 ] );
+
+    // litte end 0000 0000 0010 0111
+    // big end   1110 0100 0000 0000
+
+    /// @todo fhem crashes not beeing able to identify 0x0027???
+
+    QByteArray grSrc =  eib2hex( p_sSrcAddr );
+    QByteArray grDest = eib2hex( p_sDestAddr );
+
+    grMsg.append( grSrc );
+    grMsg.append( grDest );
+
+    grMsg.append( '\0' );
+    grMsg.append( 0x02 ); // ACPI write
+
+    grMsg.append( p_grData.toByteArray() );   // value / data
+
+    return grMsg;
+}
+
 //////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////
@@ -213,4 +252,54 @@ QString CEibdMsg::hex2eib( QByteArray & p_grHexAddr )
 
     QString sGA = sMainAddr + sSeparator + sMiddleAddr + sSeparator + sUnderAddr;
     return sGA;
+}
+
+QByteArray CEibdMsg::eib2hex(const QString &p_sEibAddr)
+{
+    // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
+    // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
+    // 0hhh hmmm
+
+
+    QByteArray  grRetArray;
+    QStringList grAddrList;
+    QString     sSep;
+
+    if ( p_sEibAddr.contains( "/" ) )
+    {
+        sSep = "/";
+    }
+    else if ( p_sEibAddr.contains( "." ) )
+    {
+        sSep = ".";
+    }
+    else
+    {
+        return grRetArray;
+    }
+
+    grAddrList = p_sEibAddr.split( sSep, QString::SkipEmptyParts );
+
+    if ( grAddrList.size() != 3 )
+    {
+        qDebug() << "ERROR: " << p_sEibAddr << "not of kind a/b/c. Aborting." << Q_FUNC_INFO;
+        return grRetArray;
+    }
+
+    uchar szHexAddr [2];
+
+    uchar szHAddr = grAddrList.at( 0 ).toUInt();
+    uchar szMAddr = grAddrList.at( 1 ).toUInt();
+    uchar szUAddr = grAddrList.at( 2 ).toUInt();
+
+    // 0000 0000 == 0x00
+    // 1111 1111 == 0xff
+
+    szHAddr = szHAddr << 3;
+    szHexAddr[ 0 ] = szHAddr | szMAddr;
+    szHexAddr[ 1 ] = szUAddr;
+
+    grRetArray.append( (char * ) & szHexAddr, sizeof( szHexAddr ) );
+
+    return grRetArray;
 }
