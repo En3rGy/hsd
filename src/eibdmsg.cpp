@@ -87,13 +87,13 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 
                 qDebug() << "Data field" << printASCII( grData );
 
-                if ( grData.size() == 2 )
+                if ( grData.size() == 1 )
                 {
                     uchar szData = grMsg.at( 5 );
                     szData = szData & 0x7f; // 0x7f = 0111 1111
                     m_grValue.setValue( ( int ) szData );
                 }
-                else if ( grData.size() > 2 )
+                else if ( grData.size() > 1 )
                 {
                     grData.remove( 0, 2 );
                     m_grValue.setValue( grData );
