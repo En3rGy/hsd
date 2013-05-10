@@ -202,8 +202,6 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
     grMsg.append( char( 0x00 ) ); // index 8
 
-
-
     bool bOk;
     double dVal = p_grData.toDouble( & bOk );
 

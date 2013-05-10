@@ -20,7 +20,7 @@ CTcpServer::CTcpServer(QObject *parent) :
   , m_pTcpServer( NULL )
   , m_pSettings( NULL )
 {
-    m_pSettings  = new QSettings();
+    m_pSettings  = new QSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
     m_pTcpServer = new QTcpServer( this );
 
     connect( m_pTcpServer, SIGNAL( newConnection()), SLOT( solt_newConnection()) );
@@ -33,13 +33,16 @@ CTcpServer::CTcpServer(QObject *parent) :
 CTcpServer::~CTcpServer()
 {
     m_pTcpServer->close();
+
+    m_pSettings->sync();
+    delete m_pSettings;
 }
 
 //////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////
 
-void CTcpServer::listen( const uint p_nPort )
+void CTcpServer::listen( const uint &p_nPort )
 {
     m_nPort = p_nPort;
 
@@ -57,7 +60,13 @@ void CTcpServer::listen( const uint p_nPort )
 
 void CTcpServer::listen()
 {
-    m_nPort = m_pSettings->value( CModel::g_sKey_HsdPort, 6720 ).value< qint16 >();
+    QVariant grPort = m_pSettings->value( CModel::g_sKey_HsdPort );
+    if ( grPort.isNull() == true )
+    {
+        m_pSettings->setValue( CModel::g_sKey_HsdPort, uint( 6720 ) );
+        grPort.setValue( uint( 6720 ) );
+    }
+    m_nPort = grPort.value< qint16>();
     listen( m_nPort );
 }
 
@@ -131,12 +140,6 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
-    {
-        qDebug() << "No eibd client connected to hsd server. Discarding incomming EIB/KNX update.";
-        return;
-    }
-
     QByteArray grMsg = CEibdMsg::getMessage( "", p_sEibGroup, p_sValue.toDouble() );
 
     if ( grMsg.isEmpty() == true )
@@ -144,7 +147,12 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    /// @todo FHEM crashes by receiving this message; Find correct messge format.
+    if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
+    {
+        qDebug() << "No eibd client connected to hsd server. Discarding incomming EIB/KNX update.";
+        return;
+    }
+
     qDebug() << "Sending via eibd interface" << CEibdMsg::printASCII( grMsg );
     m_pTcpSocket->write( grMsg );
 }

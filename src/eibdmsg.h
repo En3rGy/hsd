@@ -5,6 +5,13 @@
 #include <QString>
 #include <QVariant>
 
+/** @class CEibdMsg
+  * @brief Handler of eibd messages
+  * @author T. Paul
+  * @date 2013
+  *
+  * Helper class for dealing with incomming eibd messages. Providing replys for incomming messages.
+  */
 class CEibdMsg
 {
 public:
@@ -45,22 +52,6 @@ public:
     /// @return Hex code of byte array, e.g. "03 ff 00 8a"
     static QString printASCII(const QByteArray &p_grByteArray);
 
-//    /// @brief Converting a hex EIB/KNX address to string
-//    ///
-//    /// Conversion:<br>
-//    /// Having a 2 byte bit sequence: aaaa abbb cccc cccc<br>
-//    /// Turns to an EIB / KNX address like a/b/c<br>
-//    /// 0001 1001 0000 0010 equals 3/1/2
-//    ///
-//    /// @param p_grHexAddr 2 byte representation of a/b/c address.
-//    /// @return QString with KNX adress, e.g. "2/4/15"
-//    static QString hex2eib( QByteArray & p_grHexAddr );
-
-//    /// @brief Converting a EIB/KNX address to hex representation
-//    /// @param p_sEibAddr EIB/KNX address, e.g. 1.4.15 or 4/2/100
-//    /// @return 2 byte hex representation of KNX/EIB address
-//    static QByteArray eib2hex(const QString &p_sEibAddr);
-
     /**
      * @brief getMessage returns a simplewrite for setting a value on an EIB/KNX address
      * @param p_sSrcAddr Address of sender, e.g. 1.4.15
@@ -71,7 +62,13 @@ public:
     static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData );
 
 protected:
+
+    /** @brief Checks if the passed double is a natural number
+      * @param p_dNumber Number to check
+      * @return True if the parameter is a natural number: 1.0 -> true, 1.1 -> false
+      */
     static bool isNatural( const double & p_dNumber );
+
     enuMsgType m_eMsgType;
     QString    m_sSrcAddr; ///< EIB address of message sender.
     QString    m_sDstAddr; ///< EIB address of message receiver.

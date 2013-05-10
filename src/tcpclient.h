@@ -9,6 +9,12 @@ class QTcpSocket;
 class QTcpServer;
 class QSettings;
 
+/** @class CTcpClient
+  * @brief Class for managing communication with GIRA homeserver.
+  * @author T. Paul
+  * @date 2013
+  */
+
 class CTcpClient : public QObject
 {
     Q_OBJECT
@@ -32,6 +38,8 @@ public:
      */
     void initConnection( const QString & p_sPass = "" );
 
+    /** @brief Calls the group adress via a HS xml interface.
+      */
     void getGaXml( void );
 
 signals:
@@ -47,9 +55,19 @@ public slots:
     void slot_webRequestReadFinished( void );
     void slot_webRequestClosed( void );
 
+    /** @brief Send a write action to GIRA Home Server
+      * @param p_sEibAddr KNX/EIB address to write, e.g. 1/5/30
+      * @param p_nVal Value to set
+      */
     void slot_setEibAdress( const QString & p_sEibAddr, const int & p_nVal );
 
 private:
+    /** @brief Splits the incomming string from HS to sub data.
+      * @param[in] p_sIncoming Incoming HS string.
+      * @param[out] p_sType Type of message
+      * @param[out] p_sGA Group adress
+      * @param[out] p_sValue value of GA.
+      */
     void splitString( const QString & p_sIncoming, QString & p_sType, QString & p_sGA, QString & p_sValue );
 
     QTcpSocket * m_pTcpSocket;

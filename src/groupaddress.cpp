@@ -3,6 +3,9 @@
 #include "groupaddress.h"
 
 CGroupAddress::CGroupAddress()
+    : m_unMainAddr( 0 )
+    , m_unMiddAddr( 0 )
+    , m_unLowAddr( 0 )
 {
 }
 
@@ -121,15 +124,15 @@ void CGroupAddress::setHS(const int &p_nHSAddr)
 
 bool CGroupAddress::isValid() const
 {
-    if ( ( m_unMainAddr < 1 ) || ( m_unMainAddr > 15 ) )
+    if ( m_unMainAddr > 15 )
     {
         return false;
     }
-    if ( ( m_unMiddAddr < 1 ) || ( m_unMiddAddr > 15 ) )
+    if ( m_unMiddAddr > 15 )
     {
         return false;
     }
-    if ( ( m_unLowAddr < 1 ) || ( m_unLowAddr > 256 ) )
+    if ( m_unLowAddr > 256 )
     {
         return false;
     }

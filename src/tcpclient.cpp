@@ -23,7 +23,7 @@ CTcpClient::CTcpClient(QObject *parent) :
   , m_pWebRequestTcpSocket( NULL )
   , m_pSettings( NULL )
 {
-    m_pSettings = new QSettings();
+    m_pSettings = new QSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
     QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
 }
 
@@ -37,6 +37,8 @@ CTcpClient::~CTcpClient()
     {
         m_pTcpSocket->close();
     }
+
+    m_pSettings->sync();
 
     delete m_pSettings;
 }
@@ -83,7 +85,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
 
     if ( nRet == -1 )
     {
-        qDebug() << m_pTcpSocket->errorString();
+        qDebug() << m_pTcpSocket->errorString() << Q_FUNC_INFO;
     }
     else
     {
@@ -198,9 +200,26 @@ void CTcpClient::initConnection( const QString &p_sPass)
         connect( m_pTcpSocket, SIGNAL( readyRead()), this, SLOT( slot_startRead() ) );
     }
 
-    QHostAddress grHostAddress( m_pSettings->value( CModel::g_sKey_HSIP, "192.168.143.11" ).value< QString >() );
+    QVariant grHsIp = m_pSettings->value( CModel::g_sKey_HSIP );
+    if ( grHsIp.isNull() == true )
+    {
+        m_pSettings->setValue( CModel::g_sKey_HSIP, QString( "192.168.143.11" ) );
+        grHsIp.setValue( QString( "192.168.143.11" ) );
+    }
+    QHostAddress grHostAddress( grHsIp.toString() );
 
-    m_pTcpSocket->connectToHost( grHostAddress, m_pSettings->value( CModel::g_sKey_HSGwPort, "7003" ).value< uint >() );
+
+    QVariant grHsGwPort = m_pSettings->value( CModel::g_sKey_HSGwPort );
+    if ( grHsGwPort.isNull() == true )
+    {
+        m_pSettings->setValue( CModel::g_sKey_HSGwPort, uint( 7003 ) );
+        grHsGwPort.setValue( uint( 7003 ) );
+    }
+    uint unPort = grHsGwPort.toUInt();
+
+    qDebug() << grHostAddress << unPort;
+
+    m_pTcpSocket->connectToHost( grHostAddress, unPort);
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
         qDebug() << "Connection with HS established" ;
@@ -223,7 +242,7 @@ void CTcpClient::initConnection( const QString &p_sPass)
     }
     else
     {
-        qDebug() << m_pTcpSocket->errorString() ;
+        qDebug() << m_pTcpSocket->errorString() << Q_FUNC_INFO;
     }
 }
 
@@ -234,8 +253,23 @@ void CTcpClient::initConnection( const QString &p_sPass)
 void CTcpClient::getGaXml()
 {
     // Load Xml file form HS
-    QString sHsIp       = m_pSettings->value( CModel::g_sKey_HSIP, "192.168.143.11" ).value< QString >();
-    QString sHsPort     = m_pSettings->value( CModel::g_sKey_HSWebPort, "80" ).value< QString >();
+    QVariant grHsIp     = m_pSettings->value( CModel::g_sKey_HSIP );
+    if ( grHsIp.isNull() == true )
+    {
+        m_pSettings->setValue( CModel::g_sKey_HSIP, "192.168.143.11" );
+        grHsIp.setValue( QString( "192.168.143.11" ) );
+    }
+    QString sHsIp = grHsIp.toString();
+
+    QVariant grHsPort = m_pSettings->value( CModel::g_sKey_HSWebPort );
+    if ( grHsPort.isNull() == true )
+    {
+        m_pSettings->setValue( CModel::g_sKey_HSWebPort, uint( 80 ) );
+        grHsPort.setValue( uint( 80 ) );
+    }
+    uint unHsPort = grHsPort.toUInt();
+
+
     QString sWebRequest = "GET /hscl?sys/cobjects.xml HTTP/1.0\r\n\r\n";
 
     if ( m_pWebRequestTcpSocket == NULL )
@@ -251,7 +285,7 @@ void CTcpClient::getGaXml()
         return;
     }
 
-    m_pWebRequestTcpSocket->connectToHost( sHsIp, sHsPort.toInt() );
+    m_pWebRequestTcpSocket->connectToHost( sHsIp, unHsPort );
     if ( m_pWebRequestTcpSocket->waitForConnected( 2000 ) == true )
     {
         m_pWebRequestTcpSocket->write( sWebRequest.toAscii() );
@@ -261,13 +295,13 @@ void CTcpClient::getGaXml()
         }
         else
         {
-            qDebug() << m_pWebRequestTcpSocket->errorString();
+            qDebug() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
             return;
         }
     }
     else
     {
-        qDebug() << m_pWebRequestTcpSocket->errorString();
+        qDebug() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
         return;
     }
 }

@@ -5,6 +5,11 @@
 #include <QMap>
 #include <QString>
 
+/** @class CKoXml
+  * @brief Helper class for reading the home server group address xml file.
+  * @author T. Paul
+  * @date 2013
+  */
 class CKoXml
 {
 public:
@@ -50,6 +55,12 @@ protected:
 
     friend class CKoXmlGC;
 };
+
+/** @class CKoXmlGC
+  * @brief Garbage collector for CKoCml
+  * @author T. Paul
+  * @date 2013
+  */
 
 class CKoXmlGC
 {

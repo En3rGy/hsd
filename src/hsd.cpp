@@ -1,6 +1,8 @@
 #include "hsd.h"
 #include "tcpclient.h"
 #include "tcpserver.h"
+#include "model.h"
+#include <QSettings>
 
 CHsd::CHsd(QObject *parent) :
     QObject(parent)
