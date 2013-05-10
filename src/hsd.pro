@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     model.cpp \
     koxml.cpp \
     hsd.cpp \
-    eibdmsg.cpp
+    eibdmsg.cpp \
+    groupaddress.cpp
 
 HEADERS += \
     tcpclient.h \
@@ -31,4 +32,5 @@ HEADERS += \
     model.h \
     koxml.h \
     hsd.h \
-    eibdmsg.h
+    eibdmsg.h \
+    groupaddress.h

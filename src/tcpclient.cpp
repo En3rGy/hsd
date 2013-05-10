@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <koxml.h>
 #include <model.h>
+#include "groupaddress.h"
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -58,7 +59,10 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
         return;
     }
 
-    int     nVal     = convertGA( p_sGA );
+    CGroupAddress grGA;
+    grGA.setKNXString( p_sGA );
+
+    int     nVal     = grGA.toHSRepresentation();
     QString sMessage = p_sAction
                         + m_sSeperatorChar
                         + QString::number( nVal )
@@ -105,11 +109,22 @@ void CTcpClient::slot_startRead()
     QString sValue;
 
     splitString( sString, sType, sIntGA, sValue );
-    sGA = convertGA( sIntGA.toInt() );
 
-    qDebug() << "Received HS GA update:" << sGA << "\tValue:" << sValue;
+    CGroupAddress grGA;
+    grGA.setHS( sIntGA.toInt() );
 
-    emit signal_receivedMessage( sGA, sValue );
+    sGA = grGA.toKNXString();
+
+    qDebug() << "Received via HS interface:" << sGA << "\tValue:" << sValue;
+
+    if ( grGA.isValid() == true )
+    {
+        emit signal_receivedMessage( sGA, sValue );
+    }
+//    else
+//    {
+//        qDebug() << sGA << "is not valid.";
+//    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -138,59 +153,6 @@ void CTcpClient::slot_webRequestClosed()
 void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
 {
     send( "1", p_sEibAddr, QString::number( p_nVal ) );
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-//
-//////////////////////////////////////////////////////////////////////////////////
-
-int CTcpClient::convertGA(const QString &p_sGA)
-{
-    QVector<QString> grGAVec;
-    QString sTemp;
-
-    for ( int i = 0; i < p_sGA.length(); i++ )
-    {
-        if ( p_sGA.at( i ) == '/' )
-        {
-            grGAVec.push_back( sTemp );
-            sTemp.clear();
-        }
-        else
-        {
-            sTemp = sTemp + p_sGA.at( i );
-        }
-    }
-    grGAVec.push_back( sTemp );
-
-    if ( grGAVec.count() == 3 )
-    {
-        int nX = grGAVec.at( 0 ).toInt();
-        int nY = grGAVec.at( 1 ).toInt();
-        int nZ = grGAVec.at( 2 ).toInt();
-        int nConvert = nX * 2048 + nY * 256 + nZ;
-
-        return nConvert;
-    }
-
-    return -1;
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-//
-//////////////////////////////////////////////////////////////////////////////////
-
-QString CTcpClient::convertGA(const int &p_nGA)
-{
-    // int nConvert = nX * 2048 + nY * 256 + nZ;
-
-    int nX = p_nGA / 2048;
-    int nY = ( p_nGA - ( nX * 2048 ) ) / 256;
-    int nZ = ( p_nGA - ( nX * 2048 ) - ( nY * 256 ) );
-
-    QString sGA = QString::number( nX ) + "/" + QString::number( nY ) + "/" + QString::number( nZ );
-
-    return sGA;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -241,13 +203,13 @@ void CTcpClient::initConnection( const QString &p_sPass)
     m_pTcpSocket->connectToHost( grHostAddress, m_pSettings->value( CModel::g_sKey_HSGwPort, "7003" ).value< uint >() );
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
-        qDebug() << "Connection established" ;
+        qDebug() << "Connection with HS established" ;
 
         QByteArray grArray;
         grArray.append( p_sPass );
         grArray.append( m_sMsgEndChar );
 
-        qDebug() << "Sending initialization message." ;
+        qDebug() << "Sending to HS: Initialization message." ;
         int nRet = m_pTcpSocket->write( grArray );
 
         if ( nRet == -1 )

@@ -3,6 +3,7 @@
 #include "eibdmsg.h"
 #include "model.h"
 #include <QStringList>
+#include "groupaddress.h"
 
 CEibdMsg::CEibdMsg()
 {
@@ -66,7 +67,10 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                 QByteArray grEibAdr;
                 grEibAdr.append( grMsg.data()[2]);
                 grEibAdr.append( grMsg.data()[3]);
-                m_sDstAddr = hex2eib( grEibAdr );
+
+                CGroupAddress grGA;
+                grGA.setHex( grEibAdr );
+                m_sDstAddr = grGA.toKNXString();
 
                 uchar szData = grMsg.at( 5 );
                 szData = szData & 0x7f; // 0x7f = 0111 1111
@@ -168,35 +172,99 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
 QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData)
 {
-    // my ($head, $src, $dst,$data) = unpack("nnnxa*", $buf);
-    // quint16 $head == 0x0027
-    // quint16 $src == hex eib address
-    // quint16 $dst == hex eib address
-    // quint8 = 0 == '\0'
-    // $data = 0x?0... | DATA, having ? = ACPI ('read' => 0, 'reply' => 1, 'write' => 2)
+    // byte  0: 0x00
+    // byte  1: Length w/o byte 1 + 2
+    // byte  2: 0x00
+    // byte  3: 0x27
+    // byte  4: src addr
+    // byte  5: src addr
+    // byte  6: dest addr
+    // byte  7: dest addr
+    // byte  8: 0x00
+    // byte  9: action  0x80: 'write'; 0x40: 'response'; 0x00: 'read';
+    // byte 10: data if not in 8
 
     QByteArray grMsg;
 
-    grMsg.append( CModel::g_uzEibGroupPacket[ 0 ] ); // quint16
-    grMsg.append( CModel::g_uzEibGroupPacket[ 1 ] );
+    grMsg.append( char( 0x00 ) ); // index 0
+    grMsg.append( char( 0x08 ) ); // index 1
+    grMsg.append( char( 0x00 ) ); // index 2
+    grMsg.append( char( 0x27 ) ); // index 3
 
-    // litte end 0000 0000 0010 0111
-    // big end   1110 0100 0000 0000
+    CGroupAddress grSrcAddr;
+    CGroupAddress grDestAddr;
 
-    /// @todo fhem crashes not beeing able to identify 0x0027???
+    grSrcAddr.setKNXString( p_sSrcAddr );
+    grDestAddr.setKNXString( p_sDestAddr );
 
-    QByteArray grSrc =  eib2hex( p_sSrcAddr );
-    QByteArray grDest = eib2hex( p_sDestAddr );
+    grMsg.append( grSrcAddr.toHex() );   // index 4 + 5
+    grMsg.append( grDestAddr.toHex() );  // index 6 + 7
 
-    grMsg.append( grSrc );
-    grMsg.append( grDest );
+    grMsg.append( char( 0x00 ) ); // index 8
 
-    grMsg.append( '\0' );
-    grMsg.append( 0x02 ); // ACPI write
 
-    grMsg.append( p_grData.toByteArray() );   // value / data
 
-    return grMsg;
+    bool bOk;
+    double dVal = p_grData.toDouble( & bOk );
+
+    if ( isNatural( dVal ) == true )
+    {
+        int nVal = (int) dVal;
+        if ( nVal <= 100 )
+        {
+            char szData = nVal;// QString::number( nVal ).toAscii();
+            szData = szData | 0x80;
+            grMsg.append( szData ); // index 9
+
+            return grMsg;
+        }
+        else
+        {
+            qDebug() << "Can only forward positive natural numbers < 100, not" << p_grData;
+        }
+    }
+
+    return QByteArray();
+
+//    grMsg.append( char( 0x80 ) ); // index 9
+//    grMsg.append( dVal );
+
+//    quint8 nSize = grMsg.size() - 2;
+
+//    grMsg[ 1 ] = nSize; // index 1
+
+//    return grMsg;
+}
+
+bool CEibdMsg::isNatural(const double & p_dNumber)
+{
+    QStringList grStringList;
+
+    QString sNumer = QString::number( p_dNumber );
+
+    if ( sNumer.contains( "." ) == true )
+    {
+        grStringList = sNumer.split( '.', QString::SkipEmptyParts );
+
+        if ( grStringList.size() != 2 )
+        {
+            return false;
+        }
+
+        if ( grStringList.at( 1 ).toInt() != 0 )
+        {
+            return false;
+        }
+
+        return true;
+    }
+    else
+    {
+        bool bRet;
+        sNumer.toInt( & bRet );
+
+        return bRet;
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -219,83 +287,4 @@ QString CEibdMsg::printASCII( const QByteArray & p_grByteArray)
     }
 
     return sResult;
-}
-
-QString CEibdMsg::hex2eib( QByteArray & p_grHexAddr )
-{
-    // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
-    // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
-
-    // 0hhh hmmm
-
-    if ( p_grHexAddr.length() != 2 )
-    {
-        qDebug() << "Wrong length" << Q_FUNC_INFO;
-        return QString();
-    }
-
-    uchar szData [ 3 ];
-    szData[0] = (uchar) p_grHexAddr.at(0);
-    szData[1] = (uchar) p_grHexAddr.at(0);
-    szData[2] = (uchar) p_grHexAddr.at(1);
-
-    szData[0] = szData[0] << 1;
-    QString sMainAddr   = QString::number( ( szData[0] >> 4 ) & 0xf );
-
-    QString sMiddleAddr = QString::number( ( szData[1] & 0x7 ) );
-    QString sUnderAddr  = QString::number( szData[2] );
-    QString sSeparator = "/";
-
-    QString sGA = sMainAddr + sSeparator + sMiddleAddr + sSeparator + sUnderAddr;
-    return sGA;
-}
-
-QByteArray CEibdMsg::eib2hex(const QString &p_sEibAddr)
-{
-    // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
-    // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
-    // 0hhh hmmm
-
-
-    QByteArray  grRetArray;
-    QStringList grAddrList;
-    QString     sSep;
-
-    if ( p_sEibAddr.contains( "/" ) )
-    {
-        sSep = "/";
-    }
-    else if ( p_sEibAddr.contains( "." ) )
-    {
-        sSep = ".";
-    }
-    else
-    {
-        return grRetArray;
-    }
-
-    grAddrList = p_sEibAddr.split( sSep, QString::SkipEmptyParts );
-
-    if ( grAddrList.size() != 3 )
-    {
-        qDebug() << "ERROR: " << p_sEibAddr << "not of kind a/b/c. Aborting." << Q_FUNC_INFO;
-        return grRetArray;
-    }
-
-    uchar szHexAddr [2];
-
-    uchar szHAddr = grAddrList.at( 0 ).toUInt();
-    uchar szMAddr = grAddrList.at( 1 ).toUInt();
-    uchar szUAddr = grAddrList.at( 2 ).toUInt();
-
-    // 0000 0000 == 0x00
-    // 1111 1111 == 0xff
-
-    szHAddr = szHAddr << 3;
-    szHexAddr[ 0 ] = szHAddr | szMAddr;
-    szHexAddr[ 1 ] = szUAddr;
-
-    grRetArray.append( (char * ) & szHexAddr, sizeof( szHexAddr ) );
-
-    return grRetArray;
 }

@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     {
         QCoreApplication a(argc, argv);
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.3.0" );
+        a.setApplicationVersion( "0.4.0" );
 
         QSettings::setPath( QSettings::IniFormat, QSettings::SystemScope, "../etc/hsd.ini" );
 

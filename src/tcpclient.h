@@ -50,9 +50,6 @@ public slots:
     void slot_setEibAdress( const QString & p_sEibAddr, const int & p_nVal );
 
 private:
-    static int     convertGA( const QString & p_sGA );
-    static QString convertGA( const int & p_nGA );
-
     void splitString( const QString & p_sIncoming, QString & p_sType, QString & p_sGA, QString & p_sValue );
 
     QTcpSocket * m_pTcpSocket;

@@ -45,25 +45,26 @@ public:
     /// @return Hex code of byte array, e.g. "03 ff 00 8a"
     static QString printASCII(const QByteArray &p_grByteArray);
 
-    /// @brief Converting a hex EIB/KNX address to string
-    ///
-    /// Conversion:<br>
-    /// Having a 2 byte bit sequence: aaaa abbb cccc cccc<br>
-    /// Turns to an EIB / KNX address like a/b/c<br>
-    /// 0001 1001 0000 0010 equals 3/1/2
-    ///
-    /// @param p_grHexAddr 2 byte representation of a/b/c address.
-    /// @return QString with KNX adress, e.g. "2/4/15"
-    static QString hex2eib( QByteArray & p_grHexAddr );
+//    /// @brief Converting a hex EIB/KNX address to string
+//    ///
+//    /// Conversion:<br>
+//    /// Having a 2 byte bit sequence: aaaa abbb cccc cccc<br>
+//    /// Turns to an EIB / KNX address like a/b/c<br>
+//    /// 0001 1001 0000 0010 equals 3/1/2
+//    ///
+//    /// @param p_grHexAddr 2 byte representation of a/b/c address.
+//    /// @return QString with KNX adress, e.g. "2/4/15"
+//    static QString hex2eib( QByteArray & p_grHexAddr );
 
-    /// @brief Converting a EIB/KNX address to hex representation
-    /// @param p_sEibAddr EIB/KNX address, e.g. 1.4.15 or 4/2/100
-    /// @return 2 byte hex representation of KNX/EIB address
-    static QByteArray eib2hex(const QString &p_sEibAddr);
+//    /// @brief Converting a EIB/KNX address to hex representation
+//    /// @param p_sEibAddr EIB/KNX address, e.g. 1.4.15 or 4/2/100
+//    /// @return 2 byte hex representation of KNX/EIB address
+//    static QByteArray eib2hex(const QString &p_sEibAddr);
 
     static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData );
 
 protected:
+    static bool isNatural( const double & p_dNumber );
     enuMsgType m_eMsgType;
     QString    m_sSrcAddr; ///< EIB address of message sender.
     QString    m_sDstAddr; ///< EIB address of message receiver.

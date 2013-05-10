@@ -8,6 +8,7 @@
 #include "eibdmsg.h"
 #include "model.h"
 #include "koxml.h"
+#include "eibdmsg.h"
 
 //////////////////////////////////////////////////////////////
 //
@@ -87,21 +88,21 @@ void CTcpServer::slot_startRead()
     {
     case CEibdMsg::enuMsgType_connect:
     {
-        qDebug() << "Received connection request. Granted.";
+        qDebug() << "Received via eibd interface: Connection request. Granted.";
         m_pTcpSocket->write( grMsg.getResponse() );
     }
         break;
 
     case CEibdMsg::enuMsgType_openGroupSocket:
     {
-        qDebug() << "Received openGroupSocket request. Granted.";
+        qDebug() << "Received via eibd interface: openGroupSocket request. Granted.";
         m_pTcpSocket->write( grMsg.getResponse() );
     }
         break;
 
     case CEibdMsg::enuMsgType_simpleWrite:
     {
-        qDebug() << "Received write request" << grMsg.getDestAddress() << grMsg.getValue() << ". Forwarded.";
+        qDebug() << "Received via eibd interface: simpleWrite request" << grMsg.getDestAddress() << grMsg.getValue() << ". Forwarded.";
         emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue().toInt() );
         /// @todo Process values others than int.
     }
@@ -109,14 +110,14 @@ void CTcpServer::slot_startRead()
 
     default:
     {
-        qDebug() << "Received unknown request: " << CEibdMsg::printASCII( grDatagram );
+        qDebug() << "Received via eibd interface: Unknown request: " << CEibdMsg::printASCII( grDatagram );
     }
     }
 }
 
 void CTcpServer::slot_disconnected()
 {
-    qDebug() << "Disconnected from client";
+    qDebug() << "Disconnected from eibd client";
 }
 
 //////////////////////////////////////////////////////////////
@@ -132,17 +133,20 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 
     if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
     {
-        qDebug() << "No client connected to hsd server. Discarding incomming EIB/KNX update.";
+        qDebug() << "No eibd client connected to hsd server. Discarding incomming EIB/KNX update.";
         return;
     }
 
-    QByteArray grMsg = CEibdMsg::getMessage( "", p_sEibGroup, ( uint ) p_sValue.toDouble() );
+    QByteArray grMsg = CEibdMsg::getMessage( "", p_sEibGroup, p_sValue.toDouble() );
 
+    if ( grMsg.isEmpty() == true )
+    {
+        return;
+    }
 
     /// @todo FHEM crashes by receiving this message; Find correct messge format.
-    //qDebug() << "Sending " << CEibdMsg::printASCII( grMsg );
-    //m_pTcpSocket->write( grMsg );
-
+    qDebug() << "Sending via eibd interface" << CEibdMsg::printASCII( grMsg );
+    m_pTcpSocket->write( grMsg );
 }
 
 //////////////////////////////////////////////////////////////
