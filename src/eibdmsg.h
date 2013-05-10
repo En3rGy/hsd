@@ -61,6 +61,13 @@ public:
 //    /// @return 2 byte hex representation of KNX/EIB address
 //    static QByteArray eib2hex(const QString &p_sEibAddr);
 
+    /**
+     * @brief getMessage returns a simplewrite for setting a value on an EIB/KNX address
+     * @param p_sSrcAddr Address of sender, e.g. 1.4.15
+     * @param p_sDestAddr Address of destination, e.g. 5/5/35
+     * @param p_grData Data to write to the destination address
+     * @return Message as byte array
+     */
     static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData );
 
 protected:
