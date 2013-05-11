@@ -14,6 +14,8 @@ TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
 
+ TRANSLATIONS = hsd_de.ts \
+
 INCLUDEPATH += ../3rd_party/QsLog
 
 TEMPLATE = app
@@ -37,3 +39,6 @@ HEADERS += \
     hsd.h \
     eibdmsg.h \
     groupaddress.h
+
+RESOURCES += \
+    ressources.qrc

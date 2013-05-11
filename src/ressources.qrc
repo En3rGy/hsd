@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>hsd_de.qm</file>
+    </qresource>
+</RCC>

@@ -4,6 +4,7 @@
 #include "hsd.h"
 #include "QsLog.h"
 #include "model.h"
+#include <QTranslator>
 
 /** @mainpage
   * <p>The programm provides parts of the eibd TCP/IP interface to communicate
@@ -20,6 +21,12 @@ int main(int argc, char *argv[])
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
         a.setApplicationVersion( "0.4.1" );
+
+        QString sLocale = QLocale::system().name();
+
+        QTranslator grTranslator;
+        grTranslator.load( QString(":hsd_") + sLocale);
+        a.installTranslator( & grTranslator);
 
         CHsd grHsd;
 
