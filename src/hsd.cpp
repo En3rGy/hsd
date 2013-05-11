@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QSettings>
+#include <QDateTime>
 
 CHsd::CHsd(QObject *parent) :
     QObject(parent)
@@ -27,12 +28,21 @@ CHsd::CHsd(QObject *parent) :
     }
     uint unLogLevel = grLogLevel.toUInt();
 
-    QDir grLogPath = QDir::currentPath() + "/../var"; //QCoreApplication::applicationDirPath()/* + "../var"*/;
+    //QDir grLogPath = QDir::currentPath() + "/../var";
+    QDir grLogPath = QCoreApplication::applicationDirPath() + "/../var";
+
+    if ( grLogPath.exists() == false )
+    {
+        grLogPath.mkdir( grLogPath.absolutePath() );
+    }
+
+    QString sFileName = "hsd_" + QDateTime::currentDateTime().toString( "yyyy-MM-dd_hhmmss" /*Qt::ISODate*/ ) + ".log";
+    sFileName.replace( ":", "" );
 
     QsLogging::Logger & grLogger = QsLogging::Logger::instance();
 
     m_pFileDestPtr = QsLogging::DestinationPtr( QsLogging::DestinationFactory::MakeFileDestination(
-                        grLogPath.absoluteFilePath( "hsd.log" ) ) );
+                        grLogPath.absoluteFilePath( sFileName ) ) );
 
     m_pDebugDestPtr = QsLogging::DestinationPtr( QsLogging::DestinationFactory::MakeDebugOutputDestination() );
 
