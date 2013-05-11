@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.4.0" );
+        a.setApplicationVersion( "0.4.1" );
 
         CHsd grHsd;
 
