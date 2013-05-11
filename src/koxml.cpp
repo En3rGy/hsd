@@ -1,5 +1,6 @@
 #include "koxml.h"
 #include <QDebug>
+#include "QsLog.h"
 
 CKoXmlGC g_grKoXmlGarbageCollector;
 
@@ -7,6 +8,7 @@ CKoXml * CKoXml::m_pInstance = NULL;
 
 CKoXml *CKoXml::getInstance()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pInstance == NULL )
     {
         m_pInstance = new CKoXml();
@@ -17,6 +19,7 @@ CKoXml *CKoXml::getInstance()
 
 void CKoXml::setXml(QByteArray & p_grKoXml)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     int     nIndex = 0;
     cobject grCobject;
 
@@ -46,19 +49,19 @@ void CKoXml::setXml(QByteArray & p_grKoXml)
         grCobject.sTransmit = copy( p_grKoXml, "transmit", nIndex );
 
         m_ssGA2NameMap.insert( grCobject.sGa, grCobject );
-
-        //qDebug() << nIndex << "\t" << grCobject.sGa << "\t" << grCobject.sName;
     }
 
-    qDebug() << "Received " << m_ssGA2NameMap.size() << "elements from HS.";
+    QLOG_INFO() << QObject::tr("Received") << m_ssGA2NameMap.size() << QObject::tr("elements from HS.");
 }
 
 CKoXml::CKoXml()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
 }
 
 QString CKoXml::copy(QByteArray &p_grData, const QString & p_sTag, const int &p_nStartIndex )
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QString sBeginStr = p_sTag + "=\"";
     int nStartIndex = p_grData.indexOf( sBeginStr, p_nStartIndex ) + sBeginStr.length();
 
@@ -78,6 +81,7 @@ QString CKoXml::copy(QByteArray &p_grData, const QString & p_sTag, const int &p_
 
 CKoXmlGC::~CKoXmlGC()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( CKoXml::m_pInstance != NULL )
     {
         delete CKoXml::m_pInstance;
@@ -87,6 +91,7 @@ CKoXmlGC::~CKoXmlGC()
 
 QString CKoXml::getGaName(const QString &p_sGA)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     cobject grValue = m_ssGA2NameMap.value( p_sGA );
 
     if ( grValue.sName.isEmpty() == true )

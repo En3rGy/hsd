@@ -8,6 +8,7 @@
 #include <koxml.h>
 #include <model.h>
 #include "groupaddress.h"
+#include "QsLog.h"
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -23,6 +24,7 @@ CTcpClient::CTcpClient(QObject *parent) :
   , m_pWebRequestTcpSocket( NULL )
   , m_pSettings( NULL )
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     m_pSettings = new QSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
     QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
 }
@@ -33,6 +35,7 @@ CTcpClient::CTcpClient(QObject *parent) :
 
 CTcpClient::~CTcpClient()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket != NULL )
     {
         m_pTcpSocket->close();
@@ -49,15 +52,16 @@ CTcpClient::~CTcpClient()
 
 void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QString &p_sValue)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
     {
-        qDebug() << "Init connection first";
+        QLOG_WARN() << QObject::tr("Connection with HS not yet initialized.");
         return;
     }
 
     if ( m_pTcpSocket->state() != QAbstractSocket::ConnectedState )
     {
-        qDebug() << "Not connected";
+        QLOG_WARN() << QObject::tr("Not connected with HS");
         return;
     }
 
@@ -79,17 +83,17 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
     int nRet = m_pTcpSocket->write( grArray );
     if ( m_pTcpSocket->waitForBytesWritten() == false )
     {
-        qDebug() << "Timoeout while sending";
+        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.");
         return;
     }
 
     if ( nRet == -1 )
     {
-        qDebug() << m_pTcpSocket->errorString() << Q_FUNC_INFO;
+        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.");
     }
     else
     {
-        qDebug() << "Send" << nRet << "byte:" << grArray;
+        QLOG_INFO() << QObject::tr("Send") << nRet << QObject::tr("byte:") << grArray << QObject::tr("to HS.");
     }
 }
 
@@ -99,6 +103,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
 
 void CTcpClient::slot_startRead()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grDatagram;
 
     grDatagram = m_pTcpSocket->readAll();
@@ -117,16 +122,16 @@ void CTcpClient::slot_startRead()
 
     sGA = grGA.toKNXString();
 
-    qDebug() << "Received via HS interface:" << sGA << "\tValue:" << sValue;
+    QLOG_INFO() << QObject::tr("Received via HS interface:") << sGA << QObject::tr("Value:") << sValue;
 
     if ( grGA.isValid() == true )
     {
         emit signal_receivedMessage( sGA, sValue );
     }
-//    else
-//    {
-//        qDebug() << sGA << "is not valid.";
-//    }
+    else
+    {
+        //QLOG_ERROR() << sGA << "is not valid.";
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +140,7 @@ void CTcpClient::slot_startRead()
 
 void CTcpClient::slot_webRequestReadFinished()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     m_grWebRequestData.append( m_pWebRequestTcpSocket->readAll() );
 }
 
@@ -144,6 +150,12 @@ void CTcpClient::slot_webRequestReadFinished()
 
 void CTcpClient::slot_webRequestClosed()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
+
+    QLOG_WARN() << QObject::tr( "Connection to peer closed:" )
+                << m_pWebRequestTcpSocket->peerAddress().toString()
+                << m_pWebRequestTcpSocket->peerPort();
+
     m_pWebRequestTcpSocket->close();
 
     // Interprete XmlFile
@@ -154,6 +166,7 @@ void CTcpClient::slot_webRequestClosed()
 
 void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     send( "1", p_sEibAddr, QString::number( p_nVal ) );
 }
 
@@ -163,12 +176,13 @@ void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
 
 void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QString &p_sGA, QString &p_sValue)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QVector<QString> grGAVec;
     QString sTemp;
 
     for ( int i = 0; i < p_sIncoming.length(); i++ )
     {
-        if ( p_sIncoming.at( i ) == '|' )
+        if ( p_sIncoming.at( i ) == m_sSeperatorChar.at( 0 ) )
         {
             grGAVec.push_back( sTemp );
             sTemp.clear();
@@ -194,6 +208,7 @@ void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QStri
 
 void CTcpClient::initConnection( const QString &p_sPass)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
     {
         m_pTcpSocket = new QTcpSocket( this );
@@ -217,32 +232,32 @@ void CTcpClient::initConnection( const QString &p_sPass)
     }
     uint unPort = grHsGwPort.toUInt();
 
-    qDebug() << grHostAddress << unPort;
+    QLOG_INFO() << grHostAddress.toString() << unPort;
 
     m_pTcpSocket->connectToHost( grHostAddress, unPort);
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
-        qDebug() << "Connection with HS established" ;
+        QLOG_INFO() << QObject::tr("Connection with HS established");
 
         QByteArray grArray;
         grArray.append( p_sPass );
         grArray.append( m_sMsgEndChar );
 
-        qDebug() << "Sending to HS: Initialization message." ;
+        QLOG_INFO() << QObject::tr("Sending to HS: Initialization message.");
         int nRet = m_pTcpSocket->write( grArray );
 
         if ( nRet == -1 )
         {
-            qDebug() << "Error reported while sending" ;
+            QLOG_ERROR() << m_pTcpSocket->errorString();
         }
         else
         {
-            qDebug() << "Send" << nRet << "byte: " << grArray;
+            //QLOG_INFO() << "Send" << nRet << "byte: " << grArray << "to HS.";
         }
     }
     else
     {
-        qDebug() << m_pTcpSocket->errorString() << Q_FUNC_INFO;
+        QLOG_ERROR() << m_pTcpSocket->errorString() << "trying to init communication with HS.";
     }
 }
 
@@ -252,6 +267,7 @@ void CTcpClient::initConnection( const QString &p_sPass)
 
 void CTcpClient::getGaXml()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     // Load Xml file form HS
     QVariant grHsIp     = m_pSettings->value( CModel::g_sKey_HSIP );
     if ( grHsIp.isNull() == true )
@@ -281,7 +297,7 @@ void CTcpClient::getGaXml()
 
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
     {
-        qDebug() << "Web request ongoing";
+        QLOG_INFO() << QObject::tr("Already a HS web request ongoing");
         return;
     }
 
@@ -295,13 +311,13 @@ void CTcpClient::getGaXml()
         }
         else
         {
-            qDebug() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
+            QLOG_ERROR() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
             return;
         }
     }
     else
     {
-        qDebug() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
+        QLOG_ERROR() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
         return;
     }
 }

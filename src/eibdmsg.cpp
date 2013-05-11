@@ -4,6 +4,7 @@
 #include "model.h"
 #include <QStringList>
 #include "groupaddress.h"
+#include "QsLog.h"
 
 CEibdMsg::CEibdMsg()
 {
@@ -11,12 +12,13 @@ CEibdMsg::CEibdMsg()
 
 CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grMsg;
 
     // check if 1st 2 byte contain package length
     if ( p_grByteArray.size() < 2 )
     {
-        qDebug() << "Received too short message " << printASCII( p_grByteArray );
+        QLOG_WARN() << QObject::tr("Received too short message") << printASCII( p_grByteArray );
         return;
     }
 
@@ -31,8 +33,6 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     {
         grMsg.append( p_grByteArray );
     }
-
-    QString sString( grMsg.data() );
 
     switch ( grMsg.length() )
     {
@@ -85,8 +85,6 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                 QByteArray grData;
                 grData.append( grMsg.mid( 5, grMsg.size() - 5 ) );
 
-                qDebug() << "Data field" << printASCII( grData );
-
                 if ( grData.size() == 1 )
                 {
                     uchar szData = grMsg.at( 5 );
@@ -101,23 +99,26 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
             }
             break;
 
-            qDebug() << "Received unknown message: " << printASCII( grMsg );
+            QLOG_INFO() << QObject::tr("Received unknown message:") << printASCII( grMsg );
         }
     }
 }
 
 const CEibdMsg::enuMsgType &CEibdMsg::getType() const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     return m_eMsgType;
 }
 
 const QString &CEibdMsg::getDestAddress() const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     return m_sDstAddr;
 }
 
 const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( p_pHasValue != NULL )
     {
         * p_pHasValue = ! m_grValue.isNull();
@@ -127,6 +128,7 @@ const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
 
 QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grResponse;
 
     switch( m_eMsgType )
@@ -172,6 +174,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
 QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     // byte  0: 0x00
     // byte  1: Length w/o byte 1 + 2
     // byte  2: 0x00
@@ -218,7 +221,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         }
         else
         {
-            qDebug() << "Can only forward positive natural numbers < 100, not" << p_grData;
+            QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, not") << p_grData.toString();
         }
     }
 
@@ -236,6 +239,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
 bool CEibdMsg::isNatural(const double & p_dNumber)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QStringList grStringList;
 
     QString sNumer = QString::number( p_dNumber );
@@ -271,6 +275,7 @@ bool CEibdMsg::isNatural(const double & p_dNumber)
 
 QString CEibdMsg::printASCII( const QByteArray & p_grByteArray)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QString sResult;
     QString sBuffer;
     for ( int i = 0; i < p_grByteArray.length(); i++ )

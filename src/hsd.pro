@@ -14,8 +14,11 @@ TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
 
+INCLUDEPATH += ../3rd_party/QsLog
+
 TEMPLATE = app
 
+include( ../3rd_party/QsLog/QsLog.pri )
 
 SOURCES += main.cpp \
     tcpclient.cpp \
@@ -24,7 +27,7 @@ SOURCES += main.cpp \
     koxml.cpp \
     hsd.cpp \
     eibdmsg.cpp \
-    groupaddress.cpp
+    groupaddress.cpp \
 
 HEADERS += \
     tcpclient.h \

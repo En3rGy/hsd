@@ -9,6 +9,7 @@
 #include "model.h"
 #include "koxml.h"
 #include "eibdmsg.h"
+#include "QsLog.h"
 
 //////////////////////////////////////////////////////////////
 //
@@ -20,6 +21,7 @@ CTcpServer::CTcpServer(QObject *parent) :
   , m_pTcpServer( NULL )
   , m_pSettings( NULL )
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     m_pSettings  = new QSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
     m_pTcpServer = new QTcpServer( this );
 
@@ -32,6 +34,7 @@ CTcpServer::CTcpServer(QObject *parent) :
 
 CTcpServer::~CTcpServer()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpServer->close();
 
     m_pSettings->sync();
@@ -44,6 +47,7 @@ CTcpServer::~CTcpServer()
 
 void CTcpServer::listen( const uint &p_nPort )
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     m_nPort = p_nPort;
 
     if ( m_pTcpServer->isListening() == true )
@@ -60,6 +64,7 @@ void CTcpServer::listen( const uint &p_nPort )
 
 void CTcpServer::listen()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QVariant grPort = m_pSettings->value( CModel::g_sKey_HsdPort );
     if ( grPort.isNull() == true )
     {
@@ -76,6 +81,7 @@ void CTcpServer::listen()
 
 void CTcpServer::solt_newConnection()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpSocket = m_pTcpServer->nextPendingConnection();
 
     connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
@@ -88,6 +94,7 @@ void CTcpServer::solt_newConnection()
 
 void CTcpServer::slot_startRead()
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
 
@@ -97,21 +104,21 @@ void CTcpServer::slot_startRead()
     {
     case CEibdMsg::enuMsgType_connect:
     {
-        qDebug() << "Received via eibd interface: Connection request. Granted.";
+        QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.");
         m_pTcpSocket->write( grMsg.getResponse() );
     }
         break;
 
     case CEibdMsg::enuMsgType_openGroupSocket:
     {
-        qDebug() << "Received via eibd interface: openGroupSocket request. Granted.";
+        QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.");
         m_pTcpSocket->write( grMsg.getResponse() );
     }
         break;
 
     case CEibdMsg::enuMsgType_simpleWrite:
     {
-        qDebug() << "Received via eibd interface: simpleWrite request" << grMsg.getDestAddress() << grMsg.getValue() << ". Forwarded.";
+        QLOG_INFO() << QObject::tr("Received via eibd interface: simpleWrite request") << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
         emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue().toInt() );
         /// @todo Process values others than int.
     }
@@ -119,14 +126,15 @@ void CTcpServer::slot_startRead()
 
     default:
     {
-        qDebug() << "Received via eibd interface: Unknown request: " << CEibdMsg::printASCII( grDatagram );
+        QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram );
     }
     }
 }
 
 void CTcpServer::slot_disconnected()
 {
-    qDebug() << "Disconnected from eibd client";
+    QLOG_TRACE() << Q_FUNC_INFO;
+    QLOG_WARN() << QObject::tr("Disconnected from eibd client");
 }
 
 //////////////////////////////////////////////////////////////
@@ -135,6 +143,7 @@ void CTcpServer::slot_disconnected()
 
 void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sValue)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
     {
         return;
@@ -149,11 +158,11 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 
     if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
     {
-        qDebug() << "No eibd client connected to hsd server. Discarding incomming EIB/KNX update.";
+        QLOG_ERROR() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." );
         return;
     }
 
-    qDebug() << "Sending via eibd interface" << CEibdMsg::printASCII( grMsg );
+    QLOG_INFO() << QObject::tr("Sending via eibd interface") << CEibdMsg::printASCII( grMsg );
     m_pTcpSocket->write( grMsg );
 }
 

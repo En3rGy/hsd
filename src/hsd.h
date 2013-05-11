@@ -2,6 +2,7 @@
 #define HSD_H
 
 #include <QObject>
+#include <QsLogDest.h>
 
 class CTcpServer;
 class CTcpClient;
@@ -18,6 +19,8 @@ public:
     explicit CHsd(QObject *parent = 0);
     virtual ~CHsd( void );
 
+    void setLogLevel( const uint & p_unLogLevel );
+
     /** @brief Starts the programm components
       *
       * Connecting to home server, calling group adresses from homeserver,
@@ -31,8 +34,10 @@ public slots:
 
 private:
     CTcpServer * m_pTcpServer;
-    CTcpClient * m_pTcpClient;
-    
+    CTcpClient * m_pTcpClient; 
+
+    QsLogging::DestinationPtr m_pFileDestPtr;
+    QsLogging::DestinationPtr m_pDebugDestPtr;
 };
 
 #endif // HSD_H

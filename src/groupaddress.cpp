@@ -1,16 +1,19 @@
 #include <QStringList>
 #include <QDebug>
 #include "groupaddress.h"
+#include "QsLog.h"
 
 CGroupAddress::CGroupAddress()
     : m_unMainAddr( 0 )
     , m_unMiddAddr( 0 )
     , m_unLowAddr( 0 )
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
 }
 
 QByteArray CGroupAddress::toHex() const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
     // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
     // 0hhh hmmm
@@ -36,6 +39,7 @@ QByteArray CGroupAddress::toHex() const
 
 QString CGroupAddress::toKNXString(const QString &p_sSeparator) const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QString sRetStr;
 
     sRetStr = QString::number( m_unMainAddr )
@@ -49,12 +53,14 @@ QString CGroupAddress::toKNXString(const QString &p_sSeparator) const
 
 int CGroupAddress::toHSRepresentation() const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     int nConvert = m_unMainAddr * 2048 + m_unMiddAddr * 256 + m_unLowAddr;
     return nConvert;
 }
 
 void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
     // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
 
@@ -62,7 +68,7 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 
     if ( p_grHexAddr.length() != 2 )
     {
-        qDebug() << "Wrong length" << Q_FUNC_INFO;
+        QLOG_ERROR() << "Wrong length of hex address.";
         return;
     }
 
@@ -84,6 +90,7 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 
 void CGroupAddress::setKNXString(const QString &p_sStrAddr)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     QString     sSep;
     QStringList grAddrList;
 
@@ -104,7 +111,7 @@ void CGroupAddress::setKNXString(const QString &p_sStrAddr)
 
     if ( grAddrList.size() != 3 )
     {
-        qDebug() << "ERROR: " << p_sStrAddr << "not of kind a/b/c. Aborting." << Q_FUNC_INFO;
+        QLOG_ERROR() << p_sStrAddr << QObject::tr("not of kind a/b/c. Aborting.");
         return;
     }
 
@@ -115,6 +122,7 @@ void CGroupAddress::setKNXString(const QString &p_sStrAddr)
 
 void CGroupAddress::setHS(const int &p_nHSAddr)
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     // int nConvert = nX * 2048 + nY * 256 + nZ;
 
     m_unMainAddr = p_nHSAddr / 2048;
@@ -124,6 +132,7 @@ void CGroupAddress::setHS(const int &p_nHSAddr)
 
 bool CGroupAddress::isValid() const
 {
+    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_unMainAddr > 15 )
     {
         return false;

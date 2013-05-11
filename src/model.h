@@ -20,6 +20,7 @@ public:
     static const QString g_sKey_HSGwPort; ///< Port of HS KO-Gateway
     static const QString g_sKey_HsdPort;  ///< Port of HSD IP interface
     static const QString g_sSettingsPath;
+    static const QString g_sKey_LogLevel;
 
     static const uchar   g_uzEibGroupPacket [2];
     static const uchar   g_uzEibOpenGroupCon [5];
