@@ -1,8 +1,4 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2013-05-01T11:53:12
-#
-#-------------------------------------------------
+message( Run Qt < lrelease > before qmake. )
 
 QT       += core network
 
