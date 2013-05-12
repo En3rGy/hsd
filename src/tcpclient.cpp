@@ -93,7 +93,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
     }
     else
     {
-        QLOG_INFO() << QObject::tr("Send") << nRet << QObject::tr("byte:") << grArray << QObject::tr("to HS.");
+        QLOG_DEBUG() << QObject::tr("Send") << nRet << QObject::tr("byte:") << grArray << QObject::tr("to HS.");
     }
 }
 
@@ -122,7 +122,7 @@ void CTcpClient::slot_startRead()
 
     sGA = grGA.toKNXString();
 
-    QLOG_INFO() << QObject::tr("Received via HS interface:") << sGA << QObject::tr("Value:") << sValue;
+    QLOG_DEBUG() << QObject::tr("Received via HS interface:") << sGA << QObject::tr("Value:") << sValue;
 
     if ( grGA.isValid() == true )
     {
@@ -232,7 +232,7 @@ void CTcpClient::initConnection( const QString &p_sPass)
     }
     uint unPort = grHsGwPort.toUInt();
 
-    QLOG_INFO() << grHostAddress.toString() << unPort;
+    QLOG_DEBUG() << grHostAddress.toString() << unPort;
 
     m_pTcpSocket->connectToHost( grHostAddress, unPort);
     if( m_pTcpSocket->waitForConnected( 2000 ) )
@@ -297,7 +297,7 @@ void CTcpClient::getGaXml()
 
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
     {
-        QLOG_INFO() << QObject::tr("Already a HS web request ongoing");
+        QLOG_WARN() << QObject::tr("Already a HS web request ongoing");
         return;
     }
 

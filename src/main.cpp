@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.4.1" );
+        a.setApplicationVersion( "0.4.2" );
 
         QString sLocale = QLocale::system().name();
 
@@ -93,7 +93,10 @@ int main(int argc, char *argv[])
         }
         else
         {
-            qDebug() << QObject::tr( "Program starting. Use \"hsd --?\" for help" );
+            qDebug() << QObject::tr( "Program starting. Use \"hsd --?\" for help." )
+                     << "\n"
+                     << QObject::tr( "Press CTRL+C to quit." )
+                     << "\n\n";
         }
 
         grHsd.startService();

@@ -162,7 +162,7 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    QLOG_INFO() << QObject::tr("Sending via eibd interface") << CEibdMsg::printASCII( grMsg );
+    QLOG_DEBUG() << QObject::tr("Sending via eibd interface") << CEibdMsg::printASCII( grMsg );
     m_pTcpSocket->write( grMsg );
 }
 
