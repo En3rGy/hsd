@@ -2,7 +2,6 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QVector>
-#include <QSettings>
 #include <QDebug>
 #include <QBitArray>
 #include "eibdmsg.h"
@@ -19,10 +18,8 @@ CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
   , m_pTcpServer( NULL )
-  , m_pSettings( NULL )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    m_pSettings  = new QSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
     m_pTcpServer = new QTcpServer( this );
 
     connect( m_pTcpServer, SIGNAL( newConnection()), SLOT( solt_newConnection()) );
@@ -36,9 +33,6 @@ CTcpServer::~CTcpServer()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpServer->close();
-
-    m_pSettings->sync();
-    delete m_pSettings;
 }
 
 //////////////////////////////////////////////////////////////
@@ -65,12 +59,7 @@ void CTcpServer::listen( const uint &p_nPort )
 void CTcpServer::listen()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    QVariant grPort = m_pSettings->value( CModel::g_sKey_HsdPort );
-    if ( grPort.isNull() == true )
-    {
-        m_pSettings->setValue( CModel::g_sKey_HsdPort, uint( 6720 ) );
-        grPort.setValue( uint( 6720 ) );
-    }
+    QVariant grPort = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort, uint( 6720 ) );
     m_nPort = grPort.value< qint16>();
     listen( m_nPort );
 }

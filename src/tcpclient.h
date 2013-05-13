@@ -36,7 +36,7 @@ public:
      * @param p_unPort Port of KO-Gateway on HS, usually 7003
      * @param p_sPass Password for KO-Gateway, defined in Experte software
      */
-    void initConnection( const QString & p_sPass = "" );
+    void initConnection( void );
 
     /** @brief Calls the group adress via a HS xml interface.
       */
@@ -74,7 +74,6 @@ private:
     QTcpSocket * m_pWebRequestTcpSocket;
     qint16       m_nPort;
     QByteArray   m_grWebRequestData;
-    QSettings  * m_pSettings;
 
     static const QChar   m_sMsgEndChar;
     static const QString m_sSeperatorChar;

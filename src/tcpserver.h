@@ -51,7 +51,6 @@ private:
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     uint         m_nPort;
-    QSettings  * m_pSettings;
 };
 
 #endif // TCPSERVER_H
