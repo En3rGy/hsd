@@ -36,26 +36,26 @@ int main(int argc, char *argv[])
             {
                 if ( strcmp( argv[ i ], "--?" ) == 0 )
                 {
-                    qDebug() << QObject::tr( "hsd provides the eibd TCP/IP interface to access the KNX bus via the GIRA Homeserver KO-Gateway.\n" )
-                             << QObject::tr( "\nConfigure settings in [hsd]/etc/hsd.ini.")
-                             << QObject::tr( "\nLog file is written to [hsd]/var/hsd.log\n")
-                             << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-                             << QObject::tr( "\nSettings file options:")
-                             << "\n" << CModel::g_sKey_HsdPort << QObject::tr( "\tPort, where hsd listens for eibd messages.")
-                             << "\n" << CModel::g_sKey_HSGwPort << QObject::tr( "\tGIRA Homeserver KO-Gateway port")
-                             << "\n" << CModel::g_sKey_HSIP << QObject::tr( "\tIP address of GIRA Homeserver")
-                             << "\n" << CModel::g_sKey_HSWebPort << QObject::tr( "\tPort of GIRA Homeserver web server")
-                             << "\n" << CModel::g_sKey_LogLevel << QObject::tr( "\tHsd log level (see below)")
+                    qDebug() << QObject::tr( "hsd provides the eibd TCP/IP interface to access the KNX bus via the GIRA Homeserver KO-Gateway." )
+                             << "\n\n" << QObject::tr( "Configure settings in [hsd]/etc/hsd.ini.")
+                             << "\n"   << QObject::tr( "Log file is written to [hsd]/var/hsd.log")
                              << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-                             << QObject::tr( "\nCommand line options:\n")
-                             << "\nhsd [option]"
-                             << QObject::tr( "\n--?\tThis help page")
-                             << QObject::tr( "\n-lx\tx=0 (TraceLevel),")
-                             << QObject::tr( "\n\t =1 (DebugLevel),")
-                             << QObject::tr( "\n\t =2 (InfoLevel),")
-                             << QObject::tr( "\n\t =3 (WarnLevel),")
-                             << QObject::tr( "\n\t =4 (ErrorLevel, default),")
-                             << QObject::tr( "\n\t =5 (FatalLevel)" );
+                             << "\n" << QObject::tr( "Settings file options:")
+                             << "\n" << CModel::g_sKey_HsdPort   << "\t" << QObject::tr( "Port, where hsd listens for eibd messages.")
+                             << "\n" << CModel::g_sKey_HSGwPort  << "\t" << QObject::tr( "GIRA Homeserver KO-Gateway port")
+                             << "\n" << CModel::g_sKey_HSIP      << "\t" << QObject::tr( "IP address of GIRA Homeserver")
+                             << "\n" << CModel::g_sKey_HSWebPort << "\t" << QObject::tr( "Port of GIRA Homeserver web server")
+                             << "\n" << CModel::g_sKey_LogLevel  << "\t" << QObject::tr( "Hsd log level (see below)")
+                             << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                             << "\n" << QObject::tr( "Command line options:" )
+                             << "\n\nhsd [option]"
+                             << "\n" << "--?\t" << QObject::tr( "This help page")
+                             << "\n" << "-lx\t" << QObject::tr( "x=0 (TraceLevel),")
+                             << "\n\t" << QObject::tr( "=1 (DebugLevel),")
+                             << "\n\t" << QObject::tr( "=2 (InfoLevel),")
+                             << "\n\t" << QObject::tr( "=3 (WarnLevel),")
+                             << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),")
+                             << "\n\t" << QObject::tr( "=5 (FatalLevel)" );
 
                     return EXIT_SUCCESS;
                 }
@@ -105,6 +105,6 @@ int main(int argc, char *argv[])
     }
     catch( ... )
     {
-        //QLOG_FATAL() << "Uncought Exception" << Q_FUNC_INFO;
+        QLOG_FATAL() << "Uncought Exception" << Q_FUNC_INFO;
     }
 }
