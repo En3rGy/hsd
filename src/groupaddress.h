@@ -58,6 +58,11 @@ public:
       */
     void setHS( const int & p_nHSAddr );
 
+    /** @brief Setter for string representation of adress in EIB, HEX or HS form
+      * @param p_sAddress
+      */
+    void setAddress( const QString & p_sAddress );
+
     /** @brief Check if the EIB/KNX address is valid.
       *
       * Basically, the number ranges are checked for a/b/c with<br>
@@ -65,6 +70,8 @@ public:
       * @return bool true if address is within ranges, otherwise false.
       */
     bool isValid( void ) const;
+
+    QString toString( void ) const;
 
 protected:
     uint m_unMainAddr; ///< a in a/b/c

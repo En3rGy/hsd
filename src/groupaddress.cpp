@@ -130,6 +130,26 @@ void CGroupAddress::setHS(const int &p_nHSAddr)
     m_unLowAddr = ( p_nHSAddr - ( m_unMainAddr * 2048 ) - ( m_unMiddAddr * 256 ) );
 }
 
+void CGroupAddress::setAddress(const QString &p_sAddress)
+{
+    if ( p_sAddress.contains( "/" ) ) // EIB/KNX representation
+    {
+        setKNXString( p_sAddress );
+    }
+    else if ( p_sAddress.length() == 4 ) // HEX representation
+    {
+        QByteArray grHexAddr;
+
+        grHexAddr.append( p_sAddress.mid( 0, 2 ).toShort( NULL, 16 ) );
+        grHexAddr.append( p_sAddress.mid( 2, 2 ).toShort( NULL, 16 ) );
+        setHex( grHexAddr );
+    }
+    else // HS representation
+    {
+        setHS( p_sAddress.toInt() );
+    }
+}
+
 bool CGroupAddress::isValid() const
 {
     QLOG_TRACE() << Q_FUNC_INFO;
@@ -147,6 +167,15 @@ bool CGroupAddress::isValid() const
     }
 
     return true;
+}
+
+QString CGroupAddress::toString() const
+{
+    QString sRet = "KNX: " + toKNXString()
+            + ", HEX: " + toHex().toHex()
+            + ", HS: " + QString::number( toHSRepresentation() );
+
+    return sRet;
 }
 
 
