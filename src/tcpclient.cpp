@@ -8,6 +8,7 @@
 #include <model.h>
 #include "groupaddress.h"
 #include "QsLog.h"
+#include <QCoreApplication>
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -143,6 +144,7 @@ void CTcpClient::slot_webRequestReadFinished()
 
 void CTcpClient::slot_webRequestClosed()
 {
+    QLOG_DEBUG() << tr("Web request closed");
     QLOG_TRACE() << Q_FUNC_INFO;
 
     QLOG_WARN() << QObject::tr( "Connection to peer closed:" )
@@ -155,6 +157,8 @@ void CTcpClient::slot_webRequestClosed()
     CKoXml::getInstance()->setXml( m_grWebRequestData );
 
     m_grWebRequestData.clear();
+
+    m_bReceviedXML = true;
 }
 
 void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
@@ -256,8 +260,8 @@ void CTcpClient::getGaXml()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     // Load Xml file form HS
-    QVariant grHsIp     = CModel::getInstance()->getValue( CModel::g_sKey_HSIP, QString( "192.168.143.11" ) );
-    QString sHsIp = grHsIp.toString();
+    QVariant grHsIp = CModel::getInstance()->getValue( CModel::g_sKey_HSIP, QString( "192.168.143.11" ) );
+    QString  sHsIp  = grHsIp.toString();
 
     QVariant grHsPort = CModel::getInstance()->getValue( CModel::g_sKey_HSWebPort, uint( 80 ) );
     uint unHsPort = grHsPort.toUInt();
@@ -285,6 +289,14 @@ void CTcpClient::getGaXml()
 
         if ( m_pWebRequestTcpSocket->waitForBytesWritten() == true )
         {
+            QLOG_DEBUG() << tr("Wrote to HS");
+
+            m_bReceviedXML = false;
+
+            while ( m_bReceviedXML == false )
+            {
+                QCoreApplication::processEvents();
+            }
         }
         else
         {

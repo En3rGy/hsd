@@ -28,6 +28,8 @@ public:
       */
     void startService( void );
 
+    void callHsXML(  ) const;
+
     void stopService( void );
 
 signals:

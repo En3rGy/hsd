@@ -71,32 +71,26 @@ int main(int argc, char *argv[])
                 else if ( strcmp( argv[ i ], "-l0" ) == 0 )
                 {
                     grHsd.setLogLevel( 0 );
-                    break;
                 }
                 else if ( strcmp( argv[ i ], "-l1" ) == 0 )
                 {
                     grHsd.setLogLevel( 1 );
-                    break;
                 }
                 else if ( strcmp( argv[ i ], "-l2" ) == 0 )
                 {
                     grHsd.setLogLevel( 2 );
-                    break;
                 }
                 else if ( strcmp( argv[ i ], "-l3" ) == 0 )
                 {
                     grHsd.setLogLevel( 3 );
-                    break;
                 }
                 else if ( strcmp( argv[ i ], "-l4" ) == 0 )
                 {
                     grHsd.setLogLevel( 4 );
-                    break;
                 }
                 else if ( strcmp( argv[ i ], "-l5" ) == 0)
                 {
                     grHsd.setLogLevel( 5 );
-                    break;
                 }
                 else if ( strcmp( argv[ i ], "-c") == 0 )
                 {
@@ -104,12 +98,13 @@ int main(int argc, char *argv[])
                     {
                         QString sAddr( argv[ i + 1 ] );
 
-                        QByteArray grHexAddr;
+                        grHsd.callHsXML();
+
+
                         CGroupAddress grAddr;
                         grAddr.setAddress( sAddr );
                         qDebug() << grAddr.toString();
                         return EXIT_SUCCESS;
-
                     }
                     else
                     {
@@ -117,6 +112,7 @@ int main(int argc, char *argv[])
                         return EXIT_SUCCESS;
                     }
                 }
+
                 else if ( strcmp( argv[ i ], "-E") == 0 )
                 {
                     grHsd.stopService();

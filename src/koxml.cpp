@@ -49,6 +49,8 @@ void CKoXml::setXml(QByteArray & p_grKoXml)
         grCobject.sTransmit = copy( p_grKoXml, "transmit", nIndex );
 
         m_ssGA2NameMap.insert( grCobject.sGa, grCobject );
+
+        QLOG_DEBUG() << grCobject.sGa << "\t" << grCobject.sName;
     }
 
     QLOG_INFO() << QObject::tr("Received") << m_ssGA2NameMap.size() << QObject::tr("elements from HS.");

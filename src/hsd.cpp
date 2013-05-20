@@ -18,14 +18,7 @@ CHsd::CHsd(QObject *parent) :
     m_pTcpServer = new CTcpServer( this );
     m_pTcpClient = new CTcpClient( this );
 
-    QSettings grSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
-
-    QVariant grLogLevel = grSettings.value( CModel::g_sKey_LogLevel );
-    if ( grLogLevel.isNull() == true )
-    {
-        grSettings.setValue( CModel::g_sKey_LogLevel, uint( 4 ) );
-        grLogLevel.setValue( uint( 4 ) );
-    }
+    QVariant grLogLevel = CModel::getInstance()->getValue( CModel::g_sKey_LogLevel, uint( 4 ) );
     uint unLogLevel = grLogLevel.toUInt();
 
     //QDir grLogPath = QDir::currentPath() + "/../var";
@@ -78,6 +71,11 @@ void CHsd::startService()
     m_pTcpClient->getGaXml();
     m_pTcpServer->listen();
     m_pTcpClient->initConnection();
+}
+
+void CHsd::callHsXML() const
+{
+    m_pTcpClient->getGaXml();
 }
 
 void CHsd::stopService()

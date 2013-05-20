@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "groupaddress.h"
 #include "QsLog.h"
+#include "koxml.h"
 
 CGroupAddress::CGroupAddress()
     : m_unMainAddr( 0 )
@@ -173,7 +174,8 @@ QString CGroupAddress::toString() const
 {
     QString sRet = "KNX: " + toKNXString()
             + ", HEX: " + toHex().toHex()
-            + ", HS: " + QString::number( toHSRepresentation() );
+            + ", HS: " + QString::number( toHSRepresentation() )
+            + ", " + CKoXml::getInstance()->getGaName( toKNXString( ));
 
     return sRet;
 }

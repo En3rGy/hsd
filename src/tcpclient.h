@@ -85,6 +85,8 @@ private:
 
     static const QChar   m_sMsgEndChar;
     static const QString m_sSeperatorChar;
+
+    bool m_bReceviedXML;
 };
 
 #endif // TCPCLIENT_H
