@@ -84,6 +84,6 @@ void CHsd::stopService()
 {
     QString sDestAddr = "localhost";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
-    QString sData     = CModel::g_sKey_HsdPort; ///< @todo replace by exit string.
+    QString sData     = CModel::g_sExitMessage; ///< @todo replace by exit string.
     m_pTcpClient->sendData( sDestAddr, nPort, sData.toAscii() );
 }

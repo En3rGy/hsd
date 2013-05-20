@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.4.3" );
+        a.setApplicationVersion( "0.4.4" );
 
         QString sLocale = QLocale::system().name();
 
@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
                 }
                 else if ( strcmp( argv[ i ], "-E") == 0 )
                 {
-                    CTcpClient grClient;
-                    grClient
+                    grHsd.stopService();
+                    return EXIT_SUCCESS;
                 }
 
             }
