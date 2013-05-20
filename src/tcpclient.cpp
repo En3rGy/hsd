@@ -298,3 +298,35 @@ void CTcpClient::getGaXml()
         return;
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const QByteArray &p_grData)
+{
+    QLOG_TRACE() << Q_FUNC_INFO;
+
+    QTcpSocket grSocket;
+
+    QHostAddress grHostAddress( p_sDestAddr );
+    grSocket.connectToHost( grHostAddress, p_nPort );
+
+    if( grSocket.waitForConnected( 2000 ) )
+    {
+        int nRet = grSocket.write( p_grData );
+
+        if ( nRet == -1 )
+        {
+            QLOG_ERROR() << grSocket.errorString() << tr( "while trying to dend data to" ) << p_sDestAddr << ":" << p_nPort;
+        }
+        else
+        {
+            //QLOG_INFO() << "Send" << nRet << "byte: " << grArray << "to HS.";
+        }
+    }
+    else
+    {
+        QLOG_ERROR() << grSocket.errorString() << tr( "while trying to connect to" ) << p_sDestAddr << ":" << p_nPort;
+    }
+}

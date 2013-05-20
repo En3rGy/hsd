@@ -28,8 +28,8 @@ public:
       */
     void startService( void );
 
-    void sendExitDaemon( void );
-    
+    void stopService( void );
+
 signals:
     
 public slots:
