@@ -42,6 +42,14 @@ public:
       */
     void getGaXml( void );
 
+    /**
+     * @brief Sends a message to a specific host
+     * @param p_sDestAddr Destination address, e.g. www.url.com
+     * @param p_nPort Destination port, e.g. 80
+     * @param p_grData Data to be transmitted.
+     */
+    static void sendData( const QString & p_sDestAddr, const int & p_nPort, const QByteArray & p_grData );
+
 signals:
     /**
      * @brief Signal emitted by incomming message

@@ -27,6 +27,8 @@ public:
       * starting listening for eibd messages.
       */
     void startService( void );
+
+    void stopService( void );
     
 signals:
     
