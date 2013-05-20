@@ -79,3 +79,8 @@ void CHsd::startService()
     m_pTcpServer->listen();
     m_pTcpClient->initConnection();
 }
+
+void CHsd::sendExitDaemon()
+{
+    m_pTcpClient->send( CModel::g_sExitMessage, );
+}

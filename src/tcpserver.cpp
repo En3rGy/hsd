@@ -9,6 +9,7 @@
 #include "koxml.h"
 #include "eibdmsg.h"
 #include "QsLog.h"
+#include <QCoreApplication>
 
 //////////////////////////////////////////////////////////////
 //
@@ -115,7 +116,15 @@ void CTcpServer::slot_startRead()
 
     default:
     {
-        QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram );
+        if ( QString( grDatagram ) == CModel::g_sExitMessage )
+        {
+            QLOG_WARN() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." );
+            QCoreApplication::exit();
+        }
+        else
+        {
+            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram );
+        }
     }
     }
 }

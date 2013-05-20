@@ -7,6 +7,7 @@
 #include <QTranslator>
 #include "groupaddress.h"
 #include "eibdmsg.h"
+#include "model.h"
 
 /** @mainpage
   * <p>The programm provides parts of the eibd TCP/IP interface to communicate
@@ -116,6 +117,12 @@ int main(int argc, char *argv[])
                         return EXIT_SUCCESS;
                     }
                 }
+                else if ( strcmp( argv[ i ], "-E") == 0 )
+                {
+                    CTcpClient grClient;
+                    grClient
+                }
+
             }
         }
         else

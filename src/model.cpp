@@ -8,6 +8,7 @@ const QString CModel::g_sKey_HsdPort      = "HsdPort";
 const QString CModel::g_sKey_LogLevel     = "LogLevel";
 const QString CModel::g_sKey_HSGwPassword = "HSGwPass";
 const QString CModel::g_sSettingsPath     = "../etc/hsd.ini";
+const QString CModel::g_sExitMessage      = "Shutdown hsd please";
 
 const uchar   CModel::g_uzEibGroupPacket [2]  = { 0x00, 0x27 };
 const uchar   CModel::g_uzEibOpenGroupCon [5] = { 0x00, 0x26, 0x00, 0x00,0x00 };
