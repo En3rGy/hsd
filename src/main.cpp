@@ -38,6 +38,7 @@ void printHelpPage( void )
              << "\n\t" << QObject::tr( "=3 (WarnLevel),")
              << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),")
              << "\n\t" << QObject::tr( "=5 (FatalLevel)" )
+             << "\n"   << "-v\t" << QObject::tr( "Printing program version" )
              << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" )
              << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\""
              << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." );
@@ -112,6 +113,11 @@ int main(int argc, char *argv[])
                         printHelpPage();
                         return EXIT_SUCCESS;
                     }
+                }
+                else if ( strcmp( argv[ i ], "-v") == 0 )
+                {
+                    qDebug() << QCoreApplication::applicationName() << QCoreApplication::applicationVersion();
+                    return EXIT_SUCCESS;
                 }
 
                 else if ( strcmp( argv[ i ], "-E") == 0 )
