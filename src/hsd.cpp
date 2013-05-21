@@ -83,6 +83,8 @@ void CHsd::stopService()
     QLOG_INFO() << "Sending STOP signal.";
     QString sDestAddr = "127.0.0.1";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
-    QString sData     = CModel::g_sExitMessage; ///< @todo replace by exit string.
-    m_pTcpClient->sendData( sDestAddr, nPort, sData.toAscii() );
+    QString sData     = CModel::g_sExitMessage;
+    QByteArray grData;
+    grData.append( sData );
+    m_pTcpClient->sendData( sDestAddr, nPort, grData );
 }

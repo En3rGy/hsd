@@ -118,12 +118,12 @@ void CTcpServer::slot_startRead()
     {
         if ( QString( grDatagram ) == CModel::g_sExitMessage )
         {
-            QLOG_WARN() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." );
+            QLOG_INFO() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." );
             QCoreApplication::exit();
         }
         else
         {
-            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram );
+            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram ) << "=" << QString( grDatagram );
         }
     }
     }
@@ -132,7 +132,7 @@ void CTcpServer::slot_startRead()
 void CTcpServer::slot_disconnected()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    QLOG_WARN() << QObject::tr("Disconnected from eibd client");
+    QLOG_INFO() << QObject::tr("Disconnected from eibd client");
 }
 
 //////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 
     if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
     {
-        QLOG_ERROR() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." );
+        QLOG_DEBUG() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." );
         return;
     }
 

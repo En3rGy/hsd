@@ -328,13 +328,13 @@ void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const 
     {
         int nRet = grSocket.write( p_grData );
 
-        if ( nRet == -1 )
+        if ( grSocket.waitForBytesWritten( 2000 ) )
         {
-            QLOG_ERROR() << grSocket.errorString() << tr( "while trying to dend data to" ) << p_sDestAddr << ":" << p_nPort;
+            QLOG_DEBUG() << tr( "Send" ) << nRet <<tr( "byte:" ) << p_grData << " = " << QString( p_grData ) << tr("to") << p_sDestAddr << ":" << p_nPort;
         }
         else
         {
-            QLOG_DEBUG() << "Send" << nRet << "byte: " << p_grData << "to HS.";
+            QLOG_ERROR() << grSocket.errorString() << tr( "while trying to send" ) << p_grData << tr( "to") << p_sDestAddr << ":" << p_nPort;
         }
     }
     else
