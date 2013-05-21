@@ -243,7 +243,7 @@ void CTcpClient::initConnection()
         }
         else
         {
-            //QLOG_INFO() << "Send" << nRet << "byte: " << grArray << "to HS.";
+            QLOG_DEBUG() << "Send" << nRet << "byte: " << grArray << "to HS.";
         }
     }
     else
@@ -334,7 +334,7 @@ void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const 
         }
         else
         {
-            //QLOG_INFO() << "Send" << nRet << "byte: " << grArray << "to HS.";
+            QLOG_DEBUG() << "Send" << nRet << "byte: " << p_grData << "to HS.";
         }
     }
     else

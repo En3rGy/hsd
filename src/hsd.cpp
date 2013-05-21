@@ -18,7 +18,7 @@ CHsd::CHsd(QObject *parent) :
     m_pTcpServer = new CTcpServer( this );
     m_pTcpClient = new CTcpClient( this );
 
-    QVariant grLogLevel = CModel::getInstance()->getValue( CModel::g_sKey_LogLevel, uint( 4 ) );
+    QVariant grLogLevel = CModel::getInstance()->getValue( CModel::g_sKey_LogLevel, uint( 2 ) );
     uint unLogLevel = grLogLevel.toUInt();
 
     //QDir grLogPath = QDir::currentPath() + "/../var";
@@ -80,7 +80,8 @@ void CHsd::callHsXML() const
 
 void CHsd::stopService()
 {
-    QString sDestAddr = "localhost";
+    QLOG_INFO() << "Sending STOP signal.";
+    QString sDestAddr = "127.0.0.1";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
     QString sData     = CModel::g_sExitMessage; ///< @todo replace by exit string.
     m_pTcpClient->sendData( sDestAddr, nPort, sData.toAscii() );

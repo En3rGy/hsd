@@ -39,7 +39,8 @@ void printHelpPage( void )
              << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),")
              << "\n\t" << QObject::tr( "=5 (FatalLevel)" )
              << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" )
-             << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\"";
+             << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\""
+             << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." );
 }
 
 int main(int argc, char *argv[])
