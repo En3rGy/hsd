@@ -19,6 +19,7 @@ CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
   , m_pTcpServer( NULL )
+  , m_nSizeOfNextMsg( -1 )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpServer = new QTcpServer( this );
@@ -88,6 +89,14 @@ void CTcpServer::slot_startRead()
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
 
+    QLOG_DEBUG() << "Received via eibd Interface:" << CEibdMsg::printASCII( grDatagram );
+
+    if ( ( m_nSizeOfNextMsg > 0 ) && ( grDatagram.size() <= m_nSizeOfNextMsg ) )
+    {
+        QLOG_DEBUG() << "Shortening message to previous submitted length. Loosing:" << CEibdMsg::printASCII( grDatagram.mid( m_nSizeOfNextMsg, grDatagram.size() - m_nSizeOfNextMsg ) );
+        grDatagram = grDatagram.mid( 0, m_nSizeOfNextMsg );
+    }
+
     CEibdMsg grMsg( grDatagram );
 
     switch ( grMsg.getType() )
@@ -114,6 +123,13 @@ void CTcpServer::slot_startRead()
     }
         break;
 
+    case CEibdMsg::enuMsgType_msgSize:
+    {
+        QLOG_INFO() << QObject::tr("Received via eibd interface: message size") << grMsg.getMsgDataSize();
+        m_nSizeOfNextMsg = grMsg.getMsgDataSize();
+        break;
+    }
+
     default:
     {
         if ( QString( grDatagram ) == CModel::g_sExitMessage )
@@ -126,6 +142,11 @@ void CTcpServer::slot_startRead()
             QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram ) << "=" << QString( grDatagram );
         }
     }
+    }
+
+    if ( grMsg.getType() != CEibdMsg::enuMsgType_msgSize )
+    {
+        m_nSizeOfNextMsg = -1;
     }
 }
 

@@ -20,6 +20,7 @@ public:
           enuMsgType_connect         ///< Request for connection
         , enuMsgType_openGroupSocket ///< Request for opening a group socket
         , enuMsgType_simpleWrite     ///< Request to write a value to an EIB / KNX address
+        , enuMsgType_msgSize         ///< Message to propagate the size of the next message
         , enuMsgType_undef           ///< Default error value
     };
 
@@ -61,6 +62,12 @@ public:
      */
     static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData );
 
+    /**
+     * @brief Returns the submitted size of the data package.
+     * @return Size of data package.
+     */
+    int getMsgDataSize(  ) const;
+
 protected:
 
     /** @brief Checks if the passed double is a natural number
@@ -74,6 +81,8 @@ protected:
     QString    m_sDstAddr; ///< EIB address of message receiver.
 
     QVariant   m_grValue;  ///< Value of EIB message.
+
+    int        m_nMsgSize; ///< Size of data part of message
 };
 
 #endif // EIBDMSG_H

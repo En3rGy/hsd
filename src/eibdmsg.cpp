@@ -13,6 +13,7 @@ CEibdMsg::CEibdMsg()
 CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
+
     QByteArray grMsg;
 
     // check if 1st 2 byte contain package length
@@ -23,9 +24,9 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     }
 
     QString sSize = QString::number( p_grByteArray.at( 1 ) );
-    int nSize = ( int ) sSize.toDouble();
+    m_nMsgSize    = ( int ) sSize.toDouble();
 
-    if ( p_grByteArray.size() - 2 == nSize )
+    if ( p_grByteArray.size() - 2 == m_nMsgSize )
     {
         grMsg.append( p_grByteArray.mid( 2, p_grByteArray.size() - 2 ) );
     }
@@ -41,6 +42,11 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
              ( grMsg.data()[1] == CModel::g_uzEibAck[1] ) )
         {
             m_eMsgType = enuMsgType_connect;
+        }
+        else
+        {
+            m_eMsgType = enuMsgType_msgSize;
+            m_nMsgSize = ( int ) QString::number( p_grByteArray.at( 1 ) ).toDouble();
         }
         break;
 
@@ -234,7 +240,12 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
 //    grMsg[ 1 ] = nSize; // index 1
 
-//    return grMsg;
+    //    return grMsg;
+}
+
+int CEibdMsg::getMsgDataSize() const
+{
+    return m_nMsgSize;
 }
 
 bool CEibdMsg::isNatural(const double & p_dNumber)

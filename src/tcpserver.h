@@ -51,6 +51,8 @@ private:
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     uint         m_nPort;
+
+    int          m_nSizeOfNextMsg;
 };
 
 #endif // TCPSERVER_H
