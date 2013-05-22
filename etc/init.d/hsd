@@ -1,0 +1,41 @@
+#!/bin/sh
+# description: Start or stop the hsd application 
+# Added by T. Paul
+
+### BEGIN INIT INFO
+# Provides:             hsd
+# Required-Start:       
+# Required-Stop:        
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    hsd
+### END INIT INFO
+
+set -e
+cd /opt/hsd/bin
+
+case "$1" in
+'start')
+        echo "Starting hsd..."
+        hsd
+        RETVAL=$?
+        ;;
+'stop')
+        echo "Stopping hsd..."
+        hsd -E
+        RETVAL=$?
+        ;;
+'status')
+        cnt=`ps -ef | grep "hsd" | grep -v grep | wc -l`
+        if [ "$cnt" -eq "0" ] ; then
+                echo "hsd is not running"
+        else
+                echo "hsd is running"
+        fi
+        ;;
+*)
+        echo "Usage: $0 { start | stop | status }"
+        RETVAL=1
+        ;;
+esac
+exit $RETVAL
