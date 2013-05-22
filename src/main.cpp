@@ -31,7 +31,7 @@ void printHelpPage( void )
              << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
              << "\n" << QObject::tr( "Command line options:" )
              << "\n\nhsd [option]"
-             << "\n"   << "--?\t" << QObject::tr( "This help page")
+             << "\n"   << "-?\t" << QObject::tr( "This help page")
              << "\n"   << "-lx\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),")
              << "\n\t" << QObject::tr( "=1 (DebugLevel),")
              << "\n\t" << QObject::tr( "=2 (InfoLevel),")
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         {
             for ( int i = 0; i < argc; i++ )
             {
-                if ( strcmp( argv[ i ], "--?" ) == 0 )
+                if ( strcmp( argv[ i ], "-?" ) == 0 )
                 {
                     printHelpPage();
                     return EXIT_SUCCESS;
