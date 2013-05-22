@@ -12,17 +12,16 @@
 ### END INIT INFO
 
 set -e
-cd /opt/hsd/bin
 
 case "$1" in
 'start')
         echo "Starting hsd..."
-        hsd
+        /opt/hsd/bin/hsd
         RETVAL=$?
         ;;
 'stop')
         echo "Stopping hsd..."
-        hsd -E
+        /opt/hsd/bin/hsd -E
         RETVAL=$?
         ;;
 'status')
