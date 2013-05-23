@@ -117,7 +117,7 @@ void CTcpServer::slot_startRead()
 
     case CEibdMsg::enuMsgType_simpleWrite:
     {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: simpleWrite request") << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request") << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
         emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue().toInt() );
         /// @todo Process values others than int.
     }
@@ -125,7 +125,7 @@ void CTcpServer::slot_startRead()
 
     case CEibdMsg::enuMsgType_msgSize:
     {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: message size") << grMsg.getMsgDataSize();
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: message size") << grMsg.getMsgDataSize();
         m_nSizeOfNextMsg = grMsg.getMsgDataSize();
         break;
     }

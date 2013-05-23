@@ -130,10 +130,6 @@ int main(int argc, char *argv[])
         }
         else
         {
-            qDebug() << QObject::tr( "Program starting. Use \"hsd --?\" for help." )
-                     << "\n"
-                     << QObject::tr( "Press CTRL+C to quit." )
-                     << "\n\n";
         }
 
         grHsd.startService();
