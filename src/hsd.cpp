@@ -81,7 +81,8 @@ void CHsd::callHsXML() const
 void CHsd::stopService()
 {
     QLOG_INFO() << "Sending STOP signal.";
-    QString sDestAddr = "127.0.0.1";
+    //QString sDestAddr = "127.0.0.1";
+    QString sDestAddr = "192.168.143.15";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
     QString sData     = CModel::g_sExitMessage;
     QByteArray grData;

@@ -6,6 +6,9 @@ QT       -= gui
 
 DESTDIR = ../bin
 
+unix:target.path = /opt/hsd/bin
+unix:INSTALLS += target
+
 TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
