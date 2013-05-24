@@ -9,6 +9,7 @@
 #include "groupaddress.h"
 #include "QsLog.h"
 #include <QCoreApplication>
+#include <QTimer>
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -55,8 +56,13 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
 
     if ( m_pTcpSocket->state() != QAbstractSocket::ConnectedState )
     {
-        QLOG_WARN() << QObject::tr("Not connected with HS");
-        return;
+        QLOG_WARN() << QObject::tr("Not connected with HS.");
+
+        if ( initConnection() == false )
+        {
+            QLOG_WARN() << QObject::tr("Connection could not re-establish. Discarding message.");
+            return;
+        }
     }
 
     CGroupAddress grGA;
@@ -161,10 +167,31 @@ void CTcpClient::slot_webRequestClosed()
     m_bReceviedXML = true;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
 void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     send( "1", p_sEibAddr, QString::number( p_nVal ) );
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+void CTcpClient::slot_disconnected()
+{
+    QLOG_WARN() << tr("Disconnected from Homeserver.");
+
+    initConnection();
+}
+
+void CTcpClient::slot_reconnect()
+{
+    QLOG_INFO() << tr( "Trying to reconnect to HS." );
+    initConnection();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -203,13 +230,14 @@ void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QStri
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::initConnection()
+bool CTcpClient::initConnection()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
     {
         m_pTcpSocket = new QTcpSocket( this );
         connect( m_pTcpSocket, SIGNAL( readyRead()), this, SLOT( slot_startRead() ) );
+        connect( m_pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()));
     }
 
     QVariant grHsIp = CModel::getInstance()->getValue( CModel::g_sKey_HSIP, QString( "192.168.143.11" )  );
@@ -240,6 +268,9 @@ void CTcpClient::initConnection()
         if ( nRet == -1 )
         {
             QLOG_ERROR() << m_pTcpSocket->errorString();
+            int nTimeout_ms = CModel::getInstance()->getValue( CModel::g_sKey_PauseTilHSReconnect, 30000 ).toInt();
+            QTimer::singleShot( nTimeout_ms, this, SLOT( slot_reconnect()) );
+            return false;
         }
         else
         {
@@ -249,7 +280,12 @@ void CTcpClient::initConnection()
     else
     {
         QLOG_ERROR() << m_pTcpSocket->errorString() << "trying to init communication with HS.";
+        int nTimeout_ms = CModel::getInstance()->getValue( CModel::g_sKey_PauseTilHSReconnect, 30000 ).toInt();
+        QTimer::singleShot( nTimeout_ms, this, SLOT( slot_reconnect()) );
+        return false;
     }
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////////

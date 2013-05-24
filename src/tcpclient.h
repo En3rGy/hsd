@@ -36,7 +36,7 @@ public:
      * @param p_unPort Port of KO-Gateway on HS, usually 7003
      * @param p_sPass Password for KO-Gateway, defined in Experte software
      */
-    void initConnection( void );
+    bool initConnection( void );
 
     /** @brief Calls the group adress via a HS xml interface.
       */
@@ -68,6 +68,16 @@ public slots:
       * @param p_nVal Value to set
       */
     void slot_setEibAdress( const QString & p_sEibAddr, const int & p_nVal );
+
+    /** @brief Used if disconnected from HS by HS.
+      *
+      */
+    void slot_disconnected( void );
+
+    /** Reconnects to the HS.
+      *
+      */
+    void slot_reconnect( void );
 
 private:
     /** @brief Splits the incomming string from HS to sub data.

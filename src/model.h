@@ -24,6 +24,7 @@ public:
     static const QString g_sKey_HSGwPassword;  ///< Setings key for password for HS KO-Gateway
     static const QString g_sSettingsPath;
     static const QString g_sKey_LogLevel;
+    static const QString g_sKey_PauseTilHSReconnect; ///< Settings key for timeout until re-connection try to HS.
     static const QString g_sExitMessage;
 
     static const uchar   g_uzEibGroupPacket [2];
