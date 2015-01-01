@@ -74,7 +74,7 @@ protected:
       * @param p_dNumber Number to check
       * @return True if the parameter is a natural number: 1.0 -> true, 1.1 -> false
       */
-    static bool isNatural( const double & p_dNumber );
+    static bool isNatural(const float &p_fNumber );
 
     enuMsgType m_eMsgType;
     QString    m_sSrcAddr; ///< EIB address of message sender.

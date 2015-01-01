@@ -223,11 +223,11 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     grMsg.append( char( 0x00 ) ); // index 8
 
     bool bOk;
-    double dVal = p_grData.toDouble( & bOk );
+    float fVal = p_grData.toFloat( & bOk );
 
-    if ( isNatural( dVal ) == true )
+    if ( isNatural( fVal ) == true )
     {
-        int nVal = (int) dVal;
+        int nVal = (int) fVal;
         if ( nVal <= 100 )
         {
             char szData = nVal;// QString::number( nVal ).toAscii();
@@ -241,6 +241,11 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
             QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, not").toStdString().c_str() << p_grData.toString();
         }
     } // isNatural
+    else
+    {
+        /// @todo Foward float values
+        //QLOG_WARN() << QObject::tr("EXPERIMENTAL: Forwarding float value").toStdString().c_str() << p_grData.toString();
+    }
 
     return QByteArray();
 
@@ -259,12 +264,12 @@ int CEibdMsg::getMsgDataSize() const
     return m_nMsgSize;
 }
 
-bool CEibdMsg::isNatural(const double & p_dNumber)
+bool CEibdMsg::isNatural(const float & p_fNumber)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     QStringList grStringList;
 
-    QString sNumer = QString::number( p_dNumber );
+    QString sNumer = QString::number( p_fNumber );
 
     if ( sNumer.contains( "." ) == true )
     {
