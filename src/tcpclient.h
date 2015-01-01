@@ -24,7 +24,7 @@ public:
 
     /**
      * @brief Send a message to the KO-Gateway
-     * @param p_sAction Type of message
+     * @param p_sAction Type of message:<ul><li>1 = set value absolut</li><li>2 = set value relative</li><li>3 = step+</li>4 = step-</li><li>5 = list+</li><li>6 = list-</li></ul>
      * @param p_sGA Group Adress, e.g. 2/2/15
      * @param p_sValue Value to set, e.g. 1
      */
@@ -67,7 +67,7 @@ public slots:
       * @param p_sEibAddr KNX/EIB address to write, e.g. 1/5/30
       * @param p_nVal Value to set
       */
-    void slot_setEibAdress( const QString & p_sEibAddr, const int & p_nVal );
+    void slot_setEibAdress(const QString & p_sEibAddr, const QString &p_sVal );
 
     /** @brief Used if disconnected from HS by HS.
       *

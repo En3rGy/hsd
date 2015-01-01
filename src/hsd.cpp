@@ -34,19 +34,19 @@ CHsd::CHsd(QObject *parent) :
 
     QsLogging::Logger & grLogger = QsLogging::Logger::instance();
 
-    m_pFileDestPtr = QsLogging::DestinationPtr( QsLogging::DestinationFactory::MakeFileDestination(
-                        grLogPath.absoluteFilePath( sFileName ) ) );
-
-    m_pDebugDestPtr = QsLogging::DestinationPtr( QsLogging::DestinationFactory::MakeDebugOutputDestination() );
+    m_pFileDestPtr  = QsLogging::DestinationFactory::MakeFileDestination( grLogPath.absoluteFilePath( sFileName ) );
+    m_pDebugDestPtr = QsLogging::DestinationFactory::MakeDebugOutputDestination();
 
     grLogger.addDestination( m_pFileDestPtr.data() );
     grLogger.addDestination( m_pDebugDestPtr.data() );
     grLogger.setLoggingLevel( ( QsLogging::Level ) unLogLevel );
 
+    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
+
     connect ( m_pTcpServer,
-              SIGNAL(signal_setEibAdress(QString,int)),
+              SIGNAL(signal_setEibAdress(QString,QString)),
               m_pTcpClient,
-              SLOT( slot_setEibAdress(QString,int)));
+              SLOT( slot_setEibAdress(QString,QString)));
 
     connect( m_pTcpClient,
              SIGNAL( signal_receivedMessage(QString,QString)),
@@ -68,6 +68,8 @@ void CHsd::setLogLevel(const uint &p_unLogLevel)
 
 void CHsd::startService()
 {
+    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
+
     m_pTcpClient->getGaXml();
     m_pTcpServer->listen();
     m_pTcpClient->initConnection();
@@ -80,7 +82,8 @@ void CHsd::callHsXML() const
 
 void CHsd::stopService()
 {
-    QLOG_INFO() << "Sending STOP signal.";
+    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Sending STOP signal." ).toStdString().c_str();
+    QLOG_INFO() << tr( "Sending STOP signal." ).toStdString().c_str();
     QString sDestAddr = "127.0.0.1";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
     QString sData     = CModel::g_sExitMessage;

@@ -16,32 +16,33 @@
   * provides the eibd TCP/IP interface.</p>
   */
 
+
 void printHelpPage( void )
 {
     qDebug() << QObject::tr( "hsd provides the eibd TCP/IP interface to access the KNX bus via the GIRA Homeserver KO-Gateway." )
-             << "\n\n" << QObject::tr( "Configure settings in [hsd]/etc/hsd.ini.")
-             << "\n"   << QObject::tr( "Log file is written to [hsd]/var/hsd.log")
+             << "\n\n" << QObject::tr( "Configure settings in [hsd]/etc/hsd.ini.").toLatin1()
+             << "\n"   << QObject::tr( "Log file is written to [hsd]/var/hsd.log").toLatin1()
              << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
              << "\n" << QObject::tr( "Settings file options:")
-             << "\n" << CModel::g_sKey_HsdPort   << "\t" << QObject::tr( "Port, where hsd listens for eibd messages.")
-             << "\n" << CModel::g_sKey_HSGwPort  << "\t" << QObject::tr( "GIRA Homeserver KO-Gateway port")
-             << "\n" << CModel::g_sKey_HSIP      << "\t" << QObject::tr( "IP address of GIRA Homeserver")
-             << "\n" << CModel::g_sKey_HSWebPort << "\t" << QObject::tr( "Port of GIRA Homeserver web server")
-             << "\n" << CModel::g_sKey_LogLevel  << "\t" << QObject::tr( "Hsd log level (see below)")
+             << "\n" << CModel::g_sKey_HsdPort   << "\t" << QObject::tr( "Port, where hsd listens for eibd messages.").toLatin1()
+             << "\n" << CModel::g_sKey_HSGwPort  << "\t" << QObject::tr( "GIRA Homeserver KO-Gateway port").toLatin1()
+             << "\n" << CModel::g_sKey_HSIP      << "\t" << QObject::tr( "IP address of GIRA Homeserver").toLatin1()
+             << "\n" << CModel::g_sKey_HSWebPort << "\t" << QObject::tr( "Port of GIRA Homeserver web server").toLatin1()
+             << "\n" << CModel::g_sKey_LogLevel  << "\t" << QObject::tr( "Hsd log level (see below)").toLatin1()
              << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
              << "\n" << QObject::tr( "Command line options:" )
              << "\n\nhsd [option]"
-             << "\n"   << "-?\t" << QObject::tr( "This help page")
-             << "\n"   << "-lx\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),")
-             << "\n\t" << QObject::tr( "=1 (DebugLevel),")
-             << "\n\t" << QObject::tr( "=2 (InfoLevel),")
-             << "\n\t" << QObject::tr( "=3 (WarnLevel),")
-             << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),")
-             << "\n\t" << QObject::tr( "=5 (FatalLevel)" )
-             << "\n"   << "-v\t" << QObject::tr( "Printing program version" )
-             << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" )
+             << "\n"   << "-?\t" << QObject::tr( "This help page").toLatin1()
+             << "\n"   << "-lx\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),").toLatin1()
+             << "\n\t" << QObject::tr( "=1 (DebugLevel),").toLatin1()
+             << "\n\t" << QObject::tr( "=2 (InfoLevel),").toLatin1()
+             << "\n\t" << QObject::tr( "=3 (WarnLevel),").toLatin1()
+             << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),").toLatin1()
+             << "\n\t" << QObject::tr( "=5 (FatalLevel)" ).toLatin1()
+             << "\n"   << "-v\t" << QObject::tr( "Printing program version" ).toLatin1()
+             << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" ).toLatin1()
              << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\""
-             << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." );
+             << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." ).toLatin1();
 }
 
 int main(int argc, char *argv[])
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.4.7" );
+        a.setApplicationVersion( "0.4.8" );
 
         QString sLocale = QLocale::system().name();
 
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
     }
     catch( ... )
     {
-        QLOG_FATAL() << "Uncought Exception" << Q_FUNC_INFO;
+        QLOG_FATAL() << QObject::tr( "Uncought Exception" ).toStdString().c_str() << Q_FUNC_INFO;
     }
 }
 

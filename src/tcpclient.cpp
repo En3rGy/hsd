@@ -25,7 +25,7 @@ CTcpClient::CTcpClient(QObject *parent) :
   , m_pWebRequestTcpSocket( NULL )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
+    //QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -56,11 +56,11 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
 
     if ( m_pTcpSocket->state() != QAbstractSocket::ConnectedState )
     {
-        QLOG_WARN() << QObject::tr("Not connected with HS.");
+        QLOG_WARN() << QObject::tr("Not connected with HS.").toStdString().c_str();
 
         if ( initConnection() == false )
         {
-            QLOG_WARN() << QObject::tr("Connection could not re-establish. Discarding message.");
+            QLOG_WARN() << QObject::tr("Connection could not re-establish. Discarding message.").toStdString().c_str();
             return;
         }
     }
@@ -83,17 +83,17 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
     int nRet = m_pTcpSocket->write( grArray );
     if ( m_pTcpSocket->waitForBytesWritten() == false )
     {
-        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.");
+        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.").toStdString().c_str();
         return;
     }
 
     if ( nRet == -1 )
     {
-        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.");
+        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.").toStdString().c_str();
     }
     else
     {
-        QLOG_DEBUG() << QObject::tr("Send") << nRet << QObject::tr("byte:") << grArray << QObject::tr("to HS.");
+        QLOG_DEBUG() << QObject::tr("Send").toStdString().c_str() << nRet << QObject::tr("byte:").toStdString().c_str() << grArray << QObject::tr("to HS.").toStdString().c_str();
     }
 }
 
@@ -122,7 +122,7 @@ void CTcpClient::slot_startRead()
 
     sGA = grGA.toKNXString();
 
-    QLOG_DEBUG() << QObject::tr("Received via HS interface:") << sGA << QObject::tr("Value:") << sValue;
+    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str() << sGA << QObject::tr("Value:").toStdString().c_str() << sValue;
 
     if ( grGA.isValid() == true )
     {
@@ -150,10 +150,10 @@ void CTcpClient::slot_webRequestReadFinished()
 
 void CTcpClient::slot_webRequestClosed()
 {
-    QLOG_DEBUG() << tr("Web request closed");
+    QLOG_DEBUG() << tr("Web request closed").toStdString().c_str();
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    QLOG_WARN() << QObject::tr( "Connection to peer closed:" )
+    QLOG_WARN() << QObject::tr( "Connection to peer closed:" ).toStdString().c_str()
                 << m_pWebRequestTcpSocket->peerAddress().toString()
                 << m_pWebRequestTcpSocket->peerPort();
 
@@ -171,10 +171,11 @@ void CTcpClient::slot_webRequestClosed()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
+void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const QString &p_sVal )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    send( "1", p_sEibAddr, QString::number( p_nVal ) );
+
+    send( "1", p_sEibAddr, p_sVal );
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -183,14 +184,14 @@ void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const int &p_nVal)
 
 void CTcpClient::slot_disconnected()
 {
-    QLOG_WARN() << tr("Disconnected from Homeserver.");
+    QLOG_WARN() << tr("Disconnected from Homeserver.").toStdString().c_str();
 
     initConnection();
 }
 
 void CTcpClient::slot_reconnect()
 {
-    QLOG_INFO() << tr( "Trying to reconnect to HS." );
+    QLOG_INFO() << tr( "Trying to reconnect to HS." ).toStdString().c_str();
     initConnection();
 }
 
@@ -252,7 +253,7 @@ bool CTcpClient::initConnection()
     m_pTcpSocket->connectToHost( grHostAddress, unPort);
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
-        QLOG_INFO() << QObject::tr("Connection with HS established");
+        QLOG_INFO() << QObject::tr("Connection with HS established").toStdString().c_str();
 
         QByteArray grArray;
 
@@ -262,7 +263,7 @@ bool CTcpClient::initConnection()
         grArray.append( sPass );
         grArray.append( m_sMsgEndChar );
 
-        QLOG_INFO() << QObject::tr("Sending to HS: Initialization message.");
+        QLOG_INFO() << QObject::tr("Sending to HS: Initialization message.").toStdString().c_str();
         int nRet = m_pTcpSocket->write( grArray );
 
         if ( nRet == -1 )
@@ -274,12 +275,12 @@ bool CTcpClient::initConnection()
         }
         else
         {
-            QLOG_DEBUG() << "Send" << nRet << "byte: " << grArray << "to HS.";
+            QLOG_DEBUG() << tr( "Send" ).toStdString().c_str() << nRet << tr( "byte: " ).toStdString().c_str() << grArray << tr( "to HS." ).toStdString().c_str();
         }
     }
     else
     {
-        QLOG_ERROR() << m_pTcpSocket->errorString() << "trying to init communication with HS.";
+        QLOG_ERROR() << m_pTcpSocket->errorString() << tr( "trying to init communication with HS." ).toStdString().c_str();
         int nTimeout_ms = CModel::getInstance()->getValue( CModel::g_sKey_PauseTilHSReconnect, 30000 ).toInt();
         QTimer::singleShot( nTimeout_ms, this, SLOT( slot_reconnect()) );
         return false;
@@ -314,18 +315,18 @@ void CTcpClient::getGaXml()
 
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
     {
-        QLOG_WARN() << QObject::tr("Already a HS web request ongoing");
+        QLOG_WARN() << QObject::tr("Already a HS web request ongoing").toStdString().c_str();
         return;
     }
 
     m_pWebRequestTcpSocket->connectToHost( sHsIp, unHsPort );
     if ( m_pWebRequestTcpSocket->waitForConnected( 2000 ) == true )
     {
-        m_pWebRequestTcpSocket->write( sWebRequest.toAscii() );
+        m_pWebRequestTcpSocket->write( sWebRequest.toLatin1() );
 
         if ( m_pWebRequestTcpSocket->waitForBytesWritten() == true )
         {
-            QLOG_DEBUG() << tr("Wrote to HS");
+            QLOG_DEBUG() << tr("Wrote to HS").toStdString().c_str();
 
             m_bReceviedXML = false;
 
@@ -366,15 +367,15 @@ void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const 
 
         if ( grSocket.waitForBytesWritten( 2000 ) )
         {
-            QLOG_DEBUG() << tr( "Send" ) << nRet <<tr( "byte:" ) << p_grData << " = " << QString( p_grData ) << tr("to") << p_sDestAddr << ":" << p_nPort;
+            QLOG_DEBUG() << tr( "Send" ) << nRet <<tr( "byte:" ).toStdString().c_str() << p_grData << " = " << QString( p_grData ) << tr("to").toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
         }
         else
         {
-            QLOG_ERROR() << grSocket.errorString() << tr( "while trying to send" ) << p_grData << tr( "to") << p_sDestAddr << ":" << p_nPort;
+            QLOG_ERROR() << grSocket.errorString() << tr( "while trying to send" ).toStdString().c_str() << p_grData << tr( "to").toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
         }
     }
     else
     {
-        QLOG_ERROR() << grSocket.errorString() << tr( "while trying to connect to" ) << p_sDestAddr << ":" << p_nPort;
+        QLOG_ERROR() << grSocket.errorString() << tr( "while trying to connect to" ).toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
     }
 }

@@ -19,7 +19,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     // check if 1st 2 byte contain package length
     if ( p_grByteArray.size() < 2 )
     {
-        QLOG_WARN() << QObject::tr("Received too short message") << printASCII( p_grByteArray );
+        QLOG_WARN() << QObject::tr("Received too short message").toStdString().c_str() << printASCII( p_grByteArray );
         return;
     }
 
@@ -65,10 +65,15 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         if ( grMsg.size() >= 6 )  // set request, e.g. 00 27 09 0f 00 80
         {
 
+            // Determine message type via byte 0 + 1
+
             if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
                  ( grMsg.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
             {
                 m_eMsgType = enuMsgType_simpleWrite;
+
+
+                // determine eib adress via byte 2 + 3
 
                 QByteArray grEibAdr;
                 grEibAdr.append( grMsg.data()[2]);
@@ -78,15 +83,21 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                 grGA.setHex( grEibAdr );
                 m_sDstAddr = grGA.toKNXString();
 
+                // skipping byte 4
+
+                // determine value via byte 5
+
                 uchar szData = grMsg.at( 5 );
                 szData = szData & 0x7f; // 0x7f = 0111 1111
 
-                // If you need to send data with a data type bigger than 6 bit:
-                // byte data[] = new byte[2 + <size of datatype in bytes>];
-                // data[0] = 0;
-                // data[1] =0x80;
-                // data[2]=<first byte of datatype>;
-                // data[3]=<second byte of datatype>;
+                /** @todo Send data > 6 bit
+                 *  If you need to send data with a data type bigger than 6 bit:
+                 *  byte data[] = new byte[2 + <size of datatype in bytes>];
+                 *  data[0] = 0;
+                 *  data[1] =0x80;
+                 *  data[2]=<first byte of datatype>;
+                 *  data[3]=<second byte of datatype>;
+                 */
 
                 QByteArray grData;
                 grData.append( grMsg.mid( 5, grMsg.size() - 5 ) );
@@ -105,7 +116,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
             }
             break;
 
-            QLOG_INFO() << QObject::tr("Received unknown message:") << printASCII( grMsg );
+            QLOG_INFO() << QObject::tr("Received unknown message:").toStdString().c_str() << printASCII( grMsg );
         }
     }
 }
@@ -221,15 +232,15 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         {
             char szData = nVal;// QString::number( nVal ).toAscii();
             szData = szData | 0x80;
-            grMsg.append( szData ); // index 9
+            grMsg.append( szData ); // index 9 & 10
 
             return grMsg;
         }
         else
         {
-            QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, not") << p_grData.toString();
+            QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, not").toStdString().c_str() << p_grData.toString();
         }
-    }
+    } // isNatural
 
     return QByteArray();
 

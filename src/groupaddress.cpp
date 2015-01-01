@@ -69,7 +69,7 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 
     if ( p_grHexAddr.length() != 2 )
     {
-        QLOG_ERROR() << "Wrong length of hex address.";
+        QLOG_ERROR() << QObject::tr( "Wrong length of hex address." ).toStdString().c_str();
         return;
     }
 
@@ -112,7 +112,7 @@ void CGroupAddress::setKNXString(const QString &p_sStrAddr)
 
     if ( grAddrList.size() != 3 )
     {
-        QLOG_ERROR() << p_sStrAddr << QObject::tr("not of kind a/b/c. Aborting.");
+        QLOG_ERROR() << p_sStrAddr << QObject::tr("not of kind a/b/c. Aborting.").toStdString().c_str();
         return;
     }
 
