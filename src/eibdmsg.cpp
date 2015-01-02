@@ -225,36 +225,39 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     bool bOk;
     float fVal = p_grData.toFloat( & bOk );
 
-    if ( isNatural( fVal ) == true )
+    if ( bOk == false )
     {
-        int nVal = (int) fVal;
-        if ( nVal <= 100 )
-        {
-            char szData = nVal;// QString::number( nVal ).toAscii();
-            szData = szData | 0x80;
-            grMsg.append( szData ); // index 9 & 10
-
-            return grMsg;
-        }
-        else
-        {
-            QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, not").toStdString().c_str() << p_grData.toString();
-        }
-    } // isNatural
-    else
-    {
-        /// @todo Foward float values
-        //QLOG_WARN() << QObject::tr("EXPERIMENTAL: Forwarding float value").toStdString().c_str() << p_grData.toString();
+        QLOG_ERROR() << QObject::tr("Received non float value. Transmission aborted.").toStdString().c_str() << p_grData.toString();
+        return QByteArray();
     }
 
-    return QByteArray();
+    /// @todo Foward float values
 
-//    grMsg.append( char( 0x80 ) ); // index 9
-//    grMsg.append( dVal );
+    if ( isNatural( fVal ) != true )
+    {
+        QLOG_WARN() << QObject::tr("Forwarding float value is not supportet, converting to int").toStdString().c_str() << p_grData.toString();
+    }
 
-//    quint8 nSize = grMsg.size() - 2;
+    int nVal = (int) fVal;
 
-//    grMsg[ 1 ] = nSize; // index 1
+    if ( nVal > 100 )
+    {
+        QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, setting value to 0").toStdString().c_str() << p_grData.toString();
+        nVal = 0;
+    }
+
+    char szData = nVal;// QString::number( nVal ).toAscii();
+    szData = szData | 0x80;
+    grMsg.append( szData ); // index 9 & 10
+
+    return grMsg;
+
+    //    grMsg.append( char( 0x80 ) ); // index 9
+    //    grMsg.append( dVal );
+
+    //    quint8 nSize = grMsg.size() - 2;
+
+    //    grMsg[ 1 ] = nSize; // index 1
 
     //    return grMsg;
 }
