@@ -42,6 +42,7 @@ CHsd::CHsd(QObject *parent) :
     grLogger.setLoggingLevel( ( QsLogging::Level ) unLogLevel );
 
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
+    QLOG_INFO() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
 
     connect ( m_pTcpServer,
               SIGNAL(signal_setEibAdress(QString,QString)),
@@ -69,6 +70,7 @@ void CHsd::setLogLevel(const uint &p_unLogLevel)
 void CHsd::startService()
 {
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
+    QLOG_INFO() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
 
     m_pTcpClient->getGaXml();
     m_pTcpServer->listen();
@@ -84,6 +86,7 @@ void CHsd::stopService()
 {
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Sending STOP signal." ).toStdString().c_str();
     QLOG_INFO() << tr( "Sending STOP signal." ).toStdString().c_str();
+
     QString sDestAddr = "127.0.0.1";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
     QString sData     = CModel::g_sExitMessage;
