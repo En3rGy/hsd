@@ -63,10 +63,11 @@ int main(int argc, char *argv[])
 
         int nLogLevel = -1;
         QList< QString > grArgsList;
-        bool bValidArg = false;
+        bool bValidArg = true;
 
         if ( argc >= 2 )
         {
+            bValidArg = false;
             for ( int i = 0; i < argc; i++ )
             {
                 grArgsList.push_back( argv[ i ] );
@@ -136,13 +137,13 @@ int main(int argc, char *argv[])
             }
         }
 
+        CHsd grHsd;
+
         if ( bValidArg == false )
         {
             printHelpPage();
             return EXIT_SUCCESS;
         }
-
-        CHsd grHsd;
 
         if ( grArgsList.contains( "-E" ) == true )
         {
