@@ -19,7 +19,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     // check if 1st 2 byte contain package length
     if ( p_grByteArray.size() < 2 )
     {
-        QLOG_WARN() << QObject::tr("Received too short message").toStdString().c_str() << printASCII( p_grByteArray );
+        QLOG_WARN() << QObject::tr("Received too short message. Message was").toStdString().c_str() << printASCII( p_grByteArray );
         return;
     }
 
@@ -116,7 +116,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
             }
             break;
 
-            QLOG_INFO() << QObject::tr("Received unknown message:").toStdString().c_str() << printASCII( grMsg );
+            QLOG_INFO() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
         }
     }
 }
@@ -235,14 +235,14 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
     if ( isNatural( fVal ) != true )
     {
-        QLOG_WARN() << QObject::tr("Forwarding float value is not supportet, converting to int").toStdString().c_str() << p_grData.toString();
+        QLOG_WARN() << QObject::tr("Forwarding float values is not supportet, converting to int. Value was").toStdString().c_str() << p_grData.toString();
     }
 
     int nVal = (int) fVal;
 
     if ( nVal > 100 )
     {
-        QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, setting value to 0").toStdString().c_str() << p_grData.toString();
+        QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, setting value to 0. Value was").toStdString().c_str() << p_grData.toString();
         nVal = 0;
     }
 

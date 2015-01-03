@@ -42,7 +42,7 @@ CHsd::CHsd(QObject *parent) :
     grLogger.setLoggingLevel( ( QsLogging::Level ) unLogLevel );
 
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
-    QLOG_INFO() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
+    QLOG_INFO() << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
 
     connect ( m_pTcpServer,
               SIGNAL(signal_setEibAdress(QString,QString)),
@@ -70,7 +70,7 @@ void CHsd::setLogLevel(const uint &p_unLogLevel)
 void CHsd::startService()
 {
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
-    QLOG_INFO() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
+    QLOG_INFO() << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
 
     m_pTcpClient->getGaXml();
     m_pTcpServer->listen();

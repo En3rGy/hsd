@@ -53,7 +53,7 @@ void CKoXml::setXml(QByteArray & p_grKoXml)
         QLOG_DEBUG() << grCobject.sGa << "\t" << grCobject.sName;
     }
 
-    QLOG_INFO() << QObject::tr("Received").toStdString().c_str() << m_ssGA2NameMap.size() << QObject::tr("elements from HS.").toStdString().c_str();
+    QLOG_INFO() << QObject::tr("Received available GAs from HS. No of received elements:").toStdString().c_str() << m_ssGA2NameMap.size();
 }
 
 CKoXml::CKoXml()
@@ -98,7 +98,7 @@ QString CKoXml::getGaName(const QString &p_sGA)
 
     if ( grValue.sName.isEmpty() == true )
     {
-        return QObject::tr( "Unknown" ).toStdString().c_str();
+        return QObject::tr( "Name of GA is unknown" ).toStdString().c_str();
     }
 
     return grValue.sName;

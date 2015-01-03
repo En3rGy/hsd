@@ -93,7 +93,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QS
     }
     else
     {
-        QLOG_DEBUG() << QObject::tr("Send").toStdString().c_str() << nRet << QObject::tr("byte:").toStdString().c_str() << grArray << QObject::tr("to HS.").toStdString().c_str();
+        QLOG_DEBUG() << QObject::tr("Send message to HS:").toStdString().c_str() << grArray << QObject::tr("Message size in byte:").toStdString().c_str() << nRet;
     }
 }
 
@@ -130,7 +130,7 @@ void CTcpClient::slot_startRead()
     }
     else
     {
-        //QLOG_ERROR() << sGA << "is not valid.";
+        QLOG_ERROR() << QObject::tr( "Incomming GA is not valid. Message is not processed any further. GA was" ).toStdString().c_str() << sGA;
     }
 }
 
@@ -153,8 +153,9 @@ void CTcpClient::slot_webRequestClosed()
     QLOG_DEBUG() << tr("Web request closed").toStdString().c_str();
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    QLOG_WARN() << QObject::tr( "Connection to peer closed:" ).toStdString().c_str()
+    QLOG_INFO() << QObject::tr( "Connection to peer closed:" ).toStdString().c_str()
                 << m_pWebRequestTcpSocket->peerAddress().toString()
+                << QObject::tr( ":" ).toStdString().c_str()
                 << m_pWebRequestTcpSocket->peerPort();
 
     m_pWebRequestTcpSocket->close();
@@ -275,7 +276,7 @@ bool CTcpClient::initConnection()
         }
         else
         {
-            QLOG_DEBUG() << tr( "Send" ).toStdString().c_str() << nRet << tr( "byte: " ).toStdString().c_str() << grArray << tr( "to HS." ).toStdString().c_str();
+            QLOG_DEBUG() << QObject::tr("Send message to HS:").toStdString().c_str() << grArray << QObject::tr("Message size in byte:").toStdString().c_str() << nRet;
         }
     }
     else
@@ -315,7 +316,7 @@ void CTcpClient::getGaXml()
 
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
     {
-        QLOG_WARN() << QObject::tr("Already a HS web request ongoing").toStdString().c_str();
+        QLOG_WARN() << QObject::tr("HS web request already ongoing").toStdString().c_str();
         return;
     }
 
