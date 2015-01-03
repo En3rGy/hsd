@@ -48,6 +48,14 @@ public:
       */
     void setHex( const QByteArray & p_grHexAddr );
 
+    /** @brief Setter of hex address representation
+     *
+     * The adrees is given as hex adress, e.g. 8801 for 8/8/1
+     *
+     * @param p_grHexAdress
+     */
+    void setPlainHex( const QByteArray & p_grHexAddr );
+
     /** @brief Setter for string address representation, e.g. 3/5/18
       * @param p_sStrAddr Address as string, "/" and "." are allowed seperators.
       */

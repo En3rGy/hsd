@@ -29,7 +29,7 @@ QByteArray CGroupAddress::toHex() const
     // 0000 0000 == 0x00
     // 1111 1111 == 0xff
 
-    szHAddr = szHAddr << 3;
+    szHAddr = szHAddr << 4;
     szHexAddr[ 0 ] = szHAddr | szMAddr;
     szHexAddr[ 1 ] = szUAddr;
 
@@ -89,6 +89,34 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
     m_unLowAddr  = sUnderAddr.toUInt();
 }
 
+void CGroupAddress::setPlainHex(const QByteArray &p_grHexAddr)
+{
+    QLOG_TRACE() << Q_FUNC_INFO;
+
+    if ( p_grHexAddr.length() != 2 )
+    {
+        QLOG_ERROR() << QObject::tr( "Wrong length of hex address." ).toStdString().c_str();
+        return;
+    }
+
+    // given hhhh mmmm ssss ssss
+
+    uchar szData [ 3 ];
+    szData[0] = (uchar) p_grHexAddr.at(0);
+    szData[1] = (uchar) p_grHexAddr.at(0);
+    szData[2] = (uchar) p_grHexAddr.at(1);
+
+    //szData[0] = szData[0] << 1;
+
+    QString sMainAddr   = QString::number( ( szData[0] >> 4 ) & 0xf );
+    QString sMiddleAddr = QString::number( ( szData[1] & 0x8 ) );
+    QString sUnderAddr  = QString::number( szData[2] );
+
+    m_unMainAddr = sMainAddr.toUInt();
+    m_unMiddAddr = sMiddleAddr.toUInt();
+    m_unLowAddr  = sUnderAddr.toUInt();
+}
+
 void CGroupAddress::setKNXString(const QString &p_sStrAddr)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
@@ -121,32 +149,38 @@ void CGroupAddress::setKNXString(const QString &p_sStrAddr)
     m_unLowAddr  = grAddrList.at( 2 ).toUInt();
 }
 
-void CGroupAddress::setHS(const int &p_nHSAddr)
+void CGroupAddress::setHS(const int & p_nHSAddr)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     // int nConvert = nX * 2048 + nY * 256 + nZ;
 
-    m_unMainAddr = p_nHSAddr / 2048;
+    m_unMainAddr = p_nHSAddr / 2049; // 2049 instead of 2048 is correct (but why?)
     m_unMiddAddr = ( p_nHSAddr - ( m_unMainAddr * 2048 ) ) / 256;
-    m_unLowAddr = ( p_nHSAddr - ( m_unMainAddr * 2048 ) - ( m_unMiddAddr * 256 ) );
+    m_unLowAddr  = ( p_nHSAddr - ( m_unMainAddr * 2048 ) - ( m_unMiddAddr * 256 ) );
 }
 
 void CGroupAddress::setAddress(const QString &p_sAddress)
 {
     if ( p_sAddress.contains( "/" ) ) // EIB/KNX representation
     {
+        qDebug() << QObject::tr( "Input is EIB/KNX representation" ).toStdString().c_str();
+
         setKNXString( p_sAddress );
     }
     else if ( p_sAddress.length() == 4 ) // HEX representation
     {
+        qDebug() << QObject::tr( "Input is HEX representation" ).toStdString().c_str();
+
         QByteArray grHexAddr;
 
         grHexAddr.append( p_sAddress.mid( 0, 2 ).toShort( NULL, 16 ) );
         grHexAddr.append( p_sAddress.mid( 2, 2 ).toShort( NULL, 16 ) );
-        setHex( grHexAddr );
+        setPlainHex( grHexAddr );
     }
     else // HS representation
     {
+        qDebug() << QObject::tr( "Input is HS representation" ).toStdString().c_str();
+
         setHS( p_sAddress.toInt() );
     }
 }
@@ -174,8 +208,8 @@ QString CGroupAddress::toString() const
 {
     QString sRet = "KNX: " + toKNXString()
             + ", HEX: " + toHex().toHex()
-            + ", HS: " + QString::number( toHSRepresentation() )
-            + ", " + CKoXml::getInstance()->getGaName( toKNXString( ));
+            + ", HS: " + QString::number( toHSRepresentation() );
+           // + ", " + CKoXml::getInstance()->getGaName( toKNXString( ));
 
     return sRet;
 }
