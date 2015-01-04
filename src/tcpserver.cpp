@@ -75,6 +75,8 @@ void CTcpServer::solt_newConnection()
     QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpSocket = m_pTcpServer->nextPendingConnection();
 
+    QLOG_DEBUG() << tr( "Incomming connection via eibd interface." ).toStdString().c_str();
+
     connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
     connect( m_pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
 }
@@ -156,7 +158,7 @@ void CTcpServer::slot_disconnected()
             QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:").toStdString().c_str() << CEibdMsg::printASCII( m_grData ) << "=" << QString( m_grData );
         }
     }
-    }
+    } // switch
 
     if ( grMsg.getType() != CEibdMsg::enuMsgType_msgSize )
     {
