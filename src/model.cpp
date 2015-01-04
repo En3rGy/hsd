@@ -1,5 +1,7 @@
 #include "model.h"
 #include <QsLog.h>
+#include <QDir>
+#include <QCoreApplication>
 
 const QString CModel::g_sKey_HSIP         = "HSIP";
 const QString CModel::g_sKey_HSWebPort    = "HSWebPort";
@@ -24,7 +26,11 @@ CModel * CModel::m_pInstance = NULL;
 CModel::CModel()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
+
     m_pSettings = new QSettings( CModel::g_sSettingsPath, QSettings::IniFormat );
+    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": "
+             << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
+    QLOG_INFO() << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
 }
 
 CModel *CModel::getInstance()
