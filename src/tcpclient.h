@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QByteArray>
+#include <QList>
 
 class QTcpSocket;
 class QTcpServer;
@@ -92,6 +93,7 @@ private:
     QTcpSocket * m_pWebRequestTcpSocket;
     qint16       m_nPort;
     QByteArray   m_grWebRequestData;
+    QList< QString > m_grInvlGAList;
 
     static const QChar   m_sMsgEndChar;
     static const QString m_sSeperatorChar;

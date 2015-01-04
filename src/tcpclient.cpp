@@ -6,10 +6,10 @@
 #include <QTextCodec>
 #include <koxml.h>
 #include <model.h>
-#include "groupaddress.h"
 #include "QsLog.h"
 #include <QCoreApplication>
 #include <QTimer>
+#include "groupaddress.h"
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -130,7 +130,12 @@ void CTcpClient::slot_startRead()
     }
     else
     {
-        QLOG_ERROR() << QObject::tr( "Incomming GA is not valid. Message is not processed any further. GA was" ).toStdString().c_str() << sGA;
+        // Report invalid GA just once
+        if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
+        {
+            m_grInvlGAList.push_back( grGA.toKNXString() );
+            QLOG_ERROR() << QObject::tr( "Incomming GA is not valid. Message is not processed any further. GA was" ).toStdString().c_str() << sGA;
+        }
     }
 }
 
