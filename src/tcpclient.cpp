@@ -117,15 +117,15 @@ void CTcpClient::slot_startRead()
 
     splitString( sString, sType, sIntGA, sValue );
 
-    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
-                 << sGA
-                 << QObject::tr("Value:").toStdString().c_str()
-                 << sValue;
-
     CGroupAddress grGA;
     grGA.setHS( sIntGA.toInt() );
 
     sGA = grGA.toKNXString();
+
+    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
+                 << sGA
+                 << QObject::tr("Value:").toStdString().c_str()
+                 << sValue;
 
     if ( grGA.isValid() == true )
     {
