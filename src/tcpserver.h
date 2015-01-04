@@ -52,6 +52,8 @@ private:
     QTcpServer * m_pTcpServer;
     uint         m_nPort;
 
+    QByteArray   m_grData;
+
     int          m_nSizeOfNextMsg;
 };
 

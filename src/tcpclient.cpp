@@ -117,6 +117,11 @@ void CTcpClient::slot_startRead()
 
     splitString( sString, sType, sIntGA, sValue );
 
+    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
+                 << sGA
+                 << QObject::tr("Value:").toStdString().c_str()
+                 << sValue;
+
     CGroupAddress grGA;
     grGA.setHS( sIntGA.toInt() );
 
@@ -124,7 +129,6 @@ void CTcpClient::slot_startRead()
 
     if ( grGA.isValid() == true )
     {
-        QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str() << sGA << QObject::tr("Value:").toStdString().c_str() << sValue;
         emit signal_receivedMessage( sGA, sValue );
     }
     else
@@ -134,8 +138,7 @@ void CTcpClient::slot_startRead()
         {
             m_grInvlGAList.push_back( grGA.toKNXString() );
 
-            QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str() << sGA << QObject::tr("Value:").toStdString().c_str() << sValue;
-            QLOG_ERROR() << QObject::tr( "GA is not valid. Message from this GA are dumped and ignored in future." ).toStdString().c_str();
+            QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
         }
     }
 }
