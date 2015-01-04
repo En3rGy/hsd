@@ -52,6 +52,9 @@ QVariant CModel::getValue(const QString &p_sKey, const QVariant &p_grDefaultValu
     if ( m_pSettings->contains( p_sKey ) == false )
     {
         m_pSettings->setValue( p_sKey, p_grDefaultValue );
+        QLOG_WARN() << QObject::tr( "Requested settings key not found in config file. Using default value." ).toStdString().c_str()
+                    << QObject::tr( "Key was:" ).toStdString().c_str() << p_sKey
+                    << QObject::tr( "Default value is:" ).toStdString().c_str() << p_grDefaultValue;
         return p_grDefaultValue;
     }
     else
