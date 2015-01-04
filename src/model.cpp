@@ -29,7 +29,8 @@ CModel::CModel()
 
     QDir grSettingsPath = QCoreApplication::applicationDirPath();
 
-    m_pSettings = new QSettings( grSettingsPath.relativeFilePath( CModel::g_sSettingsPath ), QSettings::IniFormat );
+    m_pSettings = new QSettings( grSettingsPath.absoluteFilePath( CModel::g_sSettingsPath ), QSettings::IniFormat );
+
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": "
              << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
     QLOG_INFO() << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
