@@ -1,4 +1,4 @@
-// Copyright (c) 2010, Razvan Petru
+// Copyright (c) 2013, Razvan Petru
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without modification,
@@ -24,60 +24,47 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "QsLogDest.h"
-#include "QsDebugOutput.h"
-#include <QFile>
-#include <QTextStream>
+#include "QsLogDestConsole.h"
+#include "QsLogDestFile.h"
+#include "QsLogDestFunctor.h"
 #include <QString>
 
 namespace QsLogging
 {
 
-//! file message sink
-class FileDestination : public Destination
+Destination::~Destination()
 {
-public:
-   FileDestination(const QString& filePath);
-   virtual void write(const QString& message);
-
-private:
-   QFile mFile;
-   QTextStream mOutputStream;
-};
-
-
-FileDestination::FileDestination(const QString& filePath)
-{
-   mFile.setFileName(filePath);
-   mFile.open(QFile::WriteOnly | QFile::Text); //fixme: should throw on failure
-   mOutputStream.setDevice(&mFile);
 }
 
-void FileDestination::write(const QString& message)
+//! destination factory
+DestinationPtr DestinationFactory::MakeFileDestination(const QString& filePath,
+    LogRotationOption rotation, const MaxSizeBytes &sizeInBytesToRotateAfter,
+    const MaxOldLogCount &oldLogsToKeep)
 {
-   mOutputStream << message << endl;
-   mOutputStream.flush();
-}
+    if (EnableLogRotation == rotation) {
+        QScopedPointer<SizeRotationStrategy> logRotation(new SizeRotationStrategy);
+        logRotation->setMaximumSizeInBytes(sizeInBytesToRotateAfter.size);
+        logRotation->setBackupCount(oldLogsToKeep.count);
 
-//! debugger sink
-class DebugOutputDestination : public Destination
-{
-public:
-   virtual void write(const QString& message);
-};
+        return DestinationPtr(new FileDestination(filePath, RotationStrategyPtr(logRotation.take())));
+    }
 
-void DebugOutputDestination::write(const QString& message)
-{
-   QsDebugOutput::output(message);
-}
-
-DestinationPtr DestinationFactory::MakeFileDestination(const QString& filePath)
-{
-   return DestinationPtr(new FileDestination(filePath));
+    return DestinationPtr(new FileDestination(filePath, RotationStrategyPtr(new NullRotationStrategy)));
 }
 
 DestinationPtr DestinationFactory::MakeDebugOutputDestination()
 {
-   return DestinationPtr(new DebugOutputDestination);
+    return DestinationPtr(new DebugOutputDestination);
+}
+
+DestinationPtr DestinationFactory::MakeFunctorDestination(QsLogging::Destination::LogFunction f)
+{
+    return DestinationPtr(new FunctorDestination(f));
+}
+
+DestinationPtr DestinationFactory::MakeFunctorDestination(QObject *receiver, const char *member)
+{
+    return DestinationPtr(new FunctorDestination(receiver, member));
 }
 
 } // end namespace

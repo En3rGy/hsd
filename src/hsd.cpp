@@ -37,8 +37,8 @@ CHsd::CHsd(QObject *parent) :
     m_pFileDestPtr  = QsLogging::DestinationFactory::MakeFileDestination( grLogPath.absoluteFilePath( sFileName ) );
     m_pDebugDestPtr = QsLogging::DestinationFactory::MakeDebugOutputDestination();
 
-    grLogger.addDestination( m_pFileDestPtr.data() );
-    grLogger.addDestination( m_pDebugDestPtr.data() );
+    grLogger.addDestination( m_pFileDestPtr );
+    grLogger.addDestination( m_pDebugDestPtr );
     grLogger.setLoggingLevel( ( QsLogging::Level ) unLogLevel );
 
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
