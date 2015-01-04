@@ -29,7 +29,7 @@ public:
      * @param p_sGA Group Adress, e.g. 2/2/15
      * @param p_sValue Value to set, e.g. 1
      */
-    void send( const QString & p_sAction, const QString  & p_sGA, const QString & p_sValue );
+    void send(const QString & p_sAction, const QString  & p_sGA, const QVariant &p_grValue );
 
     /**
      * @brief Initialization of connection to HS
@@ -68,7 +68,7 @@ public slots:
       * @param p_sEibAddr KNX/EIB address to write, e.g. 1/5/30
       * @param p_nVal Value to set
       */
-    void slot_setEibAdress(const QString & p_sEibAddr, const QString &p_sVal );
+    void slot_setEibAdress(const QString & p_sEibAddr, const QVariant &p_grVal );
 
     /** @brief Used if disconnected from HS by HS.
       *
