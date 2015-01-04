@@ -25,53 +25,53 @@
 <context>
     <name>CTcpClient</name>
     <message>
-        <location filename="tcpclient.cpp" line="153"/>
+        <location filename="tcpclient.cpp" line="158"/>
         <source>Web request closed</source>
         <translation>Web-Abfrage geschlossen</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="188"/>
+        <location filename="tcpclient.cpp" line="193"/>
         <source>Disconnected from Homeserver.</source>
         <translation>Verbindung zum Homeserver getrennt.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="195"/>
+        <location filename="tcpclient.cpp" line="200"/>
         <source>Trying to reconnect to HS.</source>
         <translation>Versuche, Verbindung zum HS wieder herzustellen.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="284"/>
+        <location filename="tcpclient.cpp" line="289"/>
         <source>trying to init communication with HS.</source>
         <translation>Fehler trat während der Initialisierung der Kommunikation zum HS auf.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="330"/>
+        <location filename="tcpclient.cpp" line="335"/>
         <source>Wrote to HS</source>
         <translation>Daten gesendet</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="371"/>
+        <location filename="tcpclient.cpp" line="376"/>
         <source>Send</source>
         <translation>Sendete</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="371"/>
+        <location filename="tcpclient.cpp" line="376"/>
         <source>byte:</source>
         <translation>Byte:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="371"/>
-        <location filename="tcpclient.cpp" line="375"/>
+        <location filename="tcpclient.cpp" line="376"/>
+        <location filename="tcpclient.cpp" line="380"/>
         <source>to</source>
         <translation>zu</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="375"/>
+        <location filename="tcpclient.cpp" line="380"/>
         <source>while trying to send</source>
         <translation>während des Sendens</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="380"/>
+        <location filename="tcpclient.cpp" line="385"/>
         <source>while trying to connect to</source>
         <translation>während des Verbindungsaufbaus zu</translation>
     </message>
@@ -127,13 +127,13 @@
     </message>
     <message>
         <location filename="tcpclient.cpp" line="96"/>
-        <location filename="tcpclient.cpp" line="279"/>
+        <location filename="tcpclient.cpp" line="284"/>
         <source>Send message to HS:</source>
         <translation>Sende Nachricht zum HS:</translation>
     </message>
     <message>
         <location filename="tcpclient.cpp" line="96"/>
-        <location filename="tcpclient.cpp" line="279"/>
+        <location filename="tcpclient.cpp" line="284"/>
         <source>Message size in byte:</source>
         <translation>Größe der Nachricht in Byte:</translation>
     </message>
@@ -148,32 +148,32 @@
         <translation>Wert:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="133"/>
+        <location filename="tcpclient.cpp" line="137"/>
         <source>Incomming GA is not valid. Message is not processed any further. GA was</source>
         <translation>Eingehende GA ist nicht gültig. Die Nachricht wird nicht weiter verarbeitet. Die GA war</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="156"/>
+        <location filename="tcpclient.cpp" line="161"/>
         <source>Connection to peer closed:</source>
         <translation>Verbindung zur Gegenstelle getrennt:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="158"/>
+        <location filename="tcpclient.cpp" line="163"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="257"/>
+        <location filename="tcpclient.cpp" line="262"/>
         <source>Connection with HS established</source>
         <translation>Verbindung mit dem HS aufgebaut</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="267"/>
+        <location filename="tcpclient.cpp" line="272"/>
         <source>Sending to HS: Initialization message.</source>
         <translation>Zum HS gesendet: Initialisierungs-Nachricht.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="319"/>
+        <location filename="tcpclient.cpp" line="324"/>
         <source>HS web request already ongoing</source>
         <translation>Es existiert bereits eine Verbindung zum HS</translation>
     </message>
@@ -367,6 +367,27 @@
         <location filename="koxml.cpp" line="101"/>
         <source>Name of GA is unknown</source>
         <translation>Name der GA ist unbekannt</translation>
+    </message>
+    <message>
+        <location filename="model.cpp" line="37"/>
+        <location filename="model.cpp" line="38"/>
+        <source>Settings file used:</source>
+        <translation>Genutzte Konfigurationsdatei:</translation>
+    </message>
+    <message>
+        <location filename="model.cpp" line="66"/>
+        <source>Requested settings key not found in config file. Using default value.</source>
+        <translation>Angefragte Konfigurationseinstellung wurde in der Konfigurationsdatei nicht gefunden. Es wird ein Standardwert verwendet.</translation>
+    </message>
+    <message>
+        <location filename="model.cpp" line="67"/>
+        <source>Key was:</source>
+        <translation>Schlüssel war:</translation>
+    </message>
+    <message>
+        <location filename="model.cpp" line="68"/>
+        <source>Default value is:</source>
+        <translation>Standardwert ist:</translation>
     </message>
 </context>
 </TS>
