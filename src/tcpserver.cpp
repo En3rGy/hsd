@@ -91,9 +91,24 @@ void CTcpServer::slot_startRead()
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
 
+    // first byte of transmission is size of message
+    if ( ( m_grData.size() == 0 ) && ( grDatagram.size() > 0 ) )
+    {
+        QString sSize    = QString::number( grDatagram.at( 1 ) );
+        m_nSizeOfNextMsg = static_cast< int >( sSize.toDouble() );
+        //grDatagram.remove( 0, 1 );
+    }
+
+    // put all parts of message together
     if ( grDatagram.size() > 0 )
     {
         m_grData.append( grDatagram );
+    }
+
+    // if all bytes arrived. disconnect
+    if ( grDatagram.size() == m_nSizeOfNextMsg + 1 )
+    {
+        m_pTcpSocket->close();
     }
 }
 
