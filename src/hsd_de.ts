@@ -25,73 +25,55 @@
 <context>
     <name>CTcpClient</name>
     <message>
-        <location filename="tcpclient.cpp" line="162"/>
+        <location filename="tcpclient.cpp" line="158"/>
         <source>Web request closed</source>
         <translation>Web-Abfrage geschlossen</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="197"/>
+        <location filename="tcpclient.cpp" line="193"/>
         <source>Disconnected from Homeserver.</source>
         <translation>Verbindung zum Homeserver getrennt.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="204"/>
+        <location filename="tcpclient.cpp" line="200"/>
         <source>Trying to reconnect to HS.</source>
         <translation>Versuche, Verbindung zum HS wieder herzustellen.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="293"/>
+        <location filename="tcpclient.cpp" line="289"/>
         <source>trying to init communication with HS.</source>
         <translation>Fehler trat während der Initialisierung der Kommunikation zum HS auf.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="339"/>
+        <location filename="tcpclient.cpp" line="335"/>
         <source>Wrote to HS</source>
         <translation>Daten gesendet</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="380"/>
+        <location filename="tcpclient.cpp" line="376"/>
         <source>Send</source>
         <translation>Sendete</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="380"/>
+        <location filename="tcpclient.cpp" line="376"/>
         <source>byte:</source>
         <translation>Byte:</translation>
     </message>
     <message>
+        <location filename="tcpclient.cpp" line="376"/>
         <location filename="tcpclient.cpp" line="380"/>
-        <location filename="tcpclient.cpp" line="384"/>
         <source>to</source>
         <translation>zu</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="384"/>
+        <location filename="tcpclient.cpp" line="380"/>
         <source>while trying to send</source>
         <translation>während des Sendens</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="389"/>
+        <location filename="tcpclient.cpp" line="385"/>
         <source>while trying to connect to</source>
         <translation>während des Verbindungsaufbaus zu</translation>
-    </message>
-</context>
-<context>
-    <name>CTcpServer</name>
-    <message>
-        <location filename="tcpserver.cpp" line="78"/>
-        <source>Incomming connection via eibd interface.</source>
-        <translation>Eingehende Verbindung über eibd-Schnittstelle.</translation>
-    </message>
-    <message>
-        <location filename="tcpserver.cpp" line="124"/>
-        <source>Received via eibd Interface:</source>
-        <translation>Über eibd-Schnittstelle empfangen:</translation>
-    </message>
-    <message>
-        <location filename="tcpserver.cpp" line="128"/>
-        <source>Shortening message to previous submitted length. Loosing:</source>
-        <translation>Nachricht wird auf zuvor empfangene Länge gekürzt. Gelöscht wird:</translation>
     </message>
 </context>
 <context>
@@ -145,13 +127,13 @@
     </message>
     <message>
         <location filename="tcpclient.cpp" line="96"/>
-        <location filename="tcpclient.cpp" line="288"/>
+        <location filename="tcpclient.cpp" line="284"/>
         <source>Send message to HS:</source>
         <translation>Sende Nachricht zum HS:</translation>
     </message>
     <message>
         <location filename="tcpclient.cpp" line="96"/>
-        <location filename="tcpclient.cpp" line="288"/>
+        <location filename="tcpclient.cpp" line="284"/>
         <source>Message size in byte:</source>
         <translation>Größe der Nachricht in Byte:</translation>
     </message>
@@ -161,90 +143,87 @@
         <translation>Via HS Schnittstelle empfangen:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="127"/>
+        <location filename="tcpclient.cpp" line="125"/>
         <source>Value:</source>
         <translation>Wert:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="141"/>
-        <source>GA is not valid. Message is not processed further. GA was:</source>
-        <translation>GA ist nicht gültig. Die Nachricht wird nicht weiter verarbeitet. Die GA war:</translation>
-    </message>
-    <message>
+        <location filename="tcpclient.cpp" line="137"/>
         <source>Incomming GA is not valid. Message is not processed any further. GA was</source>
-        <translation type="vanished">Eingehende GA ist nicht gültig. Die Nachricht wird nicht weiter verarbeitet. Die GA war</translation>
+        <translation>Eingehende GA ist nicht gültig. Die Nachricht wird nicht weiter verarbeitet. Die GA war</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="165"/>
+        <location filename="tcpclient.cpp" line="161"/>
         <source>Connection to peer closed:</source>
         <translation>Verbindung zur Gegenstelle getrennt:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="167"/>
+        <location filename="tcpclient.cpp" line="163"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="266"/>
+        <location filename="tcpclient.cpp" line="262"/>
         <source>Connection with HS established</source>
         <translation>Verbindung mit dem HS aufgebaut</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="276"/>
+        <location filename="tcpclient.cpp" line="272"/>
         <source>Sending to HS: Initialization message.</source>
         <translation>Zum HS gesendet: Initialisierungs-Nachricht.</translation>
     </message>
     <message>
-        <location filename="tcpclient.cpp" line="328"/>
+        <location filename="tcpclient.cpp" line="324"/>
         <source>HS web request already ongoing</source>
         <translation>Es existiert bereits eine Verbindung zum HS</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="138"/>
+        <location filename="tcpserver.cpp" line="106"/>
         <source>Received via eibd interface: Connection request. Granted.</source>
         <translation>Via eibd Schnittstelle empfangen: Verbindungsanfrage. Stattgegeben.</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="145"/>
+        <location filename="tcpserver.cpp" line="113"/>
         <source>Received via eibd interface: openGroupSocket request. Granted.</source>
         <translation>Via eibd Schnittstelle empfangen: GroupSocket öffnen Anfrage. Stattgegeben.</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="152"/>
+        <location filename="tcpserver.cpp" line="120"/>
         <source>Received via eibd interface: simpleWrite request</source>
         <translation>Via eibd Schnittstelle empfangen: Einfache Schreib-Anfrage</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="152"/>
+        <location filename="tcpserver.cpp" line="120"/>
         <source>. Forwarded.</source>
         <translation>. Weitergeleitet.</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="159"/>
+        <location filename="tcpserver.cpp" line="128"/>
         <source>Received via eibd interface: message size</source>
         <translation>Über eibd Schnittstelle empfangen: Nachrichten Größe</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="168"/>
+        <location filename="tcpserver.cpp" line="137"/>
         <source>Reveived EXIT programm message via eibd interface. Shutting down.</source>
         <translation>EXIT Programm-Nachricht via eibd Schnittstelle empfangen. Programm wird beendet.</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="173"/>
+        <location filename="tcpserver.cpp" line="142"/>
         <source>Received via eibd interface: Unknown request:</source>
         <translation>Via eibd schnittstelle empfangen: Unbekannte Anfrage:</translation>
     </message>
     <message>
+        <location filename="tcpserver.cpp" line="156"/>
         <source>Disconnected from eibd client</source>
-        <translation type="vanished">Vom eibd Client getrennt</translation>
+        <translation>Vom eibd Client getrennt</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="205"/>
+        <location filename="tcpserver.cpp" line="180"/>
         <source>No eibd client connected to hsd server. Discarding incomming EIB/KNX update.</source>
         <translation>Kein eibd Client verbunden. Eingehende EIB/KNX Aktualisierung wurde verworfen.</translation>
     </message>
     <message>
-        <location filename="tcpserver.cpp" line="209"/>
+        <location filename="tcpserver.cpp" line="184"/>
         <source>Sending via eibd interface</source>
         <translation>Via eibd Schnittstelle gesendet</translation>
     </message>
@@ -349,7 +328,7 @@
         <translation>Beendet laufende hsd Instanzen.</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="172"/>
+        <location filename="main.cpp" line="167"/>
         <source>Uncought Exception</source>
         <translation>Unbekannter Ausnahmefehler</translation>
     </message>
@@ -390,23 +369,23 @@
         <translation>Name der GA ist unbekannt</translation>
     </message>
     <message>
-        <location filename="model.cpp" line="35"/>
-        <location filename="model.cpp" line="36"/>
+        <location filename="model.cpp" line="37"/>
+        <location filename="model.cpp" line="38"/>
         <source>Settings file used:</source>
         <translation>Genutzte Konfigurationsdatei:</translation>
     </message>
     <message>
-        <location filename="model.cpp" line="64"/>
+        <location filename="model.cpp" line="66"/>
         <source>Requested settings key not found in config file. Using default value.</source>
         <translation>Angefragte Konfigurationseinstellung wurde in der Konfigurationsdatei nicht gefunden. Es wird ein Standardwert verwendet.</translation>
     </message>
     <message>
-        <location filename="model.cpp" line="65"/>
+        <location filename="model.cpp" line="67"/>
         <source>Key was:</source>
         <translation>Schlüssel war:</translation>
     </message>
     <message>
-        <location filename="model.cpp" line="66"/>
+        <location filename="model.cpp" line="68"/>
         <source>Default value is:</source>
         <translation>Standardwert ist:</translation>
     </message>

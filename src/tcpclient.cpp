@@ -23,7 +23,6 @@ CTcpClient::CTcpClient(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
   , m_pWebRequestTcpSocket( NULL )
-  , m_bReceviedXML( false )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     //QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
@@ -46,7 +45,7 @@ CTcpClient::~CTcpClient()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QVariant &p_grValue)
+void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QString &p_sValue)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
@@ -74,7 +73,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
                         + m_sSeperatorChar
                         + QString::number( nVal )
                         + m_sSeperatorChar
-                        + QString::number( p_grValue.toFloat() )
+                        + p_sValue
                         + m_sMsgEndChar;
 
     QByteArray grArray;
@@ -123,10 +122,7 @@ void CTcpClient::slot_startRead()
 
     sGA = grGA.toKNXString();
 
-    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
-                 << sGA
-                 << QObject::tr("Value:").toStdString().c_str()
-                 << sValue;
+    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str() << sGA << QObject::tr("Value:").toStdString().c_str() << sValue;
 
     if ( grGA.isValid() == true )
     {
@@ -138,8 +134,7 @@ void CTcpClient::slot_startRead()
         if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
         {
             m_grInvlGAList.push_back( grGA.toKNXString() );
-
-            QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
+            QLOG_ERROR() << QObject::tr( "Incomming GA is not valid. Message is not processed any further. GA was" ).toStdString().c_str() << sGA;
         }
     }
 }
@@ -182,11 +177,11 @@ void CTcpClient::slot_webRequestClosed()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const QVariant &p_grVal )
+void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const QString &p_sVal )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    send( "1", p_sEibAddr, p_grVal.toString() );
+    send( "1", p_sEibAddr, p_sVal );
 }
 
 //////////////////////////////////////////////////////////////////////////////////

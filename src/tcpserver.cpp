@@ -75,8 +75,6 @@ void CTcpServer::solt_newConnection()
     QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpSocket = m_pTcpServer->nextPendingConnection();
 
-    QLOG_DEBUG() << tr( "Incomming connection via eibd interface." ).toStdString().c_str();
-
     connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
     connect( m_pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
 }
@@ -91,33 +89,71 @@ void CTcpServer::slot_startRead()
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
 
-    // first byte of transmission is size of message
-    if ( ( m_grData.size() == 0 ) && ( grDatagram.size() > 0 ) )
+    QLOG_DEBUG() << "Received via eibd Interface:" << CEibdMsg::printASCII( grDatagram );
+
+    if ( ( m_nSizeOfNextMsg > 0 ) && ( grDatagram.size() <= m_nSizeOfNextMsg ) )
     {
-        QString sSize    = QString::number( grDatagram.at( 1 ) );
-        m_nSizeOfNextMsg = static_cast< int >( sSize.toDouble() );
+        QLOG_DEBUG() << "Shortening message to previous submitted length. Loosing:" << CEibdMsg::printASCII( grDatagram.mid( m_nSizeOfNextMsg, grDatagram.size() - m_nSizeOfNextMsg ) );
+        grDatagram = grDatagram.mid( 0, m_nSizeOfNextMsg );
     }
 
-    // put all parts of message together
-    if ( grDatagram.size() > 0 )
-    {
-        m_grData.append( grDatagram );
+    CEibdMsg grMsg( grDatagram );
 
-        if ( m_grData.size() >= m_nSizeOfNextMsg + 1 )
+    switch ( grMsg.getType() )
+    {
+    case CEibdMsg::enuMsgType_connect:
+    {
+        QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.");
+        m_pTcpSocket->write( grMsg.getResponse() );
+    }
+        break;
+
+    case CEibdMsg::enuMsgType_openGroupSocket:
+    {
+        QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.");
+        m_pTcpSocket->write( grMsg.getResponse() );
+    }
+        break;
+
+    case CEibdMsg::enuMsgType_simpleWrite:
+    {
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request") << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
+        emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue().toString() );
+        /// @todo Process values others than int.
+    }
+        break;
+
+    case CEibdMsg::enuMsgType_msgSize:
+    {
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: message size") << grMsg.getMsgDataSize();
+        m_nSizeOfNextMsg = grMsg.getMsgDataSize();
+        break;
+    }
+
+    default:
+    {
+        if ( QString( grDatagram ) == CModel::g_sExitMessage )
         {
-            processMsg();
+            QLOG_INFO() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." );
+            QCoreApplication::exit();
+        }
+        else
+        {
+            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram ) << "=" << QString( grDatagram );
         }
     }
-}
+    }
 
-//////////////////////////////////////////////////////////////
-//
-//////////////////////////////////////////////////////////////
+    if ( grMsg.getType() != CEibdMsg::enuMsgType_msgSize )
+    {
+        m_nSizeOfNextMsg = -1;
+    }
+}
 
 void CTcpServer::slot_disconnected()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    QLOG_INFO() << QObject::tr("Disconnected from eibd client").toStdString().c_str();
+    QLOG_INFO() << QObject::tr("Disconnected from eibd client");
 }
 
 //////////////////////////////////////////////////////////////
@@ -141,81 +177,12 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 
     if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
     {
-        QLOG_DEBUG() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." ).toStdString().c_str();
+        QLOG_DEBUG() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." );
         return;
     }
 
-    QLOG_DEBUG() << QObject::tr("Sending via eibd interface").toStdString().c_str() << CEibdMsg::printASCII( grMsg );
+    QLOG_DEBUG() << QObject::tr("Sending via eibd interface") << CEibdMsg::printASCII( grMsg );
     m_pTcpSocket->write( grMsg );
-}
-
-//////////////////////////////////////////////////////////////
-//
-//////////////////////////////////////////////////////////////
-
-void CTcpServer::processMsg()
-{
-    QLOG_DEBUG() << tr( "Received via eibd Interface:" ).toStdString().c_str() << CEibdMsg::printASCII( m_grData );
-
-    if ( ( m_nSizeOfNextMsg > 0 ) && ( m_grData.size() <= m_nSizeOfNextMsg ) )
-    {
-        QLOG_DEBUG() << tr( "Shortening message to previous submitted length. Loosing:" ).toStdString().c_str() << CEibdMsg::printASCII( m_grData.mid( m_nSizeOfNextMsg, m_grData.size() - m_nSizeOfNextMsg ) );
-        m_grData = m_grData.mid( 0, m_nSizeOfNextMsg );
-    }
-
-    CEibdMsg grMsg( m_grData );
-
-    switch ( grMsg.getType() )
-    {
-    case CEibdMsg::enuMsgType_connect:
-    {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.").toStdString().c_str();
-        m_pTcpSocket->write( grMsg.getResponse() );
-        break;
-    }
-
-    case CEibdMsg::enuMsgType_openGroupSocket:
-    {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.").toStdString().c_str();
-        m_pTcpSocket->write( grMsg.getResponse() );
-        break;
-    }
-
-    case CEibdMsg::enuMsgType_simpleWrite:
-    {
-        QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request").toStdString().c_str() << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
-        emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue() );
-        break;
-    }
-
-    case CEibdMsg::enuMsgType_msgSize:
-    {
-        QLOG_DEBUG() << QObject::tr("Received via eibd interface: message size").toStdString().c_str() << grMsg.getMsgDataSize();
-        m_nSizeOfNextMsg = grMsg.getMsgDataSize();
-        break;
-    }
-
-    default:
-    {
-        if ( QString( m_grData ) == CModel::g_sExitMessage )
-        {
-            QLOG_INFO() << QObject::tr( "Received EXIT programm message via eibd interface. Shutting down." ).toStdString().c_str();
-            QCoreApplication::exit();
-        }
-        else
-        {
-            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:").toStdString().c_str() << CEibdMsg::printASCII( m_grData ) << "=" << QString( m_grData );
-        }
-    }
-    } // switch
-
-    if ( grMsg.getType() != CEibdMsg::enuMsgType_msgSize )
-    {
-        m_nSizeOfNextMsg = -1;
-    }
-
-    // drop msg after successful processing
-    m_grData.clear();
 }
 
 //////////////////////////////////////////////////////////////

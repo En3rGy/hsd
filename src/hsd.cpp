@@ -45,9 +45,9 @@ CHsd::CHsd(QObject *parent) :
     QLOG_INFO() << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
 
     connect ( m_pTcpServer,
-              SIGNAL(signal_setEibAdress(QString,QVariant)),
+              SIGNAL(signal_setEibAdress(QString,QString)),
               m_pTcpClient,
-              SLOT( slot_setEibAdress(QString,QVariant)));
+              SLOT( slot_setEibAdress(QString,QString)));
 
     connect( m_pTcpClient,
              SIGNAL( signal_receivedMessage(QString,QString)),

@@ -36,13 +36,6 @@ CModel::CModel()
     QLOG_INFO() << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
 }
 
-CModel::CModel(const CModel &p_grModel)
-{
-    QLOG_TRACE() << Q_FUNC_INFO;
-
-    m_pSettings = p_grModel.m_pSettings;
-}
-
 CModel *CModel::getInstance()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
