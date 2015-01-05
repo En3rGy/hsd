@@ -118,7 +118,7 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_simpleWrite:
     {
         QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request") << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
-        emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue().toString() );
+        emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue() );
         /// @todo Process values others than int.
     }
         break;

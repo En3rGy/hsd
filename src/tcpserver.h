@@ -34,7 +34,7 @@ signals:
       * @param p_sEibAddr KNX/EIB address to set, e.g. 3/6/39
       * @param p_nVal Value to set.
       */
-    void signal_setEibAdress( const QString & p_sEibAddr, const QString & p_sVal );
+    void signal_setEibAdress( const QString & p_sEibAddr, const QVariant & p_grVal );
 
 public slots:
     void solt_newConnection( void );
