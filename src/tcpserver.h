@@ -10,6 +10,9 @@ class QSettings;
 
 /** @class CTcpServer
   * @brief Server to provide the eibd TCP/IP interface.
+  *
+  * The connection must remain open in order to be able to forward data to the client.
+  *
   * @author T. Paul
   * @date 2013
   */
@@ -48,6 +51,8 @@ public slots:
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:
+    void processMsg( void );
+
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     uint         m_nPort;

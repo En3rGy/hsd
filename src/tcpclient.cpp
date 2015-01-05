@@ -23,6 +23,7 @@ CTcpClient::CTcpClient(QObject *parent) :
     QObject(parent)
   , m_pTcpSocket( NULL )
   , m_pWebRequestTcpSocket( NULL )
+  , m_bReceviedXML( false )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     //QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
