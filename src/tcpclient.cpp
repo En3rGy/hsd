@@ -118,6 +118,27 @@ void CTcpClient::slot_startRead()
 
     splitString( sString, sType, sIntGA, sValue );
 
+
+//    Status    Beschreibung          Daten
+//    Zahl
+
+//    1        Wert setzen absolut    Float oder Text
+//    2        Wert setzen relativ    Float
+//    3        Step+                  leer
+//    4        Step-                  leer
+//    5        Liste+                 leer
+//    6        Liste-                 leer
+
+    if ( sType == "1" )
+    {
+
+    }
+    else if ( sType == "99" ) // HS ping --> ignore
+    {
+        QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
+        return;
+    }
+
     CGroupAddress grGA;
     grGA.setHS( sIntGA.toInt() );
 
