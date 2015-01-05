@@ -154,9 +154,10 @@ void CGroupAddress::setHS(const int & p_nHSAddr)
     QLOG_TRACE() << Q_FUNC_INFO;
     // int nConvert = nX * 2048 + nY * 256 + nZ;
 
-    m_unMainAddr = p_nHSAddr / 2048; /// @bug conversion hs adress vice versa does not match
-    m_unMiddAddr = ( p_nHSAddr - ( m_unMainAddr * 2048 ) ) / 256;
-    m_unLowAddr  = ( p_nHSAddr - ( m_unMainAddr * 2048 ) - ( m_unMiddAddr * 256 ) );
+    //m_unMainAddr = p_nHSAddr / 2048; /// @bug conversion hs adress vice versa does not match
+    m_unMiddAddr = ( p_nHSAddr - ( ( p_nHSAddr / 2048 ) * 2048 ) ) / 256; // cause of int = mod
+    m_unLowAddr  = ( p_nHSAddr - ( ( p_nHSAddr / 2048 ) * 2048 ) - ( m_unMiddAddr * 256 ) ); // cause of int = mod
+    m_unMainAddr = ( p_nHSAddr - ( m_unMiddAddr * 256 ) - m_unLowAddr ) / 2048;
 }
 
 void CGroupAddress::setAddress(const QString &p_sAddress)

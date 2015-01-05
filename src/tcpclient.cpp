@@ -124,6 +124,7 @@ void CTcpClient::slot_startRead()
     sGA = grGA.toKNXString();
 
     QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
+                 << grDatagram
                  << sGA
                  << QObject::tr("Value:").toStdString().c_str()
                  << sValue;
