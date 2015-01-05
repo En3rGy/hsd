@@ -137,13 +137,18 @@ int main(int argc, char *argv[])
             }
         }
 
-        CHsd grHsd;
+        if ( grArgsList.contains( "-E" ) == true )
+        {
+            bValidArg = true;
+        }
 
         if ( bValidArg == false )
         {
             printHelpPage();
             return EXIT_SUCCESS;
         }
+
+        CHsd grHsd;
 
         if ( grArgsList.contains( "-E" ) == true )
         {
