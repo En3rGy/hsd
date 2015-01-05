@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.4.10" );
+        a.setApplicationVersion( "0.4.8" );
 
         QString sLocale = QLocale::system().name();
 
@@ -142,17 +142,17 @@ int main(int argc, char *argv[])
             bValidArg = true;
         }
 
-        if ( bValidArg == false )
+
+         if ( bValidArg == false )
         {
             printHelpPage();
             return EXIT_SUCCESS;
         }
 
-        CHsd grHsd;
+       CHsd grHsd;
 
         if ( grArgsList.contains( "-E" ) == true )
         {
-            bValidArg = true;
             grHsd.stopService();
             return EXIT_SUCCESS;
         }
