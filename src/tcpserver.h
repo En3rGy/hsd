@@ -10,6 +10,9 @@ class QSettings;
 
 /** @class CTcpServer
   * @brief Server to provide the eibd TCP/IP interface.
+  *
+  * The connection must remain open in order to be able to forward data to the client.
+  *
   * @author T. Paul
   * @date 2013
   */
@@ -34,7 +37,7 @@ signals:
       * @param p_sEibAddr KNX/EIB address to set, e.g. 3/6/39
       * @param p_nVal Value to set.
       */
-    void signal_setEibAdress( const QString & p_sEibAddr, const QString & p_sVal );
+    void signal_setEibAdress( const QString & p_sEibAddr, const QVariant & p_grVal );
 
 public slots:
     void solt_newConnection( void );
@@ -48,9 +51,13 @@ public slots:
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:
+    void processMsg( void );
+
     QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     uint         m_nPort;
+
+    QByteArray   m_grData;
 
     int          m_nSizeOfNextMsg;
 };

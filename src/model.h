@@ -38,6 +38,7 @@ public:
 
 protected:
     CModel( void );
+	CModel( const CModel & p_grModel );
 
     static CModel    * m_pInstance;
     QSettings * m_pSettings;
