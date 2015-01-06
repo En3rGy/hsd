@@ -71,11 +71,11 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
 
     int     nVal     = grGA.toHSRepresentation();
     QString sMessage = p_sAction
-                        + m_sSeperatorChar
-                        + QString::number( nVal )
-                        + m_sSeperatorChar
-                        + QString::number( p_grValue.toFloat() )
-                        + m_sMsgEndChar;
+            + m_sSeperatorChar
+            + QString::number( nVal )
+            + m_sSeperatorChar
+            + QString::number( p_grValue.toFloat() )
+            + m_sMsgEndChar;
 
     QByteArray grArray;
     grArray.append( sMessage );
@@ -109,61 +109,65 @@ void CTcpClient::slot_startRead()
 
     grDatagram = m_pTcpSocket->readAll();
 
-    QString sString( grDatagram.data() );
+    QString     sDataString( grDatagram.data() );
+    QStringList grMsgList = sDataString.split( "\0" );
 
-    QString sType;
-    QString sIntGA;
-    QString sGA;
-    QString sValue;
-
-    splitString( sString, sType, sIntGA, sValue );
-
-
-//    Status    Beschreibung          Daten
-//    Zahl
-
-//    1        Wert setzen absolut    Float oder Text
-//    2        Wert setzen relativ    Float
-//    3        Step+                  leer
-//    4        Step-                  leer
-//    5        Liste+                 leer
-//    6        Liste-                 leer
-
-    if ( sType == "1" )
+    foreach ( QString sString, grMsgList)
     {
 
-    }
-    else if ( sType == "99" ) // HS ping --> ignore
-    {
-        QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
-        return;
-    }
+        QString sType;
+        QString sIntGA;
+        QString sGA;
+        QString sValue;
 
-    CGroupAddress grGA;
-    grGA.setHS( sIntGA.toInt() );
+        splitString( sString, sType, sIntGA, sValue );
 
-    sGA = grGA.toKNXString();
+        //    Status    Beschreibung          Daten
+        //    Zahl
 
-    QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
-                 << grDatagram
-                 << sGA
-                 << QObject::tr("Value:").toStdString().c_str()
-                 << sValue;
+        //    1        Wert setzen absolut    Float oder Text
+        //    2        Wert setzen relativ    Float
+        //    3        Step+                  leer
+        //    4        Step-                  leer
+        //    5        Liste+                 leer
+        //    6        Liste-                 leer
 
-    if ( grGA.isValid() == true )
-    {
-        emit signal_receivedMessage( sGA, sValue );
-    }
-    else
-    {
-        // Report invalid GA just once
-        if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
+        if ( sType == "1" )
         {
-            m_grInvlGAList.push_back( grGA.toKNXString() );
 
-            QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
         }
-    }
+        else if ( sType == "99" ) // HS ping --> ignore
+        {
+            QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
+            return;
+        }
+
+        CGroupAddress grGA;
+        grGA.setHS( sIntGA.toInt() );
+
+        sGA = grGA.toKNXString();
+
+        QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
+                     << grDatagram
+                     << sGA
+                     << QObject::tr("Value:").toStdString().c_str()
+                     << sValue;
+
+        if ( grGA.isValid() == true )
+        {
+            emit signal_receivedMessage( sGA, sValue );
+        }
+        else
+        {
+            // Report invalid GA just once
+            if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
+            {
+                m_grInvlGAList.push_back( grGA.toKNXString() );
+
+                QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
+            }
+        }
+    } // for
 }
 
 //////////////////////////////////////////////////////////////////////////////////

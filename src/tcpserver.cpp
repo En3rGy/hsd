@@ -44,6 +44,7 @@ CTcpServer::~CTcpServer()
 void CTcpServer::listen( const uint &p_nPort )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
+
     m_nPort = p_nPort;
 
     if ( m_pTcpServer->isListening() == true )
@@ -51,7 +52,16 @@ void CTcpServer::listen( const uint &p_nPort )
         m_pTcpServer->close();
     }
 
-    m_pTcpServer->listen( QHostAddress::Any, m_nPort );
+    bool bSuccess = m_pTcpServer->listen( QHostAddress::Any, m_nPort );
+
+    if ( bSuccess == true )
+    {
+        QLOG_DEBUG() << tr( "Start listening on eibd interface." ).toStdString().c_str();
+    }
+    else
+    {
+        QLOG_ERROR() << tr( "An Error occured while starting to listen in eibd interface:" ).toStdString().c_str() << m_pTcpServer->errorString();
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -74,6 +84,12 @@ void CTcpServer::solt_newConnection()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpSocket = m_pTcpServer->nextPendingConnection();
+
+    QLOG_DEBUG() << tr( "New connection via eibd interface:" ).toStdString().c_str()
+                 << m_pTcpSocket->peerName()
+                 << m_pTcpSocket->peerAddress()
+                 << ":"
+                 << m_pTcpSocket->peerPort();
 
     connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
     connect( m_pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
