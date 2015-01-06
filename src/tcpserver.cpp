@@ -105,7 +105,7 @@ void CTcpServer::slot_startRead()
     QByteArray grDatagram;
     grDatagram = m_pTcpSocket->readAll();
 
-    QLOG_DEBUG() << "Received via eibd Interface:" << CEibdMsg::printASCII( grDatagram );
+    QLOG_DEBUG() << tr( "Received via eibd Interface:" ).toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
 
     if ( ( m_nSizeOfNextMsg > 0 ) && ( grDatagram.size() <= m_nSizeOfNextMsg ) )
     {
@@ -119,21 +119,21 @@ void CTcpServer::slot_startRead()
     {
     case CEibdMsg::enuMsgType_connect:
     {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.");
+        QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.").toStdString().c_str();
         m_pTcpSocket->write( grMsg.getResponse() );
     }
         break;
 
     case CEibdMsg::enuMsgType_openGroupSocket:
     {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.");
+        QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.").toStdString().c_str();
         m_pTcpSocket->write( grMsg.getResponse() );
     }
         break;
 
     case CEibdMsg::enuMsgType_simpleWrite:
     {
-        QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request") << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request").toStdString().c_str() << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
         emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue() );
         /// @todo Process values others than int.
     }
@@ -141,7 +141,7 @@ void CTcpServer::slot_startRead()
 
     case CEibdMsg::enuMsgType_msgSize:
     {
-        QLOG_DEBUG() << QObject::tr("Received via eibd interface: message size") << grMsg.getMsgDataSize();
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: message size").toStdString().c_str() << grMsg.getMsgDataSize();
         m_nSizeOfNextMsg = grMsg.getMsgDataSize();
         break;
     }
@@ -150,7 +150,7 @@ void CTcpServer::slot_startRead()
     {
         if ( QString( grDatagram ) == CModel::g_sExitMessage )
         {
-            QLOG_INFO() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." );
+            QLOG_INFO() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." ).toStdString().c_str();
             QCoreApplication::exit();
         }
         else

@@ -92,5 +92,5 @@ void CHsd::stopService()
     QString sData     = CModel::g_sExitMessage;
     QByteArray grData;
     grData.append( sData );
-    m_pTcpClient->sendData( sDestAddr, nPort, grData );
+    m_pTcpClient->closeConnection( sDestAddr, nPort, grData );
 }

@@ -230,6 +230,10 @@ void CTcpClient::slot_disconnected()
     initConnection();
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
 void CTcpClient::slot_reconnect()
 {
     QLOG_INFO() << tr( "Trying to reconnect to HS." ).toStdString().c_str();
@@ -419,4 +423,18 @@ void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const 
     {
         QLOG_ERROR() << grSocket.errorString() << tr( "while trying to connect to" ).toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
     }
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+void CTcpClient::closeConnection(const QString &p_sDestAddr, const int &p_nPort, const QByteArray &p_grData)
+{
+    QLOG_TRACE() << Q_FUNC_INFO;
+
+    // avoid reconnecting
+    m_pTcpSocket->disconnect( SLOT( slot_disconnected()) );
+
+    sendData( p_sDestAddr, p_nPort, p_grData );
 }

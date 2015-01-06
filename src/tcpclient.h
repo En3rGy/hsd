@@ -51,6 +51,8 @@ public:
      */
     static void sendData( const QString & p_sDestAddr, const int & p_nPort, const QByteArray & p_grData );
 
+    void closeConnection( const QString & p_sDestAddr, const int & p_nPort, const QByteArray & p_grData );
+
 signals:
     /**
      * @brief Signal emitted by incomming message
