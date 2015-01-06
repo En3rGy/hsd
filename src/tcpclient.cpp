@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include "groupaddress.h"
+#include <QStringList>
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
