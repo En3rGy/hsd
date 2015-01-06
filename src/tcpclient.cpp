@@ -110,11 +110,17 @@ void CTcpClient::slot_startRead()
 
     grDatagram = m_pTcpSocket->readAll();
 
-    QString     sDataString( grDatagram.data() );
-    QStringList grMsgList = sDataString.split( "\0" );
+    QList< QByteArray > grArrayList = grDatagram.split( '\0' );
 
-    foreach ( QString sString, grMsgList)
+    // remove las list entry inidaciting list end from hs
+    if ( grArrayList.last() == QByteArray( '\000' ) )
     {
+        grArrayList.removeLast();
+    }
+
+    foreach ( QByteArray grMsgArray, grArrayList)
+    {
+        QString     sString( grMsgArray.data() );
 
         QString sType;
         QString sIntGA;
@@ -133,41 +139,38 @@ void CTcpClient::slot_startRead()
         //    5        Liste+                 leer
         //    6        Liste-                 leer
 
-        if ( sType == "1" )
-        {
-
-        }
-        else if ( sType == "99" ) // HS ping --> ignore
+        if ( sType == "99" ) // HS ping --> ignore
         {
             QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
-            return;
-        }
-
-        CGroupAddress grGA;
-        grGA.setHS( sIntGA.toInt() );
-
-        sGA = grGA.toKNXString();
-
-        QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
-                     << grDatagram
-                     << sGA
-                     << QObject::tr("Value:").toStdString().c_str()
-                     << sValue;
-
-        if ( grGA.isValid() == true )
-        {
-            emit signal_receivedMessage( sGA, sValue );
         }
         else
         {
-            // Report invalid GA just once
-            if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
-            {
-                m_grInvlGAList.push_back( grGA.toKNXString() );
+            CGroupAddress grGA;
+            grGA.setHS( sIntGA.toInt() );
 
-                QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
+            sGA = grGA.toKNXString();
+
+            QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
+                         << sGA
+                         << QObject::tr("Value:").toStdString().c_str()
+                         << sValue
+                         << grMsgArray;
+
+            if ( grGA.isValid() == true )
+            {
+                emit signal_receivedMessage( sGA, sValue );
             }
-        }
+            else
+            {
+                // Report invalid GA just once
+                if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
+                {
+                    m_grInvlGAList.push_back( grGA.toKNXString() );
+
+                    QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
+                }
+            }
+        } //else
     } // for
 }
 
