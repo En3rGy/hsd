@@ -121,23 +121,23 @@ void CTcpServer::slot_startRead()
     {
         QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.").toStdString().c_str();
         m_pTcpSocket->write( grMsg.getResponse() );
-    }
         break;
+    }
 
     case CEibdMsg::enuMsgType_openGroupSocket:
     {
         QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.").toStdString().c_str();
         m_pTcpSocket->write( grMsg.getResponse() );
-    }
         break;
+    }
 
     case CEibdMsg::enuMsgType_simpleWrite:
     {
         QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request").toStdString().c_str() << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
         emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue() );
         /// @todo Process values others than int.
-    }
         break;
+    }
 
     case CEibdMsg::enuMsgType_msgSize:
     {
@@ -190,6 +190,7 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 
     if ( grMsg.isEmpty() == true )
     {
+        QLOG_ERROR() << QObject::tr( "No payload data could be obtained. Skippig message processing." ).toStdString().c_str();
         return;
     }
 

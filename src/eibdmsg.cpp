@@ -5,6 +5,7 @@
 #include <QStringList>
 #include "groupaddress.h"
 #include "QsLog.h"
+#include <qmath.h>
 
 CEibdMsg::CEibdMsg()
 {
@@ -62,10 +63,10 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         break;
 
     default:
-        if ( grMsg.size() >= 6 )  // set request, e.g. 00 27 09 0f 00 80
+        if ( grMsg.size() >= 6 )  // set request, e.g. (0) 00 (1) 27 (2) 09 (3) 0f (4) 00 (5) 80 (6) 08 (7) 73
         {
 
-            // Determine message type via byte 0 + 1
+            // Determine message type via byte 0 + 1, e.g. 00 27
 
             if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
                  ( grMsg.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
@@ -73,7 +74,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                 m_eMsgType = enuMsgType_simpleWrite;
 
 
-                // determine eib adress via byte 2 + 3
+                // determine eib adress via byte 2 + 3, e.g. 09 0f for 0/9/15
 
                 QByteArray grEibAdr;
                 grEibAdr.append( grMsg.data()[2]);
@@ -83,38 +84,51 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                 grGA.setHex( grEibAdr );
                 m_sDstAddr = grGA.toKNXString();
 
-                // skipping byte 4
-
-                // determine value via byte 5
-
-                uchar szData = grMsg.at( 5 );
-                szData = szData & 0x7f; // 0x7f = 0111 1111
-
-                /** @todo Send data > 6 bit
-                 *  If you need to send data with a data type bigger than 6 bit:
-                 *  byte data[] = new byte[2 + <size of datatype in bytes>];
-                 *  data[0] = 0;
-                 *  data[1] =0x80;
-                 *  data[2]=<first byte of datatype>;
-                 *  data[3]=<second byte of datatype>;
-                 */
+                // Process data
 
                 QByteArray grData;
-                grData.append( grMsg.mid( 5, grMsg.size() - 5 ) );
+                grData.append( grMsg.mid( 5, grMsg.size() - 5 ) ); // skipping byte 4 which is 00
 
-                if ( grData.size() == 1 )
+                if ( grData.size() == 1 ) // e.g. EIS1 = 1 Bit
                 {
                     uchar szData = grMsg.at( 5 );
                     szData = szData & 0x7f; // 0x7f = 0111 1111
-                    m_grValue.setValue( ( int ) szData );
+                    m_grValue.setValue( static_cast< int >( szData ) );
                 }
-                else if ( grData.size() > 1 )
+                else if ( grData.size() == 3 ) // DTP EIS5 = 2 Byte float, e.g. 08 73
                 {
-                    grData.remove( 0, 2 );
-                    m_grValue.setValue( grData );
+                    grData.remove( 0, 1 );
+
+                    // DPT 9.001 DPT_Value_Temp is a 2-octet float value.
+                    // The format is MEEE EMMM   MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
+                    // If I calculated correctly, $193D is 25,36 °C.
+
+                    uchar szM[2];
+                    uchar szE;
+
+                    szM[ 0 ] = grData.at( 0 ) & 0x87; // 0x87 = 1000 0111
+                    szM[ 1 ] = grData.at( 1 ) & 0xFF; // 0xFF = 1111 1111
+
+                    szE      = grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
+
+                    QByteArray grM;
+                    grM.append( szM[ 0 ] );
+                    grM.append( szM[ 1 ] );
+
+                    int nM = grM.toInt();
+                    int nE = static_cast< int > ( szE );
+
+                    float fValue = 0.01 * nM * qPow( 2, nE );
+
+                    m_grValue.setValue( fValue );
                 }
-            }
+                else
+                {
+                    QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << grData;
+                }
+
             break;
+            }
 
             QLOG_INFO() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
         }

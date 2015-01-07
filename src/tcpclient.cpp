@@ -47,7 +47,7 @@ CTcpClient::~CTcpClient()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QVariant &p_grValue)
+void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QVariant & p_grValue)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
@@ -70,10 +70,10 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
     CGroupAddress grGA;
     grGA.setKNXString( p_sGA );
 
-    int     nVal     = grGA.toHSRepresentation();
+    int     nHsGA     = grGA.toHSRepresentation();
     QString sMessage = p_sAction
             + m_sSeperatorChar
-            + QString::number( nVal )
+            + QString::number( nHsGA )
             + m_sSeperatorChar
             + QString::number( p_grValue.toFloat() )
             + m_sMsgEndChar;
@@ -215,7 +215,7 @@ void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const QVariant &p_
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    send( "1", p_sEibAddr, p_grVal.toString() );
+    send( "1", p_sEibAddr, p_grVal );
 }
 
 //////////////////////////////////////////////////////////////////////////////////
