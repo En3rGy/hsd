@@ -64,7 +64,7 @@ signals:
 public slots:
     void slot_startRead( void );
     void slot_webRequestReadFinished( void );
-    void slot_webRequestClosed( void );
+    void slot_gaXmlWebRequestClosed( void );
 
     /** @brief Send a write action to GIRA Home Server
       * @param p_sEibAddr KNX/EIB address to write, e.g. 1/5/30

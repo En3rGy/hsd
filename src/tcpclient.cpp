@@ -131,7 +131,6 @@ void CTcpClient::slot_startRead()
 
         //    Status    Beschreibung          Daten
         //    Zahl
-
         //    1        Wert setzen absolut    Float oder Text
         //    2        Wert setzen relativ    Float
         //    3        Step+                  leer
@@ -142,9 +141,13 @@ void CTcpClient::slot_startRead()
         if ( sType == "99" ) // HS ping --> ignore
         {
             QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
+
+            /// @todo Check is answering ping is possible / necassary
         }
         else
         {
+            /// @todo Respect different HS message types
+
             CGroupAddress grGA;
             grGA.setHS( sIntGA.toInt() );
 
@@ -188,17 +191,13 @@ void CTcpClient::slot_webRequestReadFinished()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::slot_webRequestClosed()
+void CTcpClient::slot_gaXmlWebRequestClosed()
 {
-    QLOG_DEBUG() << tr("Web request closed").toStdString().c_str();
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    QLOG_INFO() << QObject::tr( "Connection to peer closed:" ).toStdString().c_str()
-                << m_pWebRequestTcpSocket->peerAddress().toString()
-                << QObject::tr( ":" ).toStdString().c_str()
-                << m_pWebRequestTcpSocket->peerPort();
-
     m_pWebRequestTcpSocket->close();
+
+    QLOG_DEBUG() << tr("Web request asking HS for existing GAs is closed.").toStdString().c_str();
 
     // Interprete XmlFile
     CKoXml::getInstance()->setXml( m_grWebRequestData );
@@ -293,8 +292,6 @@ bool CTcpClient::initConnection()
     QVariant grHsGwPort = CModel::getInstance()->getValue( CModel::g_sKey_HSGwPort, uint( 7003 ) );
     uint unPort = grHsGwPort.toUInt();
 
-    QLOG_DEBUG() << grHostAddress.toString() << unPort;
-
     m_pTcpSocket->connectToHost( grHostAddress, unPort);
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
@@ -355,7 +352,7 @@ void CTcpClient::getGaXml()
     {
         m_pWebRequestTcpSocket = new QTcpSocket( this );
         connect( m_pWebRequestTcpSocket, SIGNAL( readChannelFinished()), this, SLOT( slot_webRequestReadFinished()) );
-        connect( m_pWebRequestTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_webRequestClosed() ) );
+        connect( m_pWebRequestTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_gaXmlWebRequestClosed() ) );
     }
 
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
@@ -371,7 +368,7 @@ void CTcpClient::getGaXml()
 
         if ( m_pWebRequestTcpSocket->waitForBytesWritten() == true )
         {
-            QLOG_DEBUG() << tr("Wrote to HS").toStdString().c_str();
+            QLOG_DEBUG() << tr("Asked HS for existing GAs by sending: ").toStdString().c_str() << sWebRequest;
 
             m_bReceviedXML = false;
 

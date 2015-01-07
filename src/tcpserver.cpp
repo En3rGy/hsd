@@ -181,6 +181,8 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
     QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
     {
+        /// @todo store messages until connection is established
+        QLOG_ERROR() << tr( "eibd Interface (TCP socket) not yet initialised. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
         return;
     }
 
