@@ -95,7 +95,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                     szData = szData & 0x7f; // 0x7f = 0111 1111
                     m_grValue.setValue( static_cast< int >( szData ) );
                 }
-                else if ( grData.size() == 3 ) // DTP EIS5 = 2 Byte float, e.g. 08 73
+                else if ( grData.size() == 3 ) // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
                 {
                     grData.remove( 0, 1 );
 
@@ -103,23 +103,38 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                     // The format is MEEE EMMM   MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
                     // If I calculated correctly, $193D is 25,36 °C.
 
+                    uchar szTemp;
                     uchar szM[2];
                     uchar szE;
 
-                    szM[ 0 ] = grData.at( 0 ) & 0x87; // 0x87 = 1000 0111
-                    szM[ 1 ] = grData.at( 1 ) & 0xFF; // 0xFF = 1111 1111
+                    // save top bit for sigend int
+                    szTemp = grData.at( 0 ) & 0x80; // 0x80 = 1000 0000
 
-                    szE      = grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
+                    szM[ 0 ] = grData.at( 0 ) & 0x07; // 0x87 = 0000 0111
+                    szM[ 1 ] = grData.at( 1 ); // & 0xFF; // 0xFF = 1111 1111
 
                     QByteArray grM;
                     grM.append( szM[ 0 ] );
                     grM.append( szM[ 1 ] );
 
-                    int nM = grM.toInt();
-                    int nE = static_cast< int > ( szE );
+                    szE    = grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
+                    szE   >>= 3; // shift bits to the right: 0xxx x000 >> 0000 xxxx
+                    int nE = static_cast< int >( szE );
 
+                    // transfer M bit representation to int representation
+                    int nM = 0;
+                    nM |= grM.at( 0 );
+                    nM <<= 8;
+                    nM |= grM.at( 1 );
+
+                    // resepct sign via two’s complement notation: negative, if highest bit is 1
+                    if ( szTemp == 0x80 )
+                    {
+                        nM *= -1;
+                    }
+
+                    // Calculate DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
                     float fValue = 0.01 * nM * qPow( 2, nE );
-
                     m_grValue.setValue( fValue );
                 }
                 else
@@ -330,7 +345,12 @@ QString CEibdMsg::printASCII( const QByteArray & p_grByteArray)
             sBuffer = "0" + sBuffer;
         }
 
-        sResult += sBuffer + " ";
+        sResult += sBuffer;
+
+        if ( i < p_grByteArray.length() - 1 )
+        {
+            sResult += " ";
+        }
     }
 
     return sResult;
