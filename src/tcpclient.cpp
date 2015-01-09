@@ -295,8 +295,6 @@ bool CTcpClient::initConnection()
     m_pTcpSocket->connectToHost( grHostAddress, unPort);
     if( m_pTcpSocket->waitForConnected( 2000 ) )
     {
-        QLOG_INFO() << QObject::tr("Connection with HS established").toStdString().c_str();
-
         QByteArray grArray;
 
         QVariant grHsGwPass = CModel::getInstance()->getValue( CModel::g_sKey_HSGwPassword, QString( "" ) );
@@ -305,7 +303,7 @@ bool CTcpClient::initConnection()
         grArray.append( sPass );
         grArray.append( m_sMsgEndChar );
 
-        QLOG_INFO() << QObject::tr("Sending to HS: Initialization message.").toStdString().c_str();
+        QLOG_DEBUG() << QObject::tr("Sending to HS: Initialization message.").toStdString().c_str();
         int nRet = m_pTcpSocket->write( grArray );
 
         if ( nRet == -1 )
@@ -317,7 +315,7 @@ bool CTcpClient::initConnection()
         }
         else
         {
-            QLOG_DEBUG() << QObject::tr("Send message to HS:").toStdString().c_str() << grArray << QObject::tr("Message size in byte:").toStdString().c_str() << nRet;
+            QLOG_INFO() << QObject::tr("Connection with HS established").toStdString().c_str();
         }
     }
     else
