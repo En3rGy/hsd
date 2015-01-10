@@ -135,7 +135,6 @@ void CTcpServer::slot_startRead()
     {
         QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request").toStdString().c_str() << grMsg.getDestAddress() << grMsg.getValue() << QObject::tr(". Forwarded.");
         emit signal_setEibAdress( grMsg.getDestAddress(), grMsg.getValue() );
-        /// @todo Process values others than int.
         break;
     }
 
@@ -152,6 +151,15 @@ void CTcpServer::slot_startRead()
         {
             QLOG_INFO() << QObject::tr( "Reveived EXIT programm message via eibd interface. Shutting down." ).toStdString().c_str();
             QCoreApplication::exit();
+        }
+        else if ( QString( grDatagram.mid( 0, CModel::g_sLogLevelMessage.length() - 1 ) ) == CModel::g_sLogLevelMessage )
+        {
+            grDatagram.remove( 0, CModel::g_sLogLevelMessage.length() -1  );
+            int nLogLevel = grDatagram.toInt();
+
+            QLOG_INFO() << QObject::tr( "Reveived Set Log Level message via eibd interface. Setting log level to:" ).toStdString().c_str() << nLogLevel;
+            QsLogging::Logger::instance().setLoggingLevel( static_cast< QsLogging::Level >( nLogLevel ) );
+            QLOG_DEBUG() << QObject::tr( "New log level is" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
         }
         else
         {
@@ -181,7 +189,6 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
     QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == NULL )
     {
-        /// @todo store messages until connection is established
         QLOG_ERROR() << tr( "eibd Interface (TCP socket) not yet initialised. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
         return;
     }

@@ -30,7 +30,8 @@ public:
 
     void callHsXML(  ) const;
 
-    void stopService( void );
+    static void stopService( void );
+    static void setRemoteLogLevel( const int & p_nLogLevel );
 
 signals:
     

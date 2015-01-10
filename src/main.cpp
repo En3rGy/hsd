@@ -18,6 +18,8 @@
   */
 
 
+/// @todo move args to model as static string
+///
 void printHelpPage( void )
 {
     qDebug() << QObject::tr( "hsd provides the eibd TCP/IP interface to access the KNX bus via the GIRA Homeserver KO-Gateway." ).toStdString().c_str()
@@ -34,12 +36,13 @@ void printHelpPage( void )
              << "\n" << QObject::tr( "Command line options:" ).toStdString().c_str()
              << "\n\nhsd [option]"
              << "\n"   << "-?\t" << QObject::tr( "This help page").toStdString().c_str()
-             << "\n"   << "-lx\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),").toStdString().c_str()
+             << "\n"   << "-l x\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),").toStdString().c_str()
              << "\n\t" << QObject::tr( "=1 (DebugLevel),").toStdString().c_str()
              << "\n\t" << QObject::tr( "=2 (InfoLevel),").toStdString().c_str()
              << "\n\t" << QObject::tr( "=3 (WarnLevel),").toStdString().c_str()
              << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),").toStdString().c_str()
              << "\n\t" << QObject::tr( "=5 (FatalLevel)" ).toStdString().c_str()
+             << "\n"   << "-rl x\t" << QObject::tr( "Setting the log level remotely for a running hsd service").toStdString().c_str()
              << "\n"   << "-v\t" << QObject::tr( "Printing program version" ).toStdString().c_str()
              << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" ).toStdString().c_str()
              << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\""
@@ -63,11 +66,9 @@ int main(int argc, char *argv[])
 
         int nLogLevel = -1;
         QList< QString > grArgsList;
-        bool bValidArg = true;
 
         if ( argc >= 2 )
         {
-            bValidArg = false;
             for ( int i = 0; i < argc; i++ )
             {
                 grArgsList.push_back( argv[ i ] );
@@ -76,44 +77,13 @@ int main(int argc, char *argv[])
 
         if ( grArgsList.contains( "-?" ) == true )
         {
-            bValidArg = true;
             printHelpPage();
             return EXIT_SUCCESS;
-        }
-        if ( grArgsList.contains( "-l0" ) == true )
-        {
-            bValidArg = true;
-            nLogLevel = 0;
-        }
-        else if ( grArgsList.contains( "-l1" )  == true )
-        {
-            bValidArg = true;
-            nLogLevel = 1;
-        }
-        else if ( grArgsList.contains( "-l2" ) == true )
-        {
-            bValidArg = true;
-            nLogLevel = 2;
-        }
-        else if ( grArgsList.contains( "-l3" ) == true )
-        {
-            bValidArg = true;
-            nLogLevel = 3;
-        }
-        else if ( grArgsList.contains( "-l4" ) == true )
-        {
-            bValidArg = true;
-            nLogLevel = 4;
-        }
-        else if ( grArgsList.contains( "-l5" ) == true)
-        {
-            bValidArg = true;
-            nLogLevel = 5;
         }
 
         if ( grArgsList.contains( "-v") == true )
         {
-            bValidArg = true;
+            grArgsList.removeAt( grArgsList.indexOf( "-v" ) );
             qDebug() << QCoreApplication::applicationName().toStdString().c_str()
                      << QCoreApplication::applicationVersion().toStdString().c_str();
             return EXIT_SUCCESS;
@@ -125,10 +95,7 @@ int main(int argc, char *argv[])
 
             if ( grArgsList.size() > nIndex + 1 )
             {
-                bValidArg = true;
                 QString sAddr( grArgsList.at( nIndex + 1 ) );
-
-                // grHsd.callHsXML();
 
                 CGroupAddress grAddr;
                 grAddr.setAddress( sAddr );
@@ -139,23 +106,59 @@ int main(int argc, char *argv[])
 
         if ( grArgsList.contains( "-E" ) == true )
         {
-            bValidArg = true;
+            CHsd::stopService();
+            return EXIT_SUCCESS;
         }
 
 
-         if ( bValidArg == false )
+        if ( grArgsList.contains( "-l" ) == true )
+        {
+            int nIndex = grArgsList.indexOf( "-l" );
+
+            if ( grArgsList.size() > nIndex + 1 )
+            {
+                bool bOk;
+                int  nArgLevel = grArgsList.at( nIndex + 1 ).toInt( & bOk );
+
+                if ( bOk == true )
+                {
+                    if ( nArgLevel >= 0 && nLogLevel <= 5 )
+                    {
+                        nLogLevel = nArgLevel;
+                        grArgsList.removeAt( nIndex + 1 );
+                        grArgsList.removeAt( nIndex );
+                    }
+                }
+            }
+        }
+
+        if ( grArgsList.contains( "-rl" ) == true )
+        {
+            int nIndex = grArgsList.indexOf( "-rl" );
+
+            if ( grArgsList.size() > nIndex + 1 )
+            {
+                bool bOk;
+                int  nArgLevel = grArgsList.at( nIndex + 1 ).toInt( & bOk );
+
+                if ( bOk == true )
+                {
+                    if ( nArgLevel >= 0 && nLogLevel <= 5 )
+                    {
+                        CHsd::setRemoteLogLevel( nArgLevel );
+                        return EXIT_SUCCESS;
+                    }
+                }
+            }
+        }
+
+        if ( grArgsList.empty() == false )
         {
             printHelpPage();
             return EXIT_SUCCESS;
         }
 
-       CHsd grHsd;
-
-        if ( grArgsList.contains( "-E" ) == true )
-        {
-            grHsd.stopService();
-            return EXIT_SUCCESS;
-        }
+        CHsd grHsd;
 
         if ( nLogLevel >= 0 )
         {

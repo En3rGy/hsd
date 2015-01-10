@@ -92,5 +92,21 @@ void CHsd::stopService()
     QString sData     = CModel::g_sExitMessage;
     QByteArray grData;
     grData.append( sData );
-    m_pTcpClient->closeConnection( sDestAddr, nPort, grData );
+
+    CTcpClient::sendData( sDestAddr, nPort, grData );
+}
+
+void CHsd::setRemoteLogLevel(const int &p_nLogLevel)
+{
+    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Sending remote log level" ).toStdString().c_str() << p_nLogLevel;
+    QLOG_INFO() << tr( "Sending remote log level" ).toStdString().c_str() << p_nLogLevel;
+
+    QString sDestAddr = "127.0.0.1";
+    int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
+    QString sData     = CModel::g_sLogLevelMessage;
+    QByteArray grData;
+    grData.append( sData );
+    grData.append( p_nLogLevel );
+
+    CTcpClient::sendData( sDestAddr, nPort, grData );
 }

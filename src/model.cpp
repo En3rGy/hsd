@@ -11,6 +11,7 @@ const QString CModel::g_sKey_LogLevel     = "LogLevel";
 const QString CModel::g_sKey_HSGwPassword = "HSGwPass";
 const QString CModel::g_sSettingsPath     = "../etc/hsd.ini";
 const QString CModel::g_sExitMessage      = "Shutdown hsd please";
+const QString CModel::g_sLogLevelMessage  = "Set hsd log level please";
 const QString CModel::g_sKey_PauseTilHSReconnect = "TimeoutForReconnectHS_ms";
 
 const uchar   CModel::g_uzEibGroupPacket [2]  = { 0x00, 0x27 };

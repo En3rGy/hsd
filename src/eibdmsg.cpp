@@ -260,11 +260,11 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         return QByteArray();
     }
 
-    /// @todo Foward float values
+    /// @todo Encode float values
 
     if ( isNatural( fVal ) != true )
     {
-        QLOG_WARN() << QObject::tr("Forwarding float values is not supportet, converting to int. Value was").toStdString().c_str() << p_grData.toString();
+        QLOG_WARN() << QObject::tr("Forwarding float values vie eibd interface is not supportet, converting to int. Value was").toStdString().c_str() << p_grData.toString();
     }
 
     int nVal = (int) fVal;
