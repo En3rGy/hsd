@@ -139,7 +139,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                 }
                 else
                 {
-                    QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << grData;
+                    QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
                 }
 
             break;
