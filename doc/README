@@ -1,3 +1,7 @@
+v0.4.9
+=========
+- Fixed bug in address conversion from HS to eibd
+
 v0.4.8
 =========
 - Fixed Bug in KNX address conversion
