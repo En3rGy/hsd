@@ -15,6 +15,14 @@
   * with the GIRA Homeserver KO-Gateway.</p>
   * <p>CTcpClient manages communication with the GIRA Homeserver. CTcpServer
   * provides the eibd TCP/IP interface.</p>
+  * <p>Incomming message from HS:<br>
+  * <ul>
+  * <li>CTcpClient::slot_startRead</li>
+  * <li><li>CGroupAddress</li></li>
+  * <li>CTcpServer::slot_groupWrite</li>
+  * <li><li>CEibdMsg</li></li>
+  * <li><li><li>CGroupAddress</li></li></li>
+  * </ul>
   */
 
 
@@ -129,6 +137,16 @@ int main(int argc, char *argv[])
                         grArgsList.removeAt( nIndex );
                     }
                 }
+                else
+                {
+                    qDebug() << QObject::tr( "Received set log level command line argument but the passed log level is not correct:" ).toStdString().c_str()
+                             << grArgsList.at( nIndex + 1);
+                }
+            }
+            else
+            {
+                qDebug() << QObject::tr( "Received set log level command line argument (\"-l\") but the level was missing" ).toStdString().c_str()
+                         << grArgsList.at( nIndex + 1);
             }
         }
 

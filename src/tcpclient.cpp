@@ -211,11 +211,11 @@ void CTcpClient::slot_gaXmlWebRequestClosed()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::slot_setEibAdress(const QString &p_sEibAddr, const QVariant &p_grVal )
+void CTcpClient::slot_setEibAdress(const QString &p_sEibAddrKnx, const QVariant &p_grVal )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    send( "1", p_sEibAddr, p_grVal );
+    send( "1", p_sEibAddrKnx, p_grVal );
 }
 
 //////////////////////////////////////////////////////////////////////////////////

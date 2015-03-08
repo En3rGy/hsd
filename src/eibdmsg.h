@@ -37,7 +37,7 @@ public:
 
     /// @brief Returns the destination adress of the message
     /// @return QString with KNX adress, e.g. "2/4/15"
-    const QString & getDestAddress( void ) const;
+    const QString & getDestAddressKnx( void ) const;
 
     /// @brief Returns the value of the message
     /// @param[out] p_pHasValue True if value is available
@@ -78,7 +78,7 @@ protected:
 
     enuMsgType m_eMsgType;
     QString    m_sSrcAddr; ///< EIB address of message sender.
-    QString    m_sDstAddr; ///< EIB address of message receiver.
+    QString    m_sDstAddrKnx; ///< EIB address of message receiver.
 
     QVariant   m_grValue;  ///< Value of EIB message.
 

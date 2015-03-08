@@ -82,7 +82,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 
                 CGroupAddress grGA;
                 grGA.setHex( grEibAdr );
-                m_sDstAddr = grGA.toKNXString();
+                m_sDstAddrKnx = grGA.toKNXString();
 
                 // Process data
 
@@ -156,10 +156,10 @@ const CEibdMsg::enuMsgType &CEibdMsg::getType() const
     return m_eMsgType;
 }
 
-const QString &CEibdMsg::getDestAddress() const
+const QString &CEibdMsg::getDestAddressKnx() const
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    return m_sDstAddr;
+    return m_sDstAddrKnx;
 }
 
 const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const

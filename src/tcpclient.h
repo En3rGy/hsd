@@ -70,7 +70,7 @@ public slots:
       * @param p_sEibAddr KNX/EIB address to write, e.g. 1/5/30
       * @param p_nVal Value to set
       */
-    void slot_setEibAdress(const QString & p_sEibAddr, const QVariant &p_grVal );
+    void slot_setEibAdress(const QString & p_sEibAddrKnx, const QVariant &p_grVal );
 
     /** @brief Used if disconnected from HS by HS.
       *

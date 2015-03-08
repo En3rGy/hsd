@@ -18,6 +18,8 @@ QByteArray CGroupAddress::toHex() const
     // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
     // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
     // 0hhh hmmm
+    //
+    // this representation does not reflect the fhem behaviour hhhh mmmm
     QByteArray grRetArray;
 
     uchar szHexAddr [2];
@@ -29,11 +31,12 @@ QByteArray CGroupAddress::toHex() const
     // 0000 0000 == 0x00
     // 1111 1111 == 0xff
 
-    szHAddr = szHAddr << 4;
-    szHexAddr[ 0 ] = szHAddr | szMAddr;
+    // szHAddr = szHAddr << 4; // hhhh 0000
+    szHAddr = szHAddr << 3;    // 0hhh h000
+    szHexAddr[ 0 ] = szHAddr | szMAddr; // 0hhh hmmm
     szHexAddr[ 1 ] = szUAddr;
 
-    grRetArray.append( (char * ) & szHexAddr, sizeof( szHexAddr ) );
+    grRetArray.append( ( char * ) & szHexAddr, sizeof( szHexAddr ) );
 
     return grRetArray;
 }
