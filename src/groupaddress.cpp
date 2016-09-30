@@ -32,6 +32,8 @@ QByteArray CGroupAddress::toHex() const
     // 1111 1111 == 0xff
 
     // szHAddr = szHAddr << 4; // hhhh 0000
+    szHAddr = szHAddr & 0x0f;
+    szMAddr = szMAddr & 0x0f;
     szHAddr = szHAddr << 3;    // 0hhh h000
     szHexAddr[ 0 ] = szHAddr | szMAddr; // 0hhh hmmm
     szHexAddr[ 1 ] = szUAddr;
@@ -76,16 +78,18 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
         return;
     }
 
-    uchar szData [ 3 ];
-    szData[0] = (uchar) p_grHexAddr.at(0);
-    szData[1] = (uchar) p_grHexAddr.at(0);
-    szData[2] = (uchar) p_grHexAddr.at(1);
+    uchar szHAdr = (uchar) p_grHexAddr.at(0);
+    uchar szMAdr = (uchar) p_grHexAddr.at(0);
+    uchar szLAdr = (uchar) p_grHexAddr.at(1);
 
-    szData[0] = szData[0] << 1;
+    szHAdr = szHAdr >> 3; // 0hhh h000;
+    szHAdr = szHAdr & 0x07;
 
-    QString sMainAddr   = QString::number( ( szData[0] >> 4 ) & 0xf );
-    QString sMiddleAddr = QString::number( ( szData[1] & 0x7 ) );
-    QString sUnderAddr  = QString::number( szData[2] );
+    szMAdr = szMAdr & 0x07; // 0hhh hmmm
+
+    QString sMainAddr   = QString::number( szHAdr );
+    QString sMiddleAddr = QString::number( szMAdr );
+    QString sUnderAddr  = QString::number( szLAdr );
 
     m_unMainAddr = sMainAddr.toUInt();
     m_unMiddAddr = sMiddleAddr.toUInt();
@@ -102,22 +106,7 @@ void CGroupAddress::setPlainHex(const QByteArray &p_grHexAddr)
         return;
     }
 
-    // given hhhh mmmm ssss ssss
-
-    uchar szData [ 3 ];
-    szData[0] = (uchar) p_grHexAddr.at(0);
-    szData[1] = (uchar) p_grHexAddr.at(0);
-    szData[2] = (uchar) p_grHexAddr.at(1);
-
-    //szData[0] = szData[0] << 1;
-
-    QString sMainAddr   = QString::number( ( szData[0] >> 4 ) & 0xf );
-    QString sMiddleAddr = QString::number( ( szData[1] & 0x8 ) );
-    QString sUnderAddr  = QString::number( szData[2] );
-
-    m_unMainAddr = sMainAddr.toUInt();
-    m_unMiddAddr = sMiddleAddr.toUInt();
-    m_unLowAddr  = sUnderAddr.toUInt();
+    setHex( p_grHexAddr );
 }
 
 void CGroupAddress::setKNXString(const QString &p_sStrAddr)

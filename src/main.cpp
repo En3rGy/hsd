@@ -54,6 +54,7 @@ void printHelpPage( void )
              << "\n"   << "-v\t" << QObject::tr( "Printing program version" ).toStdString().c_str()
              << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" ).toStdString().c_str()
              << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\""
+             << "\n\t" << QObject::tr( "HS adress representation requires to be given with at least 5 digits, e.g. by a leading zero: 01234" )
              << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." ).toStdString().c_str();
 }
 
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.4.9" );
+        a.setApplicationVersion( "0.4.10" );
 
         QString sLocale = QLocale::system().name();
 
