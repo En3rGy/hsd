@@ -17,11 +17,12 @@ class CEibdMsg
 public:
     enum enuMsgType
     {
-          enuMsgType_connect         ///< Request for connection
-        , enuMsgType_openGroupSocket ///< Request for opening a group socket
-        , enuMsgType_simpleWrite     ///< Request to write a value to an EIB / KNX address
-        , enuMsgType_msgSize         ///< Message to propagate the size of the next message
-        , enuMsgType_undef           ///< Default error value
+          enuMsgType_connect          ///< Request for connection
+        , enuMsgType_openGroupSocket  ///< Request for opening a group socket
+        , enuMsgType_simpleWrite      ///< Request to write a value to an EIB / KNX address
+        , enuMsgType_msgSize          ///< Message to propagate the size of the next message
+        , enuMsgType_undef            ///< Default error value
+        , enuMsgType_EIB_OPEN_T_GROUP
     };
 
     /// @brief default cto.

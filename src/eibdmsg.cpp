@@ -17,7 +17,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 
     QByteArray grMsg;
 
-    // check if 1st 2 byte contain package length
+    // check if 1st 2 byte contain package length, if so, remove from message!
     if ( p_grByteArray.size() < 2 )
     {
         QLOG_WARN() << QObject::tr("Received too short message. Message was").toStdString().c_str() << printASCII( p_grByteArray );
@@ -29,7 +29,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 
     if ( p_grByteArray.size() - 2 == m_nMsgSize )
     {
-        grMsg.append( p_grByteArray.mid( 2, p_grByteArray.size() - 2 ) );
+        grMsg.append( p_grByteArray.mid( 2, p_grByteArray.size() - 2 ) ); // removing size info
     }
     else
     {
@@ -60,12 +60,23 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         {
             m_eMsgType = enuMsgType_openGroupSocket;
         }
+        else if ( ( grMsg.data()[0] == 0x00 ) &&
+                  ( grMsg.data()[1] == 0x22 ) )
+        {
+            /// @todo What is (00 05 // size info) 00 22 (0c 01 // group address 1/4/1 ) 00 ( enable read & write)
+            m_eMsgType = enuMsgType_EIB_OPEN_T_GROUP;
+
+            QByteArray grEibAdr;
+            grEibAdr.append( grMsg.data()[2]);
+            grEibAdr.append( grMsg.data()[3]);
+
+            QLOG_INFO() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
+        }
         break;
 
     default:
         if ( grMsg.size() >= 6 )  // set request, e.g. (0) 00 (1) 27 (2) 09 (3) 0f (4) 00 (5) 80 (6) 08 (7) 73
         {
-
             // Determine message type via byte 0 + 1, e.g. 00 27
 
             if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
@@ -203,6 +214,16 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         if ( p_pHasResponse != NULL )
         {
             * p_pHasResponse = false;
+        }
+        break;
+    }
+    case enuMsgType_EIB_OPEN_T_GROUP:
+    {
+        const char szOpenTGroupAck[4] = { 0x00, 0x02, 0x00, 0x22 };
+        grResponse.append( QByteArray( szOpenTGroupAck, 4 ) );
+        if ( p_pHasResponse != NULL )
+        {
+            * p_pHasResponse = true;
         }
         break;
     }

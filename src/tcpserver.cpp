@@ -144,6 +144,12 @@ void CTcpServer::slot_startRead()
         m_nSizeOfNextMsg = grMsg.getMsgDataSize();
         break;
     }
+    case CEibdMsg::enuMsgType_EIB_OPEN_T_GROUP:
+    {
+        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_T_GROUP. Granted.").toStdString().c_str();
+        m_pTcpSocket->write( grMsg.getResponse() );
+        break;
+    }
 
     default:
     {
