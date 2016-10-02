@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include "eibdmsg.h"
 
 class QTcpSocket;
 class QTcpServer;
@@ -37,7 +38,7 @@ signals:
     void signal_setEibAdress( const QString & p_sEibAddr, const QVariant & p_grVal );
 
 public slots:
-    void solt_newConnection( void );
+    void slot_newConnection( void );
     void slot_startRead( void );
     void slot_disconnected( void );
 
@@ -48,9 +49,12 @@ public slots:
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:
-    QTcpSocket * m_pTcpSocket;
+    QList< QTcpSocket * > m_grSocketList;
+    //QTcpSocket * m_pTcpSocket;
     QTcpServer * m_pTcpServer;
     uint         m_nPort;
+
+    CEibdMsg     m_grMsg;
 
     int          m_nSizeOfNextMsg;
 };

@@ -17,14 +17,13 @@
 
 CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
-  , m_pTcpSocket( NULL )
   , m_pTcpServer( NULL )
   , m_nSizeOfNextMsg( -1 )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     m_pTcpServer = new QTcpServer( this );
 
-    connect( m_pTcpServer, SIGNAL( newConnection()), SLOT( solt_newConnection()) );
+    connect( m_pTcpServer, SIGNAL( newConnection()), SLOT( slot_newConnection()) );
 }
 
 //////////////////////////////////////////////////////////////
@@ -80,19 +79,19 @@ void CTcpServer::listen()
 //
 //////////////////////////////////////////////////////////////
 
-void CTcpServer::solt_newConnection()
+void CTcpServer::slot_newConnection()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    m_pTcpSocket = m_pTcpServer->nextPendingConnection();
+    QTcpSocket * pTcpSocket = m_pTcpServer->nextPendingConnection();
+    m_grSocketList.append( pTcpSocket );
 
     QLOG_DEBUG() << tr( "New connection via eibd interface:" ).toStdString().c_str()
-                 << m_pTcpSocket->peerName()
-                 << m_pTcpSocket->peerAddress()
+                 << pTcpSocket->peerAddress().toString().toStdString().c_str()
                  << ":"
-                 << m_pTcpSocket->peerPort();
+                 << pTcpSocket->peerPort();
 
-    connect( m_pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
-    connect( m_pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
+    connect( pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
+    connect( pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
 }
 
 //////////////////////////////////////////////////////////////
@@ -103,7 +102,20 @@ void CTcpServer::slot_startRead()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grDatagram;
-    grDatagram = m_pTcpSocket->readAll();
+
+    QTcpSocket * pTcpSocket = dynamic_cast< QTcpSocket * >( sender() );
+    if ( pTcpSocket == NULL )
+    {
+        return;
+    }
+
+    grDatagram = pTcpSocket->readAll();
+
+    if ( grDatagram.isEmpty() == true )
+    {
+        QLOG_DEBUG() << tr( "Incomming message triggered but nothing received. Aborting." ).toStdString().c_str();
+        return;
+    }
 
     QLOG_DEBUG() << tr( "Received via eibd Interface:" ).toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
 
@@ -120,20 +132,21 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_connect:
     {
         QLOG_INFO() << QObject::tr("Received via eibd interface: Connection request. Granted.").toStdString().c_str();
-        m_pTcpSocket->write( grMsg.getResponse() );
+        pTcpSocket->write( grMsg.getResponse() );
         break;
     }
 
-    case CEibdMsg::enuMsgType_openGroupSocket:
+    case CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON:
     {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: openGroupSocket request. Granted.").toStdString().c_str();
-        m_pTcpSocket->write( grMsg.getResponse() );
+        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_GROUPCON ") << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
+        pTcpSocket->write( grMsg.getResponse() );
+        m_grMsg = grMsg;
         break;
     }
 
-    case CEibdMsg::enuMsgType_simpleWrite:
+    case CEibdMsg::enuMsgType_EIB_GROUP_PACKET:
     {
-        QLOG_DEBUG() << QObject::tr("Received via eibd interface: simpleWrite request").toStdString().c_str() << grMsg.getDestAddressKnx() << grMsg.getValue() << QObject::tr(". Forwarded.");
+        QLOG_DEBUG() << QObject::tr("Received via eibd interface: EIB_GROUP_PACKET request").toStdString().c_str() << grMsg.getDestAddressKnx() << grMsg.getValue() << QObject::tr(". Forwarded.");
         emit signal_setEibAdress( grMsg.getDestAddressKnx(), grMsg.getValue() );
         break;
     }
@@ -146,10 +159,24 @@ void CTcpServer::slot_startRead()
     }
     case CEibdMsg::enuMsgType_EIB_OPEN_T_GROUP:
     {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_T_GROUP. Granted.").toStdString().c_str();
-        m_pTcpSocket->write( grMsg.getResponse() );
+        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_T_GROUP ") << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
+        pTcpSocket->write( grMsg.getResponse() );
+        m_grMsg = grMsg;
         break;
     }
+    case CEibdMsg::enuMsgType_EIB_APDU_PACKET:
+    {
+        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_APDU_PACKET. Assigning it to ") << m_grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
+        QLOG_DEBUG() << QObject::tr("EIB_APDU_PACKET was:") << CEibdMsg::printASCII( grDatagram );
+        emit signal_setEibAdress( m_grMsg.getDestAddressKnx(), grMsg.getValue() );
+        break;
+    }
+    case CEibdMsg::enuMsgType_EIB_RESET_CONNECTION:
+    {
+        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_RESET_CONNECTION ") << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
+        break;
+    }
+
 
     default:
     {
@@ -169,7 +196,7 @@ void CTcpServer::slot_startRead()
         }
         else
         {
-            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram ) << "=" << QString( grDatagram );
+            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:") << CEibdMsg::printASCII( grDatagram );
         }
     }
     }
@@ -180,10 +207,29 @@ void CTcpServer::slot_startRead()
     }
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 void CTcpServer::slot_disconnected()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
+
     QLOG_INFO() << QObject::tr("Disconnected from eibd client");
+
+    QTcpSocket * pTcpSocket = dynamic_cast< QTcpSocket * >( sender() );
+    if ( pTcpSocket == NULL )
+    {
+        return;
+    }
+
+    QLOG_DEBUG() << tr( "Connection was:" ).toStdString().c_str()
+                 << pTcpSocket->peerAddress().toString().toStdString().c_str()
+                 << ":"
+                 << pTcpSocket->peerPort();
+
+    m_grSocketList.removeOne( pTcpSocket );
+    pTcpSocket->deleteLater();
 }
 
 //////////////////////////////////////////////////////////////
@@ -193,9 +239,18 @@ void CTcpServer::slot_disconnected()
 void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sValue)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( m_pTcpSocket == NULL )
+
+    if ( m_grSocketList.isEmpty() == true )
     {
-        QLOG_ERROR() << tr( "eibd Interface (TCP socket) not yet initialised. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
+        QLOG_ERROR() << tr( "eibd interface not yet connected. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
+        return;
+    }
+
+    /// @todo Check which socket to send to...
+    QTcpSocket * pTcpSocket = m_grSocketList.first();
+    if ( pTcpSocket == NULL )
+    {
+        QLOG_ERROR() << tr( "eibd Interface not available for sending. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
         return;
     }
 
@@ -207,14 +262,14 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         return;
     }
 
-    if ( m_pTcpSocket->state() != QTcpSocket::ConnectedState )
+    if ( pTcpSocket->state() != QTcpSocket::ConnectedState )
     {
         QLOG_DEBUG() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." );
         return;
     }
 
     QLOG_DEBUG() << QObject::tr("Sending via eibd interface") << CEibdMsg::printASCII( grMsg );
-    m_pTcpSocket->write( grMsg );
+    pTcpSocket->write( grMsg );
 }
 
 //////////////////////////////////////////////////////////////

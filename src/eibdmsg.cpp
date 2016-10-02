@@ -11,7 +11,20 @@ CEibdMsg::CEibdMsg()
 {
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
+{
+    setEibdMsg( p_grByteArray );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
@@ -20,7 +33,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     // check if 1st 2 byte contain package length, if so, remove from message!
     if ( p_grByteArray.size() < 2 )
     {
-        QLOG_WARN() << QObject::tr("Received too short message. Message was").toStdString().c_str() << printASCII( p_grByteArray );
+        QLOG_WARN() << QObject::tr("Received message too short. Message was").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
         return;
     }
 
@@ -51,6 +64,16 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
         }
         break;
 
+    case 4:
+        // EIB_APDU_PACKET
+        if ( ( grMsg.data()[0] == 0x00 ) &&
+             ( grMsg.data()[1] == 0x25 ) )
+        {
+            m_eMsgType = enuMsgType_EIB_APDU_PACKET;
+            setEib1( grMsg.data()[4] );
+        }
+        break;
+
     case 5: // openGroupSocket
         if ( ( grMsg.data()[0] == CModel::g_uzEibOpenGroupCon[0] ) &&
              ( grMsg.data()[1] == CModel::g_uzEibOpenGroupCon[1] ) &&
@@ -58,19 +81,20 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
              ( grMsg.data()[3] == CModel::g_uzEibOpenGroupCon[3] ) &&
              ( grMsg.data()[4] == CModel::g_uzEibOpenGroupCon[4] ) )
         {
-            m_eMsgType = enuMsgType_openGroupSocket;
+            m_eMsgType = enuMsgType_EIB_OPEN_GROUPCON;
         }
         else if ( ( grMsg.data()[0] == 0x00 ) &&
                   ( grMsg.data()[1] == 0x22 ) )
         {
-            /// @todo What is (00 05 // size info) 00 22 (0c 01 // group address 1/4/1 ) 00 ( enable read & write)
             m_eMsgType = enuMsgType_EIB_OPEN_T_GROUP;
 
             QByteArray grEibAdr;
             grEibAdr.append( grMsg.data()[2]);
             grEibAdr.append( grMsg.data()[3]);
 
-            QLOG_INFO() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
+            CGroupAddress grGA;
+            grGA.setHex( grEibAdr );
+            m_sDstAddrKnx = grGA.toKNXString();
         }
         break;
 
@@ -82,8 +106,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
             if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
                  ( grMsg.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
             {
-                m_eMsgType = enuMsgType_simpleWrite;
-
+                m_eMsgType = enuMsgType_EIB_GROUP_PACKET;
 
                 // determine eib adress via byte 2 + 3, e.g. 09 0f for 0/9/15
 
@@ -102,9 +125,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
 
                 if ( grData.size() == 1 ) // e.g. EIS1 = 1 Bit
                 {
-                    uchar szData = grMsg.at( 5 );
-                    szData = szData & 0x7f; // 0x7f = 0111 1111
-                    m_grValue.setValue( static_cast< int >( szData ) );
+                    setEib1( grMsg.at( 5 ) );
                 }
                 else if ( grData.size() == 3 ) // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
                 {
@@ -153,7 +174,7 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
                     QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
                 }
 
-            break;
+                break;
             }
 
             QLOG_INFO() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
@@ -161,17 +182,29 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     }
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 const CEibdMsg::enuMsgType &CEibdMsg::getType() const
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     return m_eMsgType;
 }
 
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
 const QString &CEibdMsg::getDestAddressKnx() const
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     return m_sDstAddrKnx;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
 {
@@ -182,6 +215,10 @@ const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
     }
     return m_grValue;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 {
@@ -199,7 +236,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         }
         break;
     }
-    case enuMsgType_openGroupSocket:
+    case enuMsgType_EIB_OPEN_GROUPCON:
     {
         const char szOpenGroupSocketAck [2] = { 0x00, 0x26 };
         grResponse.append( QByteArray( szOpenGroupSocketAck, 2 ) );
@@ -209,7 +246,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         }
         break;
     }
-    case enuMsgType_simpleWrite:
+    case enuMsgType_EIB_GROUP_PACKET:
     {
         if ( p_pHasResponse != NULL )
         {
@@ -238,6 +275,10 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
     return grResponse;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData)
 {
@@ -301,21 +342,20 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     grMsg.append( szData ); // index 9 & 10
 
     return grMsg;
-
-    //    grMsg.append( char( 0x80 ) ); // index 9
-    //    grMsg.append( dVal );
-
-    //    quint8 nSize = grMsg.size() - 2;
-
-    //    grMsg[ 1 ] = nSize; // index 1
-
-    //    return grMsg;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 int CEibdMsg::getMsgDataSize() const
 {
     return m_nMsgSize;
 }
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 
 bool CEibdMsg::isNatural(const float & p_fNumber)
 {
@@ -347,6 +387,17 @@ bool CEibdMsg::isNatural(const float & p_fNumber)
 
         return bRet;
     }
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setEib1(const uchar & p_szData)
+{
+    uchar szData = p_szData;
+    szData = szData & 0x7f; // 0x7f = 0111 1111
+    m_grValue.setValue( static_cast< int >( szData ) );
 }
 
 //////////////////////////////////////////////////////////////

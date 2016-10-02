@@ -1,0 +1,24 @@
+v0.4.11
+=========
+- Added EIB_APDU_PACKET after EIB_OPEN_T_GROUP message
+- Introduced different incomming eibd connections
+
+v0.4.11
+=========
+- Added EIB_OPEN_T_GROUP message
+
+v0.4.10
+=========
+- Fixed bug in address conversion from hex to GA
+
+v0.4.9
+=========
+- Fixed bug in address conversion from HS to eibd
+
+v0.4.8
+=========
+- Fixed Bug in KNX address conversion
+- Added support for temperature values (DTP 9.1)
+- Improved Logging messages
+- Improved translations for German
+- Other bug fixes

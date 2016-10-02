@@ -18,11 +18,14 @@ public:
     enum enuMsgType
     {
           enuMsgType_connect          ///< Request for connection
-        , enuMsgType_openGroupSocket  ///< Request for opening a group socket
-        , enuMsgType_simpleWrite      ///< Request to write a value to an EIB / KNX address
+        , enuMsgType_EIB_OPEN_GROUPCON  ///< Request for opening a group socket
+        , enuMsgType_EIB_GROUP_PACKET      ///< Request to write a value to an EIB / KNX address
         , enuMsgType_msgSize          ///< Message to propagate the size of the next message
         , enuMsgType_undef            ///< Default error value
         , enuMsgType_EIB_OPEN_T_GROUP
+        , enuMsgType_EIB_RESET_CONNECTION
+        , enuMsgType_EIB_APDU_PACKET
+
     };
 
     /// @brief default cto.
@@ -31,6 +34,12 @@ public:
     /// @brief Constructor
     /// @param p_grByteArray message
     CEibdMsg( const QByteArray & p_grByteArray );
+
+    /**
+     * @brief Set for an incomming message via the Eib Interface
+     * @param p_grByteArray
+     */
+    void setEibdMsg( const QByteArray & p_grByteArray );
 
     /// @brief Type of message
     /// @return enuMsgType
@@ -76,6 +85,12 @@ protected:
       * @return True if the parameter is a natural number: 1.0 -> true, 1.1 -> false
       */
     static bool isNatural(const float &p_fNumber );
+
+    /**
+     * @brief Interprets an Eib1 Dtp (1 bit) and stores the result
+     * @param p_szData
+     */
+    void setEib1( const uchar & p_szData );
 
     enuMsgType m_eMsgType;
     QString    m_sSrcAddr; ///< EIB address of message sender.
