@@ -49,14 +49,14 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     // check different msg types
     QByteArray grMsgType = grMsg.mid( 0, 2 );
 
-    if ( grMsgType == QByteArray( * CModel::g_uzEibAck, 2 )) {
+    if ( equals( grMsgType, CModel::g_uzEibAck, 2 ) ) {
         m_eMsgType = enuMsgType_connect;
     }
-    else if ( ( grMsg.length() == 2 ) && ( grMsgType != QByteArray( * CModel::g_uzEibAck, 2 )) ) {
+    else if ( ( grMsg.length() == 2 ) && ( equals( grMsgType, CModel::g_uzEibAck, 2 )) ) {
         m_eMsgType = enuMsgType_msgSize;
         m_nMsgSize = ( int ) QString::number( p_grByteArray.at( 1 ) ).toDouble();
     }
-    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_APDU_PACKET, 2 ) ) {
+    else if ( equals( grMsgType, CModel::g_uzEIB_APDU_PACKET, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_APDU_PACKET;
 
         uchar szInd = grMsg.data()[4] & 0x80;
@@ -76,15 +76,15 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
             m_eAPDUType = enuAPDUType_undef;
         }
     }
-    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_OPEN_GROUPCON, 2 ) ) {
+    else if ( equals( grMsgType, CModel::g_uzEIB_OPEN_GROUPCON, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_OPEN_GROUPCON;
         setEibAddress( grMsg.mid( 2, 2 ) );
     }
-    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_OPEN_T_GROUP, 2 ) ) {
+    else if ( equals( grMsgType, CModel::g_uzEIB_OPEN_T_GROUP, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_OPEN_T_GROUP;
         setEibAddress( grMsg.mid( 2, 2 ) );
     }
-    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_GROUP_PACKET, 2 ) ) {
+    else if ( equals( grMsgType, CModel::g_uzEIB_GROUP_PACKET, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_GROUP_PACKET;
         setEibAddress( grMsg.mid( 2, 2 ) );
 
@@ -340,6 +340,20 @@ bool CEibdMsg::isNatural(const float & p_fNumber)
 
         return bRet;
     }
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+bool CEibdMsg::equals(const QByteArray &p_grByteArray, const uchar * p_grCharArr, const int &p_nLength)
+{
+    for ( int i = 0; i < p_nLength; ++ i) {
+        if ( p_grByteArray.data()[ i ] != p_grCharArr[ i ] ) {
+            return false;
+        }
+    }
+    return true;
 }
 
 //////////////////////////////////////////////////////////////

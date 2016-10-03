@@ -1,4 +1,12 @@
-v0.4.11
+v0.5.1
+=========
+- Fixed bug: incoming msg. not detected correctly.
+
+v0.5.0
+=========
+- Redesign
+
+v0.4.12
 =========
 - Added EIB_APDU_PACKET after EIB_OPEN_T_GROUP message
 - Introduced different incomming eibd connections

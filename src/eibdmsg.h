@@ -101,6 +101,18 @@ protected:
     static bool isNatural(const float &p_fNumber );
 
     /**
+     * @brief Perfoms a hex compare of the QByteArray and char *.
+     *
+     * One has to take care that length of p_grByteArray and p_grCharArr have at least a length on p_nLength!
+     *
+     * @param p_grByteArray
+     * @param p_grCharArr
+     * @param p_nLength
+     * @return
+     */
+    bool equals( const QByteArray & p_grByteArray, const uchar * p_grCharArr, const int & p_nLength );
+
+    /**
      * @brief Interprets an Eib1 Dtp (1 bit) and stores the result
      * @param p_szData
      */
