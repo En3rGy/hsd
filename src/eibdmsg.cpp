@@ -52,7 +52,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     if ( equals( grMsgType, CModel::g_uzEibAck, 2 ) ) {
         m_eMsgType = enuMsgType_connect;
     }
-    else if ( ( grMsg.length() == 2 ) && ( equals( grMsgType, CModel::g_uzEibAck, 2 )) ) {
+    else if ( ( grMsg.length() == 2 ) && ( equals( grMsgType, CModel::g_uzEibAck, 2 )) == false ) {
         m_eMsgType = enuMsgType_msgSize;
         m_nMsgSize = ( int ) QString::number( p_grByteArray.at( 1 ) ).toDouble();
     }
@@ -161,14 +161,18 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
     switch( m_eMsgType ) {
     case enuMsgType_connect: {
-        grResponse.append( ( const char * ) CModel::g_uzEibAck, 2 );
+        grResponse.append( CModel::g_uzEibAck[0] );
+        grResponse.append( CModel::g_uzEibAck[1] );
+
         if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = true;
         }
         break;
     }
     case enuMsgType_EIB_OPEN_GROUPCON: {
-        grResponse.append( QByteArray( * CModel::g_uzEIB_OPEN_GROUPCON, 2 ) );
+        grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[0] );
+        grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[1] );
+
         if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = true;
         }

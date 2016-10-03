@@ -80,7 +80,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
 
     QByteArray grArray;
     grArray.append( sMessage );
-    grArray.append( m_sMsgEndChar );
+    //grArray.append( m_sMsgEndChar ); ///< @todo check if necessary
 
     int nRet = m_pTcpSocket->write( grArray );
     if ( m_pTcpSocket->waitForBytesWritten() == false )
@@ -208,7 +208,7 @@ void CTcpClient::slot_gaXmlWebRequestClosed()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::slot_setEibAdress(const QString &p_sEibAddrKnx, const QVariant &p_grVal )
+void CTcpClient::slot_sendToHs(const QString &p_sEibAddrKnx, const QVariant &p_grVal )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 

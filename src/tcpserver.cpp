@@ -143,7 +143,11 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON:
     {
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_GROUPCON ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
-        pTcpSocket->write( grMsg.getResponse() );
+        QByteArray grResp = grMsg.getResponse();
+
+        QLOG_INFO() << QObject::tr( "Sending to eibd client:" ) << CEibdMsg::printASCII( grResp );
+
+        pTcpSocket->write( grResp );
         m_grSocketMap[ pTcpSocket ] = grMsg;
         m_pReplyTcpSocket = pTcpSocket;
         break;
@@ -152,7 +156,7 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_EIB_GROUP_PACKET:
     {
         QLOG_DEBUG() << QObject::tr("Received via eibd interface: EIB_GROUP_PACKET request").toStdString().c_str() << grMsg.getDestAddressKnx() << grMsg.getValue() << QObject::tr(". Forwarded.");
-        emit signal_setEibAdress( grMsg.getDestAddressKnx(), grMsg.getValue() );
+        emit signal_sendToHs( grMsg.getDestAddressKnx(), grMsg.getValue() );
         break;
     }
 
@@ -175,7 +179,7 @@ void CTcpServer::slot_startRead()
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_APDU_PACKET. Assigning it to ").toStdString().c_str() << grFormerMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
 
         if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_bit ) {
-            emit signal_setEibAdress( grFormerMsg.getDestAddressKnx(), grMsg.getValue() );
+            emit signal_sendToHs( grFormerMsg.getDestAddressKnx(), grMsg.getValue() );
         }
         else if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_bit ) {
             if ( m_pReplyTcpSocket == NULL ) {
