@@ -144,8 +144,7 @@ void CTcpClient::slot_startRead()
 
             /// @todo Check is answering ping is possible / necassary
         }
-        else
-        {
+        else  {
             /// @todo Respect different HS message types
 
             CGroupAddress grGA;
@@ -154,20 +153,18 @@ void CTcpClient::slot_startRead()
             sGA = grGA.toKNXString();
 
             QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
-                         << sGA
+                         << sGA.toStdString().c_str()
                          << QObject::tr("Value:").toStdString().c_str()
-                         << sValue
+                         << sValue.toStdString().c_str()
                          << grMsgArray;
 
-            if ( grGA.isValid() == true )
-            {
+            if ( grGA.isValid() == true ) {
+                CModel::getInstance()->m_grGAState.insert( sGA, sValue.toFloat());
                 emit signal_receivedMessage( sGA, sValue );
             }
-            else
-            {
+            else {
                 // Report invalid GA just once
-                if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false )
-                {
+                if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false ) {
                     m_grInvlGAList.push_back( grGA.toKNXString() );
 
                     QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;

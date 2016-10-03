@@ -4,6 +4,8 @@ QT       += core network
 
 QT       -= gui
 
+#CONFIG += c++11
+
 DESTDIR = ../bin
 
 unix:target.path = /opt/hsd/bin

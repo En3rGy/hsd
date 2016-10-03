@@ -31,8 +31,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     QByteArray grMsg;
 
     // check if 1st 2 byte contain package length, if so, remove from message!
-    if ( p_grByteArray.size() < 2 )
-    {
+    if ( p_grByteArray.size() < 2 ) {
         QLOG_WARN() << QObject::tr("Received message too short. Message was").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
         return;
     }
@@ -40,145 +39,74 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     QString sSize = QString::number( p_grByteArray.at( 1 ) );
     m_nMsgSize    = ( int ) sSize.toDouble();
 
-    if ( p_grByteArray.size() - 2 == m_nMsgSize )
-    {
+    if ( p_grByteArray.size() - 2 == m_nMsgSize ) {
         grMsg.append( p_grByteArray.mid( 2, p_grByteArray.size() - 2 ) ); // removing size info
     }
-    else
-    {
+    else {
         grMsg.append( p_grByteArray );
     }
 
-    switch ( grMsg.length() )
-    {
-    case 2: // connect
-        if ( ( grMsg.data()[0] == CModel::g_uzEibAck[0] ) &&
-             ( grMsg.data()[1] == CModel::g_uzEibAck[1] ) )
-        {
-            m_eMsgType = enuMsgType_connect;
-        }
-        else
-        {
-            m_eMsgType = enuMsgType_msgSize;
-            m_nMsgSize = ( int ) QString::number( p_grByteArray.at( 1 ) ).toDouble();
-        }
-        break;
+    // check different msg types
+    QByteArray grMsgType = grMsg.mid( 0, 2 );
 
-    case 4:
-        // EIB_APDU_PACKET
-        if ( ( grMsg.data()[0] == 0x00 ) &&
-             ( grMsg.data()[1] == 0x25 ) )
-        {
-            m_eMsgType = enuMsgType_EIB_APDU_PACKET;
+    if ( grMsgType == QByteArray( * CModel::g_uzEibAck, 2 )) {
+        m_eMsgType = enuMsgType_connect;
+    }
+    else if ( ( grMsg.length() == 2 ) && ( grMsgType != QByteArray( * CModel::g_uzEibAck, 2 )) ) {
+        m_eMsgType = enuMsgType_msgSize;
+        m_nMsgSize = ( int ) QString::number( p_grByteArray.at( 1 ) ).toDouble();
+    }
+    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_APDU_PACKET, 2 ) ) {
+        m_eMsgType = enuMsgType_EIB_APDU_PACKET;
+
+        uchar szInd = grMsg.data()[4] & 0x80;
+
+        // set boolean
+        if ( ( grMsg.length() == 4 ) &&
+             ( szInd == 0x80 ) ) {
             setEib1( grMsg.data()[4] );
+            m_eAPDUType = enuAPDUType_bit;
         }
-        break;
 
-    case 5: // openGroupSocket
-        if ( ( grMsg.data()[0] == CModel::g_uzEibOpenGroupCon[0] ) &&
-             ( grMsg.data()[1] == CModel::g_uzEibOpenGroupCon[1] ) &&
-             ( grMsg.data()[2] == CModel::g_uzEibOpenGroupCon[2] ) &&
-             ( grMsg.data()[3] == CModel::g_uzEibOpenGroupCon[3] ) &&
-             ( grMsg.data()[4] == CModel::g_uzEibOpenGroupCon[4] ) )
-        {
-            m_eMsgType = enuMsgType_EIB_OPEN_GROUPCON;
+        // request sent fo GA
+        else if ( ( grMsg.length() == 4 ) && ( grMsg.data()[4] == 0x00 ) ) {
+            m_eAPDUType = enuAPDUType_readRequest;
         }
-        else if ( ( grMsg.data()[0] == 0x00 ) &&
-                  ( grMsg.data()[1] == 0x22 ) )
-        {
-            m_eMsgType = enuMsgType_EIB_OPEN_T_GROUP;
-
-            QByteArray grEibAdr;
-            grEibAdr.append( grMsg.data()[2]);
-            grEibAdr.append( grMsg.data()[3]);
-
-            CGroupAddress grGA;
-            grGA.setHex( grEibAdr );
-            m_sDstAddrKnx = grGA.toKNXString();
+        else {
+            m_eAPDUType = enuAPDUType_undef;
         }
-        break;
+    }
+    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_OPEN_GROUPCON, 2 ) ) {
+        m_eMsgType = enuMsgType_EIB_OPEN_GROUPCON;
+        setEibAddress( grMsg.mid( 2, 2 ) );
+    }
+    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_OPEN_T_GROUP, 2 ) ) {
+        m_eMsgType = enuMsgType_EIB_OPEN_T_GROUP;
+        setEibAddress( grMsg.mid( 2, 2 ) );
+    }
+    else if ( grMsgType == QByteArray( * CModel::g_uzEIB_GROUP_PACKET, 2 ) ) {
+        m_eMsgType = enuMsgType_EIB_GROUP_PACKET;
+        setEibAddress( grMsg.mid( 2, 2 ) );
 
-    default:
-        if ( grMsg.size() >= 6 )  // set request, e.g. (0) 00 (1) 27 (2) 09 (3) 0f (4) 00 (5) 80 (6) 08 (7) 73
-        {
-            // Determine message type via byte 0 + 1, e.g. 00 27
+        // Process data
+        QByteArray grData;
+        grData.append( grMsg.mid( 5, grMsg.size() - 5 ) ); // skipping byte 4 which is 00
 
-            if ( ( grMsg.data()[0] == CModel::g_uzEibGroupPacket[0] ) &&
-                 ( grMsg.data()[1] == CModel::g_uzEibGroupPacket[1] ) )
-            {
-                m_eMsgType = enuMsgType_EIB_GROUP_PACKET;
-
-                // determine eib adress via byte 2 + 3, e.g. 09 0f for 0/9/15
-
-                QByteArray grEibAdr;
-                grEibAdr.append( grMsg.data()[2]);
-                grEibAdr.append( grMsg.data()[3]);
-
-                CGroupAddress grGA;
-                grGA.setHex( grEibAdr );
-                m_sDstAddrKnx = grGA.toKNXString();
-
-                // Process data
-
-                QByteArray grData;
-                grData.append( grMsg.mid( 5, grMsg.size() - 5 ) ); // skipping byte 4 which is 00
-
-                if ( grData.size() == 1 ) // e.g. EIS1 = 1 Bit
-                {
-                    setEib1( grMsg.at( 5 ) );
-                }
-                else if ( grData.size() == 3 ) // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
-                {
-                    grData.remove( 0, 1 );
-
-                    // DPT 9.001 DPT_Value_Temp is a 2-octet float value.
-                    // The format is MEEE EMMM   MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
-                    // If I calculated correctly, $193D is 25,36 °C.
-
-                    uchar szTemp;
-                    uchar szM[2];
-                    uchar szE;
-
-                    // save top bit for sigend int
-                    szTemp = grData.at( 0 ) & 0x80; // 0x80 = 1000 0000
-
-                    szM[ 0 ] = grData.at( 0 ) & 0x07; // 0x87 = 0000 0111
-                    szM[ 1 ] = grData.at( 1 ); // & 0xFF; // 0xFF = 1111 1111
-
-                    QByteArray grM;
-                    grM.append( szM[ 0 ] );
-                    grM.append( szM[ 1 ] );
-
-                    szE    = grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
-                    szE   >>= 3; // shift bits to the right: 0xxx x000 >> 0000 xxxx
-                    int nE = static_cast< int >( szE );
-
-                    // transfer M bit representation to int representation
-                    int nM = 0;
-                    nM |= grM.at( 0 );
-                    nM <<= 8;
-                    nM |= grM.at( 1 );
-
-                    // resepct sign via two’s complement notation: negative, if highest bit is 1
-                    if ( szTemp == 0x80 )
-                    {
-                        nM *= -1;
-                    }
-
-                    // Calculate DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
-                    float fValue = 0.01 * nM * qPow( 2, nE );
-                    m_grValue.setValue( fValue );
-                }
-                else
-                {
-                    QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
-                }
-
-                break;
-            }
-
-            QLOG_INFO() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
+        // e.g. EIS1 = 1 Bit
+        if ( grData.size() == 1 ) {
+            setEib1( grMsg.at( 5 ) );
         }
+
+        // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
+        else if ( grData.size() == 3 ) {
+            setDTP9_001( grData.mid( 1, 2 ) ); // skipping 1st byte
+        }
+        else {
+            QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
+        }
+    } // else if ( grMsgType == QByteArray( * CModel::g_uzEIB_GROUP_PACKET, 2 ) )
+    else {
+        QLOG_WARN() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
     }
 }
 
@@ -190,6 +118,12 @@ const CEibdMsg::enuMsgType &CEibdMsg::getType() const
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     return m_eMsgType;
+}
+
+const CEibdMsg::enuAPDUType &CEibdMsg::getAPDUType() const
+{
+    QLOG_TRACE() << Q_FUNC_INFO;
+    return m_eAPDUType;
 }
 
 //////////////////////////////////////////////////////////////
@@ -225,49 +159,63 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
     QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grResponse;
 
-    switch( m_eMsgType )
-    {
-    case enuMsgType_connect:
-    {
+    switch( m_eMsgType ) {
+    case enuMsgType_connect: {
         grResponse.append( ( const char * ) CModel::g_uzEibAck, 2 );
-        if ( p_pHasResponse != NULL )
-        {
+        if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = true;
         }
         break;
     }
-    case enuMsgType_EIB_OPEN_GROUPCON:
-    {
-        const char szOpenGroupSocketAck [2] = { 0x00, 0x26 };
-        grResponse.append( QByteArray( szOpenGroupSocketAck, 2 ) );
-        if ( p_pHasResponse != NULL )
-        {
+    case enuMsgType_EIB_OPEN_GROUPCON: {
+        grResponse.append( QByteArray( * CModel::g_uzEIB_OPEN_GROUPCON, 2 ) );
+        if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = true;
         }
         break;
     }
-    case enuMsgType_EIB_GROUP_PACKET:
-    {
-        if ( p_pHasResponse != NULL )
-        {
+    case enuMsgType_EIB_GROUP_PACKET: {
+        if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = false;
         }
         break;
     }
-    case enuMsgType_EIB_OPEN_T_GROUP:
-    {
-        const char szOpenTGroupAck[4] = { 0x00, 0x02, 0x00, 0x22 };
-        grResponse.append( QByteArray( szOpenTGroupAck, 4 ) );
-        if ( p_pHasResponse != NULL )
-        {
+    case enuMsgType_EIB_OPEN_T_GROUP: {
+        const char szMsgLength[2] = { 0x00, 0x02 };
+        grResponse.append( szMsgLength, 2 );
+        grResponse.append( QByteArray( * CModel::g_uzEIB_OPEN_T_GROUP, 2 ) );
+        if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = true;
         }
         break;
     }
-    default:
-    {
-        if ( p_pHasResponse != NULL )
-        {
+    case enuMsgType_EIB_APDU_PACKET: {
+        if ( m_eAPDUType == enuAPDUType_readRequest ) {
+            const char szMsgLength[2] = { 0x00, 0x04 };
+            grResponse.append( szMsgLength, 2 );
+            grResponse.append( QByteArray( * CModel::g_uzEIB_APDU_PACKET, 2 ) );
+            if ( p_pHasResponse != NULL ) {
+                * p_pHasResponse = true;
+            }
+            grResponse.append( QByteArray( 0x00 ) );
+
+            char szData = 0x80;
+            float fVal = m_grValue.toFloat();
+            if ( fVal == 1.0 ) {
+                szData = szData | 0x01;
+            }
+            else if ( fVal == 0.0 ) {
+                szData = szData | 0x00;
+            }
+            else {
+                QLOG_WARN() << QObject::tr( "Value is not bool. Feature not implemented yet. Providing 0x00." ).toStdString().c_str();
+            }
+            grResponse.append( szData );
+        }
+        break;
+    }
+    default: {
+        if ( p_pHasResponse != NULL ) {
             * p_pHasResponse = false;
         }
     }
@@ -353,6 +301,11 @@ int CEibdMsg::getMsgDataSize() const
     return m_nMsgSize;
 }
 
+void CEibdMsg::setValue(const float &p_fVal)
+{
+    m_grValue = p_fVal;
+}
+
 //////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////
@@ -398,6 +351,62 @@ void CEibdMsg::setEib1(const uchar & p_szData)
     uchar szData = p_szData;
     szData = szData & 0x7f; // 0x7f = 0111 1111
     m_grValue.setValue( static_cast< int >( szData ) );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setDTP9_001(const QByteArray & p_grData)
+{
+    // DPT 9.001 DPT_Value_Temp is a 2-octet float value.
+    // The format is MEEE EMMM   MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
+    // If I calculated correctly, $193D is 25,36 °C.
+
+    uchar szTemp;
+    uchar szM[2];
+    uchar szE;
+
+    // save top bit for sigend int
+    szTemp = p_grData.at( 0 ) & 0x80; // 0x80 = 1000 0000
+
+    szM[ 0 ] = p_grData.at( 0 ) & 0x07; // 0x87 = 0000 0111
+    szM[ 1 ] = p_grData.at( 1 ); // & 0xFF; // 0xFF = 1111 1111
+
+    QByteArray grM;
+    grM.append( szM[ 0 ] );
+    grM.append( szM[ 1 ] );
+
+    szE    = p_grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
+    szE   >>= 3; // shift bits to the right: 0xxx x000 >> 0000 xxxx
+    int nE = static_cast< int >( szE );
+
+    // transfer M bit representation to int representation
+    int nM = 0;
+    nM |= grM.at( 0 );
+    nM <<= 8;
+    nM |= grM.at( 1 );
+
+    // resepct sign via two’s complement notation: negative, if highest bit is 1
+    if ( szTemp == 0x80 )
+    {
+        nM *= -1;
+    }
+
+    // Calculate DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
+    float fValue = 0.01 * nM * qPow( 2, nE );
+    m_grValue.setValue( fValue );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setEibAddress(const QByteArray &p_grData)
+{
+    CGroupAddress grGA;
+    grGA.setHex( p_grData );
+    m_sDstAddrKnx = grGA.toKNXString();
 }
 
 //////////////////////////////////////////////////////////////

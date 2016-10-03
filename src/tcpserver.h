@@ -49,12 +49,10 @@ public slots:
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
 private:
-    QList< QTcpSocket * > m_grSocketList;
-    //QTcpSocket * m_pTcpSocket;
+    QMap< QTcpSocket *, CEibdMsg > m_grSocketMap;
+    QTcpSocket * m_pReplyTcpSocket; ///< Socket to forward HS messages to eibd client.
     QTcpServer * m_pTcpServer;
     uint         m_nPort;
-
-    CEibdMsg     m_grMsg;
 
     int          m_nSizeOfNextMsg;
 };

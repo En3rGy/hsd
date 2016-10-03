@@ -28,6 +28,12 @@ public:
 
     };
 
+    enum enuAPDUType {
+        enuAPDUType_undef
+        , enuAPDUType_bit
+        , enuAPDUType_readRequest
+    };
+
     /// @brief default cto.
     CEibdMsg();
 
@@ -44,6 +50,12 @@ public:
     /// @brief Type of message
     /// @return enuMsgType
     const enuMsgType & getType( void ) const;
+
+    /**
+     * @brief getAPDUType
+     * @return enuAPDUType
+     */
+    const enuAPDUType & getAPDUType( void ) const;
 
     /// @brief Returns the destination adress of the message
     /// @return QString with KNX adress, e.g. "2/4/15"
@@ -78,6 +90,8 @@ public:
      */
     int getMsgDataSize(  ) const;
 
+    void setValue( const float & p_fVal );
+
 protected:
 
     /** @brief Checks if the passed double is a natural number
@@ -92,13 +106,22 @@ protected:
      */
     void setEib1( const uchar & p_szData );
 
-    enuMsgType m_eMsgType;
-    QString    m_sSrcAddr; ///< EIB address of message sender.
-    QString    m_sDstAddrKnx; ///< EIB address of message receiver.
+    /**
+     * @brief Interprets an 2 byte DTP9.001 message and stores the result
+     * @param p_grData 2 byte DTP9.001 message
+     */
+    void setDTP9_001( const QByteArray &p_grData );
 
-    QVariant   m_grValue;  ///< Value of EIB message.
+    void setEibAddress( const QByteArray &p_grData );
 
-    int        m_nMsgSize; ///< Size of data part of message
+    enuMsgType  m_eMsgType;
+    enuAPDUType m_eAPDUType;
+    QString     m_sSrcAddr; ///< EIB address of message sender.
+    QString     m_sDstAddrKnx; ///< EIB address of message receiver.
+
+    QVariant    m_grValue;  ///< Value of EIB message.
+
+    int         m_nMsgSize; ///< Size of data part of message
 };
 
 #endif // EIBDMSG_H
