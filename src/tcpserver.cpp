@@ -247,20 +247,19 @@ void CTcpServer::slot_disconnected()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    QLOG_INFO() << QObject::tr("Disconnected from eibd client");
+    QLOG_INFO() << QObject::tr("Disconnected connection from eibd client.").toStdString().c_str();
 
     QTcpSocket * pTcpSocket = dynamic_cast< QTcpSocket * >( sender() );
-    if ( pTcpSocket == NULL )
-    {
+    if ( pTcpSocket == NULL ) {
         return;
     }
 
     QLOG_DEBUG() << tr( "Connection was:" ).toStdString().c_str()
-                 << pTcpSocket->peerAddress().toString().toStdString().c_str() << ":" << pTcpSocket->peerPort();
+                 << pTcpSocket->peerAddress().toString().toStdString().c_str() << ":" << pTcpSocket->peerPort()
+                 << tr( "Socket state is") << pTcpSocket->state();
 
     m_grSocketMap.remove( pTcpSocket );
-    if ( m_pReplyTcpSocket == pTcpSocket )
-    {
+    if ( m_pReplyTcpSocket == pTcpSocket ) {
         m_pReplyTcpSocket = NULL;
     }
     pTcpSocket->deleteLater();
