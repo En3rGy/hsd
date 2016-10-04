@@ -48,6 +48,9 @@ public slots:
       */
     void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
 
+protected:
+    inline qint64 write( QTcpSocket * p_pTcpSocket, const QByteArray & p_grData);
+
 private:
     QMap< QTcpSocket *, CEibdMsg > m_grSocketMap;
     QTcpSocket * m_pReplyTcpSocket; ///< Socket to forward HS messages to eibd client.

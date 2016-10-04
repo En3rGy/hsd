@@ -159,38 +159,30 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
     QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grResponse;
 
+    bool bHasResponde = false;
+
     switch( m_eMsgType ) {
     case enuMsgType_connect: {
         grResponse.append( CModel::g_uzEibAck[0] );
         grResponse.append( CModel::g_uzEibAck[1] );
-
-        if ( p_pHasResponse != NULL ) {
-            * p_pHasResponse = true;
-        }
+        bHasResponde = true;
         break;
     }
     case enuMsgType_EIB_OPEN_GROUPCON: {
         grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[0] );
         grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[1] );
-
-        if ( p_pHasResponse != NULL ) {
-            * p_pHasResponse = true;
-        }
+        bHasResponde = true;
         break;
     }
     case enuMsgType_EIB_GROUP_PACKET: {
-        if ( p_pHasResponse != NULL ) {
-            * p_pHasResponse = false;
-        }
+        bHasResponde = false;
         break;
     }
     case enuMsgType_EIB_OPEN_T_GROUP: {
         const char szMsgLength[2] = { 0x00, 0x02 };
         grResponse.append( szMsgLength, 2 );
         grResponse.append( QByteArray( * CModel::g_uzEIB_OPEN_T_GROUP, 2 ) );
-        if ( p_pHasResponse != NULL ) {
-            * p_pHasResponse = true;
-        }
+        bHasResponde = true;
         break;
     }
     case enuMsgType_EIB_APDU_PACKET: {
@@ -198,9 +190,9 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
             const char szMsgLength[2] = { 0x00, 0x04 };
             grResponse.append( szMsgLength, 2 );
             grResponse.append( QByteArray( * CModel::g_uzEIB_APDU_PACKET, 2 ) );
-            if ( p_pHasResponse != NULL ) {
-                * p_pHasResponse = true;
-            }
+
+            bHasResponde = true;
+
             grResponse.append( QByteArray( 0x00 ) );
 
             char szData = 0x80;
@@ -219,11 +211,22 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         break;
     }
     default: {
-        if ( p_pHasResponse != NULL ) {
-            * p_pHasResponse = false;
-        }
+        bHasResponde = false;
+
     }
     }
+
+    if ( p_pHasResponse != NULL ) {
+        * p_pHasResponse = bHasResponde;
+    }
+
+    int nLength = grResponse.length();
+
+    char szLength = nLength;
+    grResponse.append( szLength );
+
+    grResponse.insert( 0, QByteArray( 0x00 ) );
+    grResponse.insert( 1, szLength );
 
     return grResponse;
 }
