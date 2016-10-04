@@ -90,8 +90,8 @@ void CTcpServer::slot_newConnection()
                  << ":"
                  << pTcpSocket->peerPort();
 
-    connect( pTcpSocket, SIGNAL(readyRead()), this, SLOT( slot_startRead() ) );
-    connect( pTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_disconnected()) );
+    connect( pTcpSocket, SIGNAL( readyRead() ), this, SLOT( slot_startRead() ) );
+    connect( pTcpSocket, SIGNAL( disconnected() ), this, SLOT( slot_disconnected()) );
 }
 
 //////////////////////////////////////////////////////////////
@@ -291,7 +291,7 @@ qint64 CTcpServer::write( QTcpSocket *p_pTcpSocket, const QByteArray &p_grData )
         return -1;
     }
 
-    QLOG_DEBUG() << QObject::tr( "Sending to eibd client:" )
+    QLOG_DEBUG() << QObject::tr( "Sending to eibd client:" ).toStdString().c_str()
                  << p_pTcpSocket->peerAddress().toString().toStdString().c_str() << ":"
                  << p_pTcpSocket->peerPort()
                  << CEibdMsg::printASCII( p_grData );
