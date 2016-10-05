@@ -2,6 +2,17 @@ v0.5.1
 =========
 - Fixed bug: incoming msg. not detected correctly.
 
+v0.5.2
+=========
+- Removed length info from outgoing eibd messages
+- Solved bug in loosing pointer information leading to wrong messages (e.g. 00 02 22 02 instead of 00 02 00 22 )
+
+
+v0.5.1
+=========
+- Redesign cont.
+
+
 v0.5.0
 =========
 - Redesign
