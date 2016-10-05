@@ -182,8 +182,12 @@ void CTcpServer::slot_startRead()
                 QLOG_WARN() << tr( "Failure while trying to read GA state. Trying to read float. GA stat is" ) << grVal;
             }
 
+            bool bHasReply;
             grMsg.setValue( fVal );
-            write( pTcpSocket, grMsg.getResponse() );
+            QByteArray grResp = grMsg.getResponse( & bHasReply );
+            if ( bHasReply == true ) {
+                write( pTcpSocket, grResp );
+            }
         }
         else {
             QLOG_WARN() << QObject::tr("Unknown EIB_APDU_PACKET. Discarding.").toStdString().c_str();
@@ -237,7 +241,7 @@ void CTcpServer::slot_disconnected()
 
     QLOG_DEBUG() << tr( "Connection was:" ).toStdString().c_str()
                  << pTcpSocket->peerAddress().toString().toStdString().c_str() << ":" << pTcpSocket->peerPort()
-                 << tr( "Socket state is") << pTcpSocket->state();
+                 << tr( "Socket state is").toStdString().c_str() << pTcpSocket->state();
 
     m_grSocketMap.remove( pTcpSocket );
     if ( m_pReplyTcpSocket == pTcpSocket ) {

@@ -160,44 +160,49 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
     QByteArray grResponse;
 
     bool bHasResponde = false;
+    bool bPrependLengthInfo = true;
 
     switch( m_eMsgType ) {
     case enuMsgType_connect: {
         grResponse.append( CModel::g_uzEibAck[0] );
         grResponse.append( CModel::g_uzEibAck[1] );
         bHasResponde = true;
+        bPrependLengthInfo = false; // fhem accepts no size info for this msg
         break;
     }
     case enuMsgType_EIB_OPEN_GROUPCON: {
         grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[0] );
         grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[1] );
         bHasResponde = true;
+        bPrependLengthInfo = false; // fhem accepts no size info for this msg
         break;
     }
     case enuMsgType_EIB_GROUP_PACKET: {
         bHasResponde = false;
+        bPrependLengthInfo = false;
         break;
     }
     case enuMsgType_EIB_OPEN_T_GROUP: {
-        const uchar szMsgLength[2] = { 0x00, 0x02 };
-        grResponse.append( szMsgLength[ 0 ] );
-        grResponse.append( szMsgLength[ 1 ] );
-        grResponse.append( QByteArray( * CModel::g_uzEIB_OPEN_T_GROUP, 2 ) );
+        grResponse.append( char( 0x00 ) ); ///@todo check length
+        grResponse.append( char( 0x02) );
+        grResponse.append( CModel::g_uzEIB_OPEN_T_GROUP[ 0 ] );
+        grResponse.append( CModel::g_uzEIB_OPEN_T_GROUP[ 1 ] );
         bHasResponde = true;
+        bPrependLengthInfo = false; /// @todo check if correct
         break;
     }
     case enuMsgType_EIB_APDU_PACKET: {
         if ( m_eAPDUType == enuAPDUType_readRequest ) {
-            const uchar szMsgLength[2] = { 0x00, 0x04 };
-            grResponse.append( szMsgLength[ 0 ] );
-            grResponse.append( szMsgLength[ 1 ] );
-            grResponse.append( QByteArray( * CModel::g_uzEIB_APDU_PACKET, 2 ) );
+            grResponse.append( char( 0x00 ) );
+            grResponse.append( char( 0x04 ) );
+            grResponse.append( CModel::g_uzEIB_APDU_PACKET[ 0 ] );
+            grResponse.append( CModel::g_uzEIB_APDU_PACKET[ 1 ] );
+            grResponse.append( char( 0x00 ) );
 
             bHasResponde = true;
+            bPrependLengthInfo = false; /// @todo check if correct
 
-            grResponse.append( QByteArray( 0x00 ) );
-
-            uchar szData = 0x80;
+            char szData = 0x80;
             float fVal = m_grValue.toFloat();
             if ( fVal == 1.0 ) {
                 szData = szData | 0x01;
@@ -207,8 +212,12 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
             }
             else {
                 QLOG_WARN() << QObject::tr( "Value is not bool. Feature not implemented yet. Providing 0x00." ).toStdString().c_str();
+                bHasResponde = true;
             }
             grResponse.append( szData );
+        }
+        else if ( m_eAPDUType == enuAPDUType_bit ) {
+            bHasResponde = false;
         }
         break;
     }
@@ -224,10 +233,12 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
     int nLength = grResponse.length();
 
-    uchar szLength[2];
-    szLength[0] = 0x00;
-    szLength[1] = nLength;
-    grResponse.prepend( QByteArray( * szLength, 2 ) );
+    if ( bPrependLengthInfo == true ) {
+        char szLength0 = 0x00;
+        char szLength1 = nLength;
+        grResponse.prepend( szLength1 );
+        grResponse.prepend( szLength0 );
+    }
 
     return grResponse;
 }
@@ -253,10 +264,10 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
     QByteArray grMsg;
 
-    grMsg.append( QByteArray( 0x00 ) ); // index 0
-    grMsg.append( uchar( 0x08 ) ); // index 1
-    grMsg.append( QByteArray( 0x00 ) ); // index 2
-    grMsg.append( uchar( 0x27 ) ); // index 3
+    grMsg.append( char( 0x00 ) ); // index 0
+    grMsg.append( char( 0x08 ) ); // index 1
+    grMsg.append( char( 0x00 ) ); // index 2
+    grMsg.append( char( 0x27 ) ); // index 3
 
     CGroupAddress grSrcAddr;
     CGroupAddress grDestAddr;
@@ -267,7 +278,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     grMsg.append( grSrcAddr.toHex() );   // index 4 + 5
     grMsg.append( grDestAddr.toHex() );  // index 6 + 7
 
-    grMsg.append( QByteArray( 0x00 ) ); // index 8
+    grMsg.append( char( 0x00 ) ); // index 8
 
     bool bOk;
     float fVal = p_grData.toFloat( & bOk );
@@ -293,7 +304,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         nVal = 0;
     }
 
-    uchar szData = nVal;// QString::number( nVal ).toAscii();
+    char szData = nVal;// QString::number( nVal ).toAscii();
     szData = szData | 0x80;
     grMsg.append( szData ); // index 9 & 10
 

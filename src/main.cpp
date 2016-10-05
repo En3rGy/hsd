@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.5.1" );
+        a.setApplicationVersion( "0.5.2" );
 
         QString sLocale = QLocale::system().name();
 
@@ -183,6 +183,10 @@ int main(int argc, char *argv[])
         {
             grHsd.setLogLevel( nLogLevel );
         }
+
+        QLOG_INFO() << a.applicationName().toStdString().c_str()
+                    << a.applicationVersion().toStdString().c_str()
+                    << a.applicationFilePath().toStdString().c_str();
 
         grHsd.startService();
 
