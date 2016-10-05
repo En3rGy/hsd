@@ -59,19 +59,20 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     else if ( equals( grMsgType, CModel::g_uzEIB_APDU_PACKET, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_APDU_PACKET;
 
-        uchar szInd = grMsg.data()[4] & 0x80;
+        uchar szInd = grMsg.data()[3] & 0x80;
 
         // set boolean
-        if ( ( grMsg.length() == 4 ) &&
-             ( szInd == 0x80 ) ) {
-            setEib1( grMsg.data()[4] );
+
+        if ( ( grMsg.length() == 4 ) && ( szInd == 0x80 ) ) {
+            setEib1( grMsg.data()[3] );
             m_eAPDUType = enuAPDUType_bit;
         }
 
         // request sent fo GA
-        else if ( ( grMsg.length() == 4 ) && ( grMsg.data()[4] == 0x00 ) ) {
+        else if ( ( grMsg.length() == 4 ) && ( grMsg.data()[3] == 0x00 ) ) {
             m_eAPDUType = enuAPDUType_readRequest;
         }
+
         else {
             m_eAPDUType = enuAPDUType_undef;
         }
