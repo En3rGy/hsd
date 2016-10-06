@@ -170,10 +170,10 @@ void CTcpServer::slot_startRead()
         CEibdMsg grFormerMsg = m_grSocketMap.value( pTcpSocket );
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_APDU_PACKET. Assigning it to ").toStdString().c_str() << grFormerMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
 
-        if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_bit ) {
+        if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Write_PDU ) {
             emit signal_sendToHs( grFormerMsg.getDestAddressKnx(), grMsg.getValue() );
         }
-        else if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_readRequest ) {
+        else if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Read_PDU ) {
             bool bRet;
             QVariant grVal = CModel::getInstance()->m_grGAState.value( grFormerMsg.getDestAddressKnx() );
             float    fVal  = grVal.toFloat( & bRet );

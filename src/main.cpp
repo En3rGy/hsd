@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.5.3" );
+        a.setApplicationVersion( "0.5.4" );
 
         QString sLocale = QLocale::system().name();
 

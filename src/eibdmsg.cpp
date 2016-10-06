@@ -59,20 +59,32 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     else if ( equals( grMsgType, CModel::g_uzEIB_APDU_PACKET, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_APDU_PACKET;
 
-        uchar szInd = grMsg.data()[3] & 0x80;
+        // paylaod is within byte 2, 3
+        // Check 1st payload byte
+        uchar szPayload0 = grMsg.data()[2] & 0x03; // 0000 0011
+        uchar szPayload1 = grMsg.data()[3] & 0xC0; // 1100 0000
 
-        // set boolean
-
-        if ( ( grMsg.length() == 4 ) && ( szInd == 0x80 ) ) {
-            setEib1( grMsg.data()[3] );
-            m_eAPDUType = enuAPDUType_bit;
+        if ( szPayload0 == 0x00 ) {
+            // Check 2nd payload byte
+            if ( szPayload1 == 0x00 ) {
+                m_eAPDUType = enuAPDUType_A_GroupValue_Read_PDU;
+            }
+            else if ( szPayload1 == 0x40 ) {
+                // A_GroupValue_Response_PDU
+                m_eAPDUType = enuAPDUType_undef;
+            }
+            else if ( szPayload1 == 0x80 ) {
+                setEib1( grMsg.data()[3] );
+                m_eAPDUType = enuAPDUType_A_GroupValue_Write_PDU;
+            }
+            else if ( szPayload1 == 0xC0 ) {
+                // A_IndividualAddress_Write_PDU
+                m_eAPDUType = enuAPDUType_undef;
+            }
         }
-
-        // request sent fo GA
-        else if ( ( grMsg.length() == 4 ) && ( grMsg.data()[3] == 0x00 ) ) {
-            m_eAPDUType = enuAPDUType_readRequest;
+        else if ( szPayload0 == 0xC0 ) {
+            m_eAPDUType = enuAPDUType_undef;
         }
-
         else {
             m_eAPDUType = enuAPDUType_undef;
         }
@@ -193,31 +205,34 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         break;
     }
     case enuMsgType_EIB_APDU_PACKET: {
-        if ( m_eAPDUType == enuAPDUType_readRequest ) {
-            grResponse.append( char( 0x00 ) );
-            grResponse.append( char( 0x04 ) );
-            grResponse.append( CModel::g_uzEIB_APDU_PACKET[ 0 ] );
-            grResponse.append( CModel::g_uzEIB_APDU_PACKET[ 1 ] );
-            grResponse.append( char( 0x00 ) );
+        if ( m_eAPDUType == enuAPDUType_A_GroupValue_Read_PDU ) {
 
-            bHasResponde = true;
+            // response
+            uchar szByte0 = 0x00;
+            uchar szByte1 = 0x40; // 0100 0000
+
+            bHasResponde       = true;
             bPrependLengthInfo = false; /// @todo check if correct
 
-            char szData = 0x80;
+            uchar szData = 0x00;
             float fVal = m_grValue.toFloat();
             if ( fVal == 1.0 ) {
-                szData = szData | 0x01;
+                szData = 0x01;
             }
             else if ( fVal == 0.0 ) {
-                szData = szData | 0x00;
+                szData = 0x00;
             }
             else {
                 QLOG_WARN() << QObject::tr( "Value is not bool. Feature not implemented yet. Providing 0x00." ).toStdString().c_str();
                 bHasResponde = true;
             }
-            grResponse.append( szData );
+
+            szByte1 = szByte1 | ( szData & 0x3f ); // 0011 1111
+
+            grResponse.append( szByte0 );
+            grResponse.append( szByte1 );
         }
-        else if ( m_eAPDUType == enuAPDUType_bit ) {
+        else if ( m_eAPDUType == enuAPDUType_A_GroupValue_Write_PDU ) {
             bHasResponde = false;
         }
         break;

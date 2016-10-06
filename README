@@ -1,6 +1,11 @@
-v0.5.1
+v0.5.4
 =========
 - Fixed bug: incoming msg. not detected correctly.
+- 1st imolementation of APDU Response (small)
+
+v0.5.3
+=========
+- Fixed incomming EIB_APDU_PACKET handling
 
 v0.5.2
 =========

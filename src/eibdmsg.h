@@ -30,8 +30,8 @@ public:
 
     enum enuAPDUType {
         enuAPDUType_undef
-        , enuAPDUType_bit
-        , enuAPDUType_readRequest
+        , enuAPDUType_A_GroupValue_Write_PDU
+        , enuAPDUType_A_GroupValue_Read_PDU
     };
 
     /// @brief default cto.
