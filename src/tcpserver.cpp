@@ -211,7 +211,7 @@ void CTcpServer::slot_startRead()
             QLOG_DEBUG() << QObject::tr( "New log level is" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
         }
         else {
-            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:").toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
+            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request (might be processed as msg size):").toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
         }
     }
     }
