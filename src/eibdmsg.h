@@ -118,6 +118,8 @@ protected:
      */
     void setEib1( const uchar & p_szData );
 
+    void setDTP5( const QByteArray &p_grData );
+
     /**
      * @brief Interprets an 2 byte DTP9.001 message and stores the result
      * @param p_grData 2 byte DTP9.001 message

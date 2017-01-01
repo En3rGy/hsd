@@ -346,7 +346,7 @@ void CTcpClient::getGaXml()
     if ( m_pWebRequestTcpSocket == NULL )
     {
         m_pWebRequestTcpSocket = new QTcpSocket( this );
-        connect( m_pWebRequestTcpSocket, SIGNAL( readChannelFinished()), this, SLOT( slot_webRequestReadFinished()) );
+        connect( m_pWebRequestTcpSocket, SIGNAL( readyRead()), this, SLOT( slot_webRequestReadFinished()) );
         connect( m_pWebRequestTcpSocket, SIGNAL( disconnected()), this, SLOT( slot_gaXmlWebRequestClosed() ) );
     }
 

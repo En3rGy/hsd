@@ -5,6 +5,7 @@
 #include <QStringList>
 #include "groupaddress.h"
 #include "QsLog.h"
+#include "koxml.h"
 #include <qmath.h>
 
 CEibdMsg::CEibdMsg()
@@ -30,19 +31,26 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
 
     QByteArray grMsg;
 
-    // check if 1st 2 byte contain package length, if so, remove from message!
+    QLOG_DEBUG() << QObject::tr("Received message: ").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
+
+    // check if 1st 2 byte contain package length
     if ( p_grByteArray.size() < 2 ) {
         QLOG_WARN() << QObject::tr("Received message too short. Message was").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
         return;
     }
 
-    QString sSize = QString::number( p_grByteArray.at( 1 ) );
-    m_nMsgSize    = ( int ) sSize.toDouble();
+    if ( p_grByteArray.at( 1 ) < char( 0x20 ) ) { // size info
+        QString sSize = QString::number( p_grByteArray.at( 1 ) );
+        m_nMsgSize    = ( int ) sSize.toDouble();
 
-    if ( p_grByteArray.size() - 2 == m_nMsgSize ) {
-        grMsg.append( p_grByteArray.mid( 2, p_grByteArray.size() - 2 ) ); // removing size info
+        grMsg.append( p_grByteArray.mid( 2, m_nMsgSize ) ); // removing size info
+
+        if ( grMsg.size() != m_nMsgSize ) {
+            QLOG_WARN() << QObject::tr("Message longer than indicated; truncating. Msg was:").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
+        }
     }
     else {
+        m_nMsgSize = p_grByteArray.size();
         grMsg.append( p_grByteArray );
     }
 
@@ -108,6 +116,18 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         // e.g. EIS1 = 1 Bit
         if ( grData.size() == 1 ) {
             setEib1( grMsg.at( 5 ) );
+        }
+
+        //
+        else if ( grData.size() == 2 ) {
+            //    ERROR 2016-12-31T14:49:55.283 Unknown DTP of data bytes in EIB message: "00 27 13 0c 00 80 cc"
+            //    ERROR 2016-12-31T16:29:33.342 Unknown DTP of data bytes in EIB message: "00 27 1a 10 00 80 00"
+            //    ERROR 2016-12-31T20:58:45.778 Unknown DTP of data bytes in EIB message: "00 27 12 02 00 81 00 06 00 27 12 03 00 81"
+            //    ERROR 2016-12-31T20:58:55.018 Unknown DTP of data bytes in EIB message: "00 27 12 02 00 81 00 06 00 27 12 03 00 81"
+            //    ERROR 2016-12-31T23:11:50.557 Unknown DTP of data bytes in EIB message: "00 27 1a 10 00 80 ff"
+            //    ERROR 2016-12-31T23:11:51.847 Unknown DTP of data bytes in EIB message: "00 27 1a 10 00 80 00"
+
+            setDTP5( grData.mid( 1, 1 ) ); // skipping 80 byte
         }
 
         // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
@@ -305,24 +325,31 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         return QByteArray();
     }
 
-    /// @todo Encode float values
+    CKoXml::enuDPT eDPT = CKoXml::getInstance()->getGaDPT( p_sDestAddr );
 
-    if ( isNatural( fVal ) != true )
-    {
-        QLOG_WARN() << QObject::tr("Forwarding float values vie eibd interface is not supportet, converting to int. Value was").toStdString().c_str() << p_grData.toString();
+    switch( eDPT ) {
+    case CKoXml::enuDPT_DPT1: {
+        int nVal = (int) fVal;
+        char szData = nVal;// QString::number( nVal ).toAscii();
+        szData = szData | 0x80;
+        grMsg.append( szData ); // index 9 & 10
+        break;
     }
 
-    int nVal = (int) fVal;
-
-    if ( nVal > 100 )
-    {
-        QLOG_WARN() << QObject::tr("Can only forward positive natural numbers < 100, setting value to 0. Value was").toStdString().c_str() << p_grData.toString();
-        nVal = 0;
+    case CKoXml::enuDPT_DPT5_DPT6: {
+        // e.g. "00 27 1a 10 00 80 ff"
+        grMsg.append( char( 0x80 ) ); // index 8
+        quint8 unVal = static_cast< quint8 >( fVal );
+        grMsg.append( unVal );
+        grMsg.replace(1, quint8( 0x09 )); // correction of msg length
+        break;
     }
 
-    char szData = nVal;// QString::number( nVal ).toAscii();
-    szData = szData | 0x80;
-    grMsg.append( szData ); // index 9 & 10
+    default: {
+        QLOG_WARN() << QObject::tr("Requested DPT not supported. Value was").toStdString().c_str() << p_grData.toString();
+        break;
+    }
+    }
 
     return grMsg;
 }
@@ -400,6 +427,16 @@ void CEibdMsg::setEib1(const uchar & p_szData)
     uchar szData = p_szData;
     szData = szData & 0x7f; // 0x7f = 0111 1111
     m_grValue.setValue( static_cast< int >( szData ) );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setDTP5(const QByteArray &p_grData)
+{
+    quint8 unData = static_cast< quint8 >( p_grData.at( 0 ) );
+    m_grValue.setValue( static_cast< int >( unData ) );
 }
 
 //////////////////////////////////////////////////////////////

@@ -52,7 +52,7 @@ CHsd::CHsd(QObject *parent) :
     connect( m_pTcpClient,
              SIGNAL( signal_receivedMessage(QString,QString)),
              m_pTcpServer,
-             SLOT( slot_groupWrite(QString,QString)) );
+             SLOT( slot_sendToEibdClient(QString,QString)) );
 }
 
 CHsd::~CHsd()

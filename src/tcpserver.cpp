@@ -17,6 +17,7 @@
 
 CTcpServer::CTcpServer(QObject *parent) :
     QObject(parent)
+  , m_pReplyTcpSocket( NULL )
   , m_pTcpServer( NULL )
   , m_nSizeOfNextMsg( -1 )
 {
@@ -182,12 +183,8 @@ void CTcpServer::slot_startRead()
                 QLOG_WARN() << tr( "Failure while trying to read GA state. Trying to read float. GA stat is" ) << grVal;
             }
 
-            bool bHasReply;
-            grMsg.setValue( fVal );
-            QByteArray grResp = grMsg.getResponse( & bHasReply );
-            if ( bHasReply == true ) {
-                write( pTcpSocket, grResp );
-            }
+            QByteArray grEibdMsg = CEibdMsg::getMessage( "", grFormerMsg.getDestAddressKnx(), fVal );
+            write( m_pReplyTcpSocket, grEibdMsg );
         }
         else {
             QLOG_WARN() << QObject::tr("Unknown EIB_APDU_PACKET. Discarding.").toStdString().c_str();
@@ -254,7 +251,7 @@ void CTcpServer::slot_disconnected()
 //
 //////////////////////////////////////////////////////////////
 
-void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sValue)
+void CTcpServer::slot_sendToEibdClient(const QString &p_sEibGroup, const QString &p_sValue)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
@@ -267,6 +264,8 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
         QLOG_ERROR() << tr( "eibd client not available to recieve data. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
         return;
     }
+
+    QString sFormat = CKoXml::getInstance()->getGaFormat( p_sEibGroup );
 
     QByteArray grMsg = CEibdMsg::getMessage( "", p_sEibGroup, p_sValue.toFloat() );
 
@@ -287,11 +286,15 @@ void CTcpServer::slot_groupWrite(const QString &p_sEibGroup, const QString &p_sV
 //
 //////////////////////////////////////////////////////////////
 
-qint64 CTcpServer::write( QTcpSocket *p_pTcpSocket, const QByteArray &p_grData )
+qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
     if ( p_pTcpSocket == NULL ) {
+        return -1;
+    }
+
+    if ( p_pTcpSocket->state() != QAbstractSocket::ConnectedState ) {
         return -1;
     }
 

@@ -1,3 +1,8 @@
+v0.5.5
+=========
+- Fixed Bug in reading GA-XML from HS
+- Using EIS info from HS to identify required DPT
+
 v0.5.4
 =========
 - Fixed bug: incoming msg. not detected correctly.

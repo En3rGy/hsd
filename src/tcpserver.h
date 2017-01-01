@@ -46,7 +46,7 @@ public slots:
       * @param p_sEibGroup Eib address to be set, e.g. 11/1/100
       * @param p_sValue Value to be set.
       */
-    void slot_groupWrite( const QString & p_sEibGroup, const QString & p_sValue );
+    void slot_sendToEibdClient( const QString & p_sEibGroup, const QString & p_sValue );
 
 protected:
     inline qint64 write( QTcpSocket * p_pTcpSocket, const QByteArray & p_grData);

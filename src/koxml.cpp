@@ -31,6 +31,7 @@ void CKoXml::setXml(QByteArray & p_grKoXml)
         grCobject.sUsed     = copy( p_grKoXml, "used", nIndex );
         grCobject.sType     = copy( p_grKoXml, "type", nIndex );
         grCobject.sPath     = copy( p_grKoXml, "path", nIndex );
+        grCobject.sFmt      = copy( p_grKoXml, "fmt", nIndex );
         grCobject.sFmtex    = copy( p_grKoXml, "fmtex", nIndex );
         grCobject.sName     = copy( p_grKoXml, "name", nIndex );
         grCobject.sRem      = copy( p_grKoXml, "rem", nIndex );
@@ -50,10 +51,14 @@ void CKoXml::setXml(QByteArray & p_grKoXml)
 
         m_ssGA2NameMap.insert( grCobject.sGa, grCobject );
 
-        QLOG_DEBUG() << grCobject.sGa << "\t" << grCobject.sName;
+        QLOG_DEBUG() << grCobject.sGa << "\t" << grCobject.sName << "\t" << grCobject.sFmt;
     }
 
     QLOG_INFO() << QObject::tr("Received available GAs from HS. No of received elements:").toStdString().c_str() << m_ssGA2NameMap.size();
+
+    if ( m_ssGA2NameMap.size() == 0 ) {
+        QLOG_WARN() << QObject::tr( "NO GAs were received. Remeber to transfer your project via Data+Images+Sounds to transfer XML also." );
+    }
 }
 
 CKoXml::CKoXml()
@@ -102,4 +107,66 @@ QString CKoXml::getGaName(const QString &p_sGA)
     }
 
     return grValue.sName;
+}
+
+QString CKoXml::getGaFormat(const QString &p_sGA)
+{
+    QLOG_TRACE() << Q_FUNC_INFO;
+    cobject grValue = m_ssGA2NameMap.value( p_sGA );
+
+    if ( grValue.sFmt.isEmpty() == true )
+    {
+        return QObject::tr( "Format of GA is unknown" ).toStdString().c_str();
+    }
+
+    return grValue.sFmt;
+}
+
+CKoXml::enuDPT CKoXml::getGaDPT(const QString &p_sGA)
+{
+    QString sFmt = getGaFormat( p_sGA );
+
+    if ( sFmt == "EIS6_8BIT" ) {
+        return enuDPT_DPT5_DPT6;
+    }
+    else if ( ( sFmt == "NONEIS_8BIT_RTR" ) ||
+              ( sFmt == "EIS5_16BIT" ) ) {
+        return enuDPT_DPT9;
+    }
+    else if ( sFmt == "EIS2+EIS6_8BIT" ) {
+        return enuDPT_DPT3;
+    }
+    else if ( ( sFmt == "EIS?_4BIT" ) ||
+              ( sFmt == "EIS?_8BIT" ) ||
+              ( sFmt == "EIS?_14BYTE" ) ||
+              ( sFmt == "EIS?_DALI" ) ||
+              ( sFmt == "EIS?_SRO" ) ) {
+        return enuDPT_undef;
+    }
+    else if ( ( sFmt == "EIS10_16BIT_UNSIGNED" ) ||
+              ( sFmt == "EIS10_16BIT_SIGNED" ) ) {
+        return enuDPT_DPT7_DPT8;
+    }
+    else if ( ( sFmt == "EIS11_32BIT_UNSIGNED" ) ||
+              ( sFmt == "EIS11_32BIT_SIGNED" ) ) {
+        return enuDPT_DPT12_DPT13;
+    }
+    else if ( sFmt == "EIS3_3BYTE_TIME" ) {
+        return enuDPT_DPT10;
+    }
+    else if ( sFmt == "EIS4_3BYTE_DATE" ) {
+        return enuDPT_DPT11;
+    }
+    else if ( sFmt == "EIS9_4BYTE" ) {
+        return enuDPT_DPT14;
+    }
+    else if ( sFmt == "EIS8_2BIT" ) {
+        return enuDPT_DPT2;
+    }
+    else if ( sFmt == "EIS1+EIS2+EIS7_1BIT" ) {
+        return enuDPT_DPT1;
+    }
+    else {
+        return enuDPT_undef;
+    }
 }

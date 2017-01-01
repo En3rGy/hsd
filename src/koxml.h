@@ -15,8 +15,24 @@ class CKoXml
 public:
     static CKoXml * getInstance();
 
+    enum enuDPT {
+        enuDPT_undef,
+        enuDPT_DPT1,
+        enuDPT_DPT2,
+        enuDPT_DPT3,
+        enuDPT_DPT5_DPT6,
+        enuDPT_DPT7_DPT8,
+        enuDPT_DPT9,
+        enuDPT_DPT10,
+        enuDPT_DPT11,
+        enuDPT_DPT12_DPT13,
+        enuDPT_DPT14
+    };
+
     void setXml( QByteArray & p_grKoXml );
     QString getGaName( const QString & p_sGA );
+    QString getGaFormat( const QString & p_sGA );
+    enuDPT getGaDPT( const QString & p_sGA );
 
     struct cobject
     {

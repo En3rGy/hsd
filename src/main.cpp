@@ -19,7 +19,7 @@
   * <ul>
   * <li>CTcpClient::slot_startRead</li>
   * <li><li>CGroupAddress</li></li>
-  * <li>CTcpServer::slot_groupWrite</li>
+  * <li>CTcpServer::slot_sendToEibdClient</li>
   * <li><li>CEibdMsg</li></li>
   * <li><li><li>CGroupAddress</li></li></li>
   * </ul>
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         QCoreApplication a(argc, argv);
         a.setOrganizationName( "PImp" );
         a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.5.4" );
+        a.setApplicationVersion( "0.5.5" );
 
         QString sLocale = QLocale::system().name();
 
