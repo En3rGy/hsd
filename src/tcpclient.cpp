@@ -330,7 +330,7 @@ bool CTcpClient::initConnection()
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-void CTcpClient::getGaXml()
+bool CTcpClient::getGaXml()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     // Load Xml file form HS
@@ -353,7 +353,7 @@ void CTcpClient::getGaXml()
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
     {
         QLOG_WARN() << QObject::tr("HS web request already ongoing").toStdString().c_str();
-        return;
+        return false;
     }
 
     m_pWebRequestTcpSocket->connectToHost( sHsIp, unHsPort );
@@ -375,14 +375,16 @@ void CTcpClient::getGaXml()
         else
         {
             QLOG_ERROR() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
-            return;
+            return false;
         }
     }
     else
     {
         QLOG_ERROR() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
-        return;
+        return false;
     }
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////////

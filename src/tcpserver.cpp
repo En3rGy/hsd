@@ -265,8 +265,6 @@ void CTcpServer::slot_sendToEibdClient(const QString &p_sEibGroup, const QString
         return;
     }
 
-    QString sFormat = CKoXml::getInstance()->getGaFormat( p_sEibGroup );
-
     QByteArray grMsg = CEibdMsg::getMessage( "", p_sEibGroup, p_sValue.toFloat() );
 
     if ( grMsg.isEmpty() == true ) {

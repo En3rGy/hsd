@@ -41,7 +41,7 @@ public:
 
     /** @brief Calls the group adress via a HS xml interface.
       */
-    void getGaXml( void );
+    bool getGaXml( void );
 
     /**
      * @brief Sends a message to a specific host

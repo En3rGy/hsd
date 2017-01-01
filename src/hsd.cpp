@@ -72,7 +72,9 @@ void CHsd::startService()
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
     QLOG_INFO() << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
 
-    m_pTcpClient->getGaXml();
+    while ( m_pTcpClient->getGaXml() == false ) {
+        QCoreApplication::processEvents();
+    }
     m_pTcpServer->listen();
     m_pTcpClient->initConnection();
 }
