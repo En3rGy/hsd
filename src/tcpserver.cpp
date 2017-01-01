@@ -161,7 +161,7 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_EIB_OPEN_T_GROUP:
     {
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_T_GROUP ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
-        write( pTcpSocket, grMsg.getResponse() );
+        write( m_pReplyTcpSocket /*pTcpSocket*/, grMsg.getResponse() );
 
         m_grSocketMap[ pTcpSocket ] = grMsg;
         break;
@@ -211,7 +211,7 @@ void CTcpServer::slot_startRead()
             QLOG_DEBUG() << QObject::tr( "New log level is" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
         }
         else {
-            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request (might be processed as msg size):").toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
+            QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:").toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
         }
     }
     }
