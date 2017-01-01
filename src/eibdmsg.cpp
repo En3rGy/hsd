@@ -346,7 +346,10 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     }
 
     default: {
-        QLOG_WARN() << QObject::tr("Requested DPT not supported. Value was").toStdString().c_str() << p_grData.toString();
+        QLOG_WARN() << QObject::tr("Requested DPT not supported. EIS / Value was").toStdString().c_str()
+                    << CKoXml::getInstance()->getGaFormat( p_sDestAddr ).toStdString().c_str()
+                    << " / "
+                    << p_grData;
         break;
     }
     }
