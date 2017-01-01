@@ -9,6 +9,7 @@
 #include <qmath.h>
 
 CEibdMsg::CEibdMsg()
+    : m_nMsgSize( -1 )
 {
 }
 
@@ -17,6 +18,7 @@ CEibdMsg::CEibdMsg()
 //////////////////////////////////////////////////////////////
 
 CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
+    : m_nMsgSize( -1 )
 {
     setEibdMsg( p_grByteArray );
 }
@@ -43,9 +45,15 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         QString sSize = QString::number( p_grByteArray.at( 1 ) );
         m_nMsgSize    = ( int ) sSize.toDouble();
 
+        if ( p_grByteArray.size() == 2 ) {
+            return;
+        }
+    }
+
+    if ( m_nMsgSize != -1 ) {
         grMsg.append( p_grByteArray.mid( 2, m_nMsgSize ) ); // removing size info
 
-        if ( grMsg.size() != m_nMsgSize ) {
+        if ( grMsg.size() > m_nMsgSize ) {
             QLOG_WARN() << QObject::tr("Message longer than indicated; truncating. Msg was:").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
         }
     }
@@ -141,6 +149,8 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     else {
         QLOG_WARN() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
     }
+
+    m_nMsgSize = -1; // reset info
 }
 
 //////////////////////////////////////////////////////////////
