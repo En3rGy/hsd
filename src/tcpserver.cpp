@@ -9,6 +9,7 @@
 #include "koxml.h"
 #include "eibdmsg.h"
 #include "QsLog.h"
+#include <QTime>
 #include <QCoreApplication>
 
 //////////////////////////////////////////////////////////////
@@ -138,6 +139,14 @@ void CTcpServer::slot_startRead()
 
     case CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON: {
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_GROUPCON ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
+
+        QTime grTime;
+        grTime.start();
+
+        while( grTime.elapsed() < 250 ) {
+            QCoreApplication::processEvents();
+        }
+
         write( pTcpSocket, grMsg.getResponse() );
 
         m_grSocketMap[ pTcpSocket ] = grMsg;
@@ -161,7 +170,7 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_EIB_OPEN_T_GROUP:
     {
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_T_GROUP ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
-        write( m_pReplyTcpSocket /*pTcpSocket*/, grMsg.getResponse() );
+        write( pTcpSocket, grMsg.getResponse() );
 
         m_grSocketMap[ pTcpSocket ] = grMsg;
         break;
