@@ -143,10 +143,6 @@ void CTcpServer::slot_startRead()
         QTime grTime;
         grTime.start();
 
-        while( grTime.elapsed() < 1000 ) {
-            QCoreApplication::processEvents();
-        }
-
         write( pTcpSocket, grMsg.getResponse() );
 
         m_grSocketMap[ pTcpSocket ] = grMsg;
