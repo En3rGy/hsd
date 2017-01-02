@@ -140,9 +140,6 @@ void CTcpServer::slot_startRead()
     case CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON: {
         QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_GROUPCON ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granting.").toStdString().c_str();
 
-        QTime grTime;
-        grTime.start();
-
         write( pTcpSocket, grMsg.getResponse() );
 
         m_grSocketMap[ pTcpSocket ] = grMsg;
@@ -301,12 +298,17 @@ qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData 
         return -1;
     }
 
+
+    qint64 nDataWritten = p_pTcpSocket->write( p_grData );
+
     QLOG_DEBUG() << QObject::tr( "Sending to eibd client:" ).toStdString().c_str()
                  << p_pTcpSocket->peerAddress().toString().toStdString().c_str() << ":"
                  << p_pTcpSocket->peerPort()
-                 << CEibdMsg::printASCII( p_grData );
+                 << CEibdMsg::printASCII( p_grData )
+                 << QObject::tr( "Bytes written:" ).toStdString().c_str()
+                 << nDataWritten;
 
-    return p_pTcpSocket->write( p_grData );
+    return nDataWritten;
 }
 
 //////////////////////////////////////////////////////////////
