@@ -138,12 +138,12 @@ void CTcpServer::slot_startRead()
     }
 
     case CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON: {
-        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_GROUPCON ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
+        QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_GROUPCON ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granting.").toStdString().c_str();
 
         QTime grTime;
         grTime.start();
 
-        while( grTime.elapsed() < 250 ) {
+        while( grTime.elapsed() < 1000 ) {
             QCoreApplication::processEvents();
         }
 
@@ -238,7 +238,7 @@ void CTcpServer::slot_disconnected()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    QLOG_INFO() << QObject::tr("Disconnected connection from eibd client.").toStdString().c_str();
+    QLOG_INFO() << QObject::tr("Disconnected from eibd client.").toStdString().c_str();
 
     QTcpSocket * pTcpSocket = dynamic_cast< QTcpSocket * >( sender() );
     if ( pTcpSocket == NULL ) {
