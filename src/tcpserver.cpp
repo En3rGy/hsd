@@ -295,7 +295,8 @@ qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData 
     }
 
     if ( p_pTcpSocket->state() != QAbstractSocket::ConnectedState ) {
-        return -1;
+        QLOG_ERROR() << QObject::tr( "Socket state is != ConnectedState" );
+        //return -1;
     }
 
 
