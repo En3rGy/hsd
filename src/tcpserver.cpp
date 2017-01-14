@@ -92,7 +92,7 @@ void CTcpServer::slot_newConnection()
                  << ":"
                  << pTcpSocket->peerPort();
 
-    connect( pTcpSocket, SIGNAL( readyRead() ), this, SLOT( slot_startRead() ) );
+    connect( pTcpSocket, SIGNAL( readChannelFinished() ), this, SLOT( slot_startRead() ) );
     connect( pTcpSocket, SIGNAL( disconnected() ), this, SLOT( slot_disconnected()) );
 }
 
