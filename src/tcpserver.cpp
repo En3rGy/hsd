@@ -276,7 +276,7 @@ void CTcpServer::slot_sendToEibdClient(const QString &p_sEibGroup, const QString
 
     if ( m_pReplyTcpSocket->state() != QTcpSocket::ConnectedState ) {
         QLOG_DEBUG() << QObject::tr( "No eibd client connected to hsd server. Discarding incomming EIB/KNX update." ).toStdString().c_str();
-        return;
+        //return;
     }
 
     write( m_pReplyTcpSocket, grMsg );
@@ -294,9 +294,9 @@ qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData 
         return -1;
     }
 
-    if ( p_pTcpSocket->state() != QAbstractSocket::ConnectedState ) {
-        QLOG_ERROR() << QObject::tr( "Socket state is != ConnectedState" );
-        //return -1;
+    if ( p_pTcpSocket->state() == QAbstractSocket::UnconnectedState ) {
+        QLOG_ERROR() << QObject::tr( "Socket is unconnected." );
+        return -1;
     }
 
 
