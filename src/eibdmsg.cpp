@@ -279,7 +279,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
     int nLength = grResponse.length();
 
-    if ( bPrependLengthInfo == true ) {
+    if ( ( bPrependLengthInfo == true ) && ( nLength > 0 ) ) {
         char szLength0 = 0x00;
         char szLength1 = nLength;
         grResponse.prepend( szLength1 );

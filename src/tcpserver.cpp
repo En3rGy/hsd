@@ -92,7 +92,7 @@ void CTcpServer::slot_newConnection()
                  << ":"
                  << pTcpSocket->peerPort();
 
-    connect( pTcpSocket, SIGNAL( readChannelFinished() ), this, SLOT( slot_startRead() ) );
+    connect( pTcpSocket, SIGNAL( readyRead() ), this, SLOT( slot_startRead() ) );
     connect( pTcpSocket, SIGNAL( disconnected() ), this, SLOT( slot_disconnected()) );
 }
 
@@ -294,11 +294,15 @@ qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData 
         return -1;
     }
 
+    if ( p_grData.isEmpty() == true ) {
+        QLOG_WARN() << QObject::tr( "Send request but nothing to send available." );
+        return -1;
+    }
+
     if ( p_pTcpSocket->state() == QAbstractSocket::UnconnectedState ) {
         QLOG_ERROR() << QObject::tr( "Socket is unconnected." );
         return -1;
     }
-
 
     qint64 nDataWritten = p_pTcpSocket->write( p_grData );
 
