@@ -9,7 +9,8 @@
 #include <qmath.h>
 
 CEibdMsg::CEibdMsg()
-    : m_nMsgSize( -1 )
+    : m_eMsgType( enuMsgType_undef )
+    , m_nMsgSize( -1 )
 {
 }
 
@@ -18,7 +19,8 @@ CEibdMsg::CEibdMsg()
 //////////////////////////////////////////////////////////////
 
 CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
-    : m_nMsgSize( -1 )
+    : m_eMsgType( enuMsgType_undef )
+    , m_nMsgSize( -1 )
 {
     setEibdMsg( p_grByteArray );
 }
@@ -42,8 +44,10 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     }
 
     if ( p_grByteArray.at( 1 ) < char( 0x20 ) ) { // size info
+        m_eMsgType    = enuMsgType_msgSize;
         QString sSize = QString::number( p_grByteArray.at( 1 ) );
         m_nMsgSize    = ( int ) sSize.toDouble();
+        QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
 
         if ( p_grByteArray.size() == 2 ) {
             return;
