@@ -141,8 +141,6 @@ void CTcpClient::slot_startRead()
         if ( sType == "99" ) // HS ping --> ignore
         {
             QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
-
-            /// @todo Check is answering ping is possible / necassary
         }
         else  {
             /// @todo Respect different HS message types

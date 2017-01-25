@@ -221,7 +221,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[0] );
         grResponse.append( CModel::g_uzEIB_OPEN_GROUPCON[1] );
         bHasResponde = true;
-        bPrependLengthInfo = false; // fhem accepts no size info for this msg
+        bPrependLengthInfo = true; // fhem accepts no size info for this msg
         break;
     }
     case enuMsgType_EIB_GROUP_PACKET: {
@@ -353,7 +353,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     case CKoXml::enuDPT_DPT5_DPT6: {
         // e.g. "00 27 1a 10 00 80 ff"
         grMsg.append( char( 0x80 ) ); // index 8
-        quint8 unVal = static_cast< quint8 >( fVal );
+        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
         grMsg.append( unVal );
         grMsg.replace(1, quint8( 0x09 )); // correction of msg length
         break;
