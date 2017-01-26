@@ -453,7 +453,7 @@ void CEibdMsg::setEib1(const uchar & p_szData)
 void CEibdMsg::setDTP5(const QByteArray &p_grData)
 {
     quint8 unData = static_cast< quint8 >( p_grData.at( 0 ) );
-    m_grValue.setValue( static_cast< int >( unData ) );
+    m_grValue.setValue( static_cast< int >( unData * 100.0f / 255.0f ) );
 }
 
 //////////////////////////////////////////////////////////////
