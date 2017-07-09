@@ -83,7 +83,7 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
     uchar szLAdr = (uchar) p_grHexAddr.at(1);
 
     szHAdr = szHAdr >> 3; // 0hhh h000;
-    szHAdr = szHAdr & 0x0E; // 0x0E = 0x00001111
+    szHAdr = szHAdr & 0x0F; // 0x0F = 0x00001111
 
     szMAdr = szMAdr & 0x07; // 0hhh hmmm
 
