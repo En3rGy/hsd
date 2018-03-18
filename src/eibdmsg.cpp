@@ -7,6 +7,7 @@
 #include "QsLog.h"
 #include "koxml.h"
 #include <qmath.h>
+#include <QtEndian>
 
 CEibdMsg::CEibdMsg()
     : m_eMsgType( enuMsgType_undef )
@@ -142,6 +143,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
             setDTP5( grData.mid( 1, 1 ) ); // skipping 80 byte
         }
 
+        // 00 08 # 00 27 # 25 00 # 00 # 80 86 52 = -4.3
         // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
         else if ( grData.size() == 3 ) {
             setDTP9_001( grData.mid( 1, 2 ) ); // skipping 1st byte
@@ -466,35 +468,65 @@ void CEibdMsg::setDTP9_001(const QByteArray & p_grData)
     // The format is MEEE EMMM   MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
     // If I calculated correctly, $193D is 25,36 °C.
 
-    uchar szTemp;
-    uchar szM[2];
+
+    //    4.10.3
+    //    Example
+    //    A temperature value of - 30 degrees C can be calculated according DPT 9.001 as follows:
+    //    Step 1: Calculate the mantissa
+    //    Due to the resolution of 0.01, the value to be coded must be multiplied by 100: 30 x 100 = 3000
+    //
+    //    Step 2: Check if exponent is required
+    //    Mantissa is 11 bits, range is from + 2047 to -2048.
+    //    3000 is larger, therefore exponent is required.
+    //    Which exponent? 2 1 = 2
+    //    is sufficient as 3000 : 2 = 1500, and this number can be coded in
+    //    the mantissa.
+    //
+    //    Step 3: Code the mantissa:
+    //    Value:  1024 512 256 128 64 32 16 8 4 2 1
+    //    Number:    1   0   1   1  1  0 1  1 1 0 0
+    //
+    //    If the number is negative, then create a two’s complement!
+    //    Output value:  101 1101 1100
+    //    Invert:        010 0010 0011
+    //    +1                         1
+    //    -------------------------------------------------
+    //                   010 0010 0100
+    //
+    //    Step 4: Code sign and exponent
+    //    Number is negative, therefore the S bit = 1
+    //    Exponent = 1, coded in four bits = 0001
+    //
+    //    Step 5: Final result
+    //    -30 = 1 0001 010 0010 0100 => 1000 1010 0010 0100 => 0x8A 0xA4
+
+    uchar szSign;
+    char szM[4];
     uchar szE;
 
     // save top bit for sigend int
-    szTemp = p_grData.at( 0 ) & 0x80; // 0x80 = 1000 0000
+    szSign = p_grData.at( 0 ) & 0x80; // 0x80 = 1000 0000
 
-    szM[ 0 ] = p_grData.at( 0 ) & 0x07; // 0x87 = 0000 0111
+    szM[ 0 ] = p_grData.at( 0 ) & 0x07; // 0x07 = 0000 0111
     szM[ 1 ] = p_grData.at( 1 ); // & 0xFF; // 0xFF = 1111 1111
 
-    QByteArray grM;
-    grM.append( szM[ 0 ] );
-    grM.append( szM[ 1 ] );
+    // transfer M bit representation to int representation
+
+    qint16 nM  = 0;
+    char * pzM = reinterpret_cast< char * > ( & nM );
+
+    pzM[ 0 ] = szSign;
+    //pzM[ 1 ] =
+    pzM[ 2 ] = szM[ 0 ];
+    pzM[ 3 ] = szM[ 1 ];
+
+//    nM |= szM[ 0 ];
+//    nM <<= 8;
+//    nM |= szM[ 1 ];
 
     szE    = p_grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
     szE   >>= 3; // shift bits to the right: 0xxx x000 >> 0000 xxxx
     int nE = static_cast< int >( szE );
-
-    // transfer M bit representation to int representation
-    int nM = 0;
-    nM |= grM.at( 0 );
-    nM <<= 8;
-    nM |= grM.at( 1 );
-
-    // resepct sign via two’s complement notation: negative, if highest bit is 1
-    if ( szTemp == 0x80 )
-    {
-        nM *= -1;
-    }
 
     // Calculate DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
     float fValue = 0.01 * nM * qPow( 2, nE );
