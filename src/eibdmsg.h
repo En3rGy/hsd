@@ -74,6 +74,7 @@ public:
     /// @param[in] p_grByteArray byte array to print
     /// @return Hex code of byte array, e.g. "03 ff 00 8a"
     static QString printASCII(const QByteArray &p_grByteArray);
+    static QString printBin( qint16 p_nNo );
 
     /**
      * @brief getMessage returns a simplewrite for setting a value on an EIB/KNX address
@@ -91,6 +92,8 @@ public:
     int getMsgDataSize(  ) const;
 
     void setValue( const float & p_fVal );
+
+    static qint16 bDecr(qint16 p_nN1);
 
 protected:
 

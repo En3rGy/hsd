@@ -8,6 +8,7 @@
 #include "koxml.h"
 #include <qmath.h>
 #include <QtEndian>
+#include <QBitArray>
 
 CEibdMsg::CEibdMsg()
     : m_eMsgType( enuMsgType_undef )
@@ -465,12 +466,9 @@ void CEibdMsg::setDTP5(const QByteArray &p_grData)
 void CEibdMsg::setDTP9_001(const QByteArray & p_grData)
 {
     // DPT 9.001 DPT_Value_Temp is a 2-octet float value.
-    // The format is MEEE EMMM   MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
+    // The format is MEEE EMMM MMMM MMMM (16 bits). The value is then 0,01 x M x 2^E. The mantissa (M) is coded two's complement.
     // If I calculated correctly, $193D is 25,36 °C.
 
-
-    //    4.10.3
-    //    Example
     //    A temperature value of - 30 degrees C can be calculated according DPT 9.001 as follows:
     //    Step 1: Calculate the mantissa
     //    Due to the resolution of 0.01, the value to be coded must be multiplied by 100: 30 x 100 = 3000
@@ -498,31 +496,64 @@ void CEibdMsg::setDTP9_001(const QByteArray & p_grData)
     //    Exponent = 1, coded in four bits = 0001
     //
     //    Step 5: Final result
-    //    -30 = 1 0001 010 0010 0100 => 1000 1010 0010 0100 => 0x8A 0xA4
+    //    -30 = 1 0001 010 0010 0100 => 1000 1010 0010 0100 => 0x8A 0x24
 
+    // Test if input values are correct
+    qint16 nIn = 0;
+    const char * szIn = p_grData.data();
+    nIn |= ( szIn[0] << 8 );
+    nIn |= szIn[ 1 ];
+    // OK: qDebug() << printASCII( p_grData ) << "sould be 8A 24" << Q_FUNC_INFO;
+
+    // endian check
+    qint16 nTest  = 1;
+    char * szTest = reinterpret_cast< char * > ( & nTest );
+
+    bool bLE = false;
+    if ( szTest[0] == 0x01 ) { // litlle endian
+        bLE = true;
+    }
+
+    if ( bLE == false ) {
+        QLOG_ERROR() << "Big Endian not supported!" << Q_FUNC_INFO;
+        return;
+    }
+
+    // start processing dtp 9
     uchar szSign;
-    char szM[4];
     uchar szE;
 
     // save top bit for sigend int
     szSign = p_grData.at( 0 ) & 0x80; // 0x80 = 1000 0000
 
-    szM[ 0 ] = p_grData.at( 0 ) & 0x07; // 0x07 = 0000 0111
-    szM[ 1 ] = p_grData.at( 1 ); // & 0xFF; // 0xFF = 1111 1111
-
     // transfer M bit representation to int representation
-
+    // MEEE EMMM MMMM MMMM
     qint16 nM  = 0;
     char * pzM = reinterpret_cast< char * > ( & nM );
 
-    pzM[ 0 ] = szSign;
-    //pzM[ 1 ] =
-    pzM[ 2 ] = szM[ 0 ];
-    pzM[ 3 ] = szM[ 1 ];
+    nM = nIn & 0x07FF;
 
-//    nM |= szM[ 0 ];
-//    nM <<= 8;
-//    nM |= szM[ 1 ];
+    //qDebug() << " 0000 0MMM MMMM MMMM";
+    //qDebug() << "In:      " << printBin( nIn ) << "sould be 1000 1010 0010 0100" << Q_FUNC_INFO;
+    //qDebug() << "Mantissa:" << printBin( nM ) << " should be 0000 0010 0010 0100";
+
+
+    // in case of negative value, revert two component representation
+    if ( szSign == 0x80 ) {
+        // substract 1 by adding the two complement of 1
+        nM = bDecr( nM );
+
+        // invert value
+        pzM[ 0 ] = ~pzM[ 0 ];
+        pzM[ 1 ] = ~pzM[ 1 ];
+
+        nM &= 2047; // limit to mantisa
+
+        nM *= -1;
+    }
+
+    //qDebug() << "Restr.:  " << printBin( nM ) << " should be 0000 0101 1101 1100";
+
 
     szE    = p_grData.at( 0 ) & 0x78; // 0x78 = 0111 1000
     szE   >>= 3; // shift bits to the right: 0xxx x000 >> 0000 xxxx
@@ -542,6 +573,78 @@ void CEibdMsg::setEibAddress(const QByteArray &p_grData)
     CGroupAddress grGA;
     grGA.setHex( p_grData );
     m_sDstAddrKnx = grGA.toKNXString();
+}
+
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+qint16 CEibdMsg::bDecr(qint16 p_nN1)
+{
+    // increment by adding 0xFFFF (two complement of 0x0001
+
+    QBitArray grBits( 16 );
+    bool bCarryBit = false;
+
+    for ( int i = 0; i < 16; ++i ) {
+
+        // read int 2 bit array
+        grBits.setBit( i, (( p_nN1 >> i ) & 0x0001) == 0x0001 ); // bit[0] most right; right to left; little endian
+
+        // add 1 to each bit
+        if( grBits.testBit( i ) == true ) {
+            // sum = 2 -> 0 + carry bit
+            if ( bCarryBit == false ) {
+                grBits.setBit( i, false ); // take 1 over
+                bCarryBit = true;
+            }
+            // sum = 3 -> 1 + carry bit
+            else {
+                grBits.setBit( i, true ); // take 1 over
+                bCarryBit = true;
+            }
+        }
+        // current bit = 0
+        else {
+            if ( bCarryBit == false ) { // sum = 1 -> 1, no carry bit
+                grBits.setBit( i, true ); // take 1 over
+                bCarryBit = false;
+            }
+            else { // sum = 2 -> 0, carry bit
+                grBits.setBit( i, false ); // take 1 over
+                bCarryBit = true;
+            }
+        } // else
+
+    }// for 0..15
+
+    // put bit array 2 int
+    qint16 nRetVal = 0;
+    for ( int i = 0; i < 16; ++i ) { // bit[0] most right
+        if ( grBits.testBit( 15 - i ) == true ) {
+            nRetVal = nRetVal | ( 0x0001 << (15 - i ) );
+        }
+    }
+
+    return nRetVal;
+}
+
+QString CEibdMsg::printBin(qint16 p_nNo)
+{
+    QString sRes;
+    for ( int i = 0; i < 16; ++i ) {
+        if ( ( i % 4 == 0 ) && ( i > 0 ) ) {
+            sRes += " ";
+        }
+        if ( ( ( p_nNo >> (15 - i )) & 0x0001 ) == 0x001 ) {
+            sRes += "1";
+        }
+        else {
+            sRes += "0";
+        }
+    }
+    return sRes;
 }
 
 //////////////////////////////////////////////////////////////
