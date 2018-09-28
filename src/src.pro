@@ -4,7 +4,7 @@ QT       += core network
 
 QT       -= gui
 
-#CONFIG += c++11
+CONFIG += c++11
 
 DESTDIR = ../bin
 
