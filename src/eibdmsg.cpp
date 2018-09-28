@@ -70,6 +70,10 @@ QList<QByteArray> CEibdMsg::splitMessages(QByteArray &p_grMessages)
         grRetList.append( grMsg );
     }
 
+    if ( grIdxList.isEmpty() ) {
+        grRetList.append( p_grMessages );
+    }
+
     return grRetList;
 }
 

@@ -15,6 +15,7 @@ private Q_SLOTS:
     void testBinDecr();
     void testPrintBin();
     void testMultMsg();
+    void testOpenGroupCon();
 };
 
 Hsd_testTest::Hsd_testTest()
@@ -80,17 +81,11 @@ void Hsd_testTest::testMultMsg()
     in << 0x06f4000800272506;
     in << 0x00800667;
 
-    qDebug() << CEibdMsg::printASCII( grTestData );
-
     // 00 27 25 00 00 80 04 4c || 00 08 00 27 25 05 00 80 06 f4 || 00 08 00 27 25 06 00 80 06 67
 
     QList< QByteArray > grResList = CEibdMsg::splitMessages( grTestData );
 
     QVERIFY( grResList.size() == 3 );
-
-    foreach ( QByteArray grDat, grResList ) {
-        qDebug() << CEibdMsg::printASCII( grDat );
-    }
 
     QByteArray grRes1;
     QDataStream in1( & grRes1, QIODevice::ReadWrite );
@@ -110,14 +105,46 @@ void Hsd_testTest::testMultMsg()
     grRes3.append( 0x06 );
     grRes3.append( 0x67 );
 
-    qDebug() << CEibdMsg::printASCII(grRes1 );
-    qDebug() << CEibdMsg::printASCII(grRes2 );
-    qDebug() << CEibdMsg::printASCII(grRes3 );
-
-
     QVERIFY( grRes1 == grResList.at( 0 ) );
     QVERIFY( grRes2 == grResList.at( 1 ) );
     QVERIFY( grRes3 == grResList.at( 2 ) );
+
+    QByteArray grTestData2;
+    QDataStream inA( & grTestData2, QIODevice::ReadWrite );
+    grResList.clear();
+    inA << 0x00050026;
+    grTestData2.append( (char) 0x00 );
+    grTestData2.append( (char) 0x00 );
+    grTestData2.append( (char) 0x00 );
+
+    grResList = CEibdMsg::splitMessages( grTestData2 );
+
+    qDebug() << "Orig" << CEibdMsg::printASCII( grTestData2 );
+    foreach ( QByteArray grDat, grResList ) {
+        qDebug() << "Array:" << CEibdMsg::printASCII( grDat );
+    }
+
+    QVERIFY( grResList.size() == 1 );
+}
+
+void Hsd_testTest::testOpenGroupCon()
+{
+    // 00 05 00 26 00 00 00
+
+    QByteArray grTestData;
+    QDataStream in( & grTestData, QIODevice::ReadWrite);
+
+    in << 0x00050026;
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x00 );
+
+    qDebug() << CEibdMsg::printASCII( grTestData );
+
+    CEibdMsg grMsg( grTestData );
+
+    QVERIFY( grMsg.getType() == CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON );
+
 }
 
 QTEST_APPLESS_MAIN(Hsd_testTest)
