@@ -5,6 +5,7 @@ QT       += core network
 QT       -= gui
 
 CONFIG += c++11
+QMAKE_CXXFLAGS += -std=c++11
 
 DESTDIR = ../bin
 
@@ -15,7 +16,7 @@ TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
 
- TRANSLATIONS = hsd_de.ts \
+TRANSLATIONS = hsd_de.ts \
 
 INCLUDEPATH += ../3rd_party/QsLog
 
