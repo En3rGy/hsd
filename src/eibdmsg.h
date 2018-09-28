@@ -41,6 +41,8 @@ public:
     /// @param p_grByteArray message
     CEibdMsg( const QByteArray & p_grByteArray );
 
+    static QList< QByteArray > splitMessages( QByteArray & p_grMessages );
+
     /**
      * @brief Set for an incomming message via the Eib Interface
      * @param p_grByteArray
@@ -120,6 +122,8 @@ protected:
      * @param p_szData
      */
     void setEib1( const uchar & p_szData );
+
+    void setDTP3( const QByteArray &p_grData );
 
     void setDTP5( const QByteArray &p_grData );
 

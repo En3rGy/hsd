@@ -22,8 +22,8 @@ const QString CTcpClient::m_sSeperatorChar = "|";
 
 CTcpClient::CTcpClient(QObject *parent) :
     QObject(parent)
-  , m_pTcpSocket( NULL )
-  , m_pWebRequestTcpSocket( NULL )
+  , m_pTcpSocket( nullptr )
+  , m_pWebRequestTcpSocket( nullptr )
   , m_bReceviedXML( false )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
@@ -37,7 +37,7 @@ CTcpClient::CTcpClient(QObject *parent) :
 CTcpClient::~CTcpClient()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( m_pTcpSocket != NULL )
+    if ( m_pTcpSocket != nullptr )
     {
         m_pTcpSocket->close();
     }
@@ -50,7 +50,7 @@ CTcpClient::~CTcpClient()
 void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QVariant & p_grValue)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( m_pTcpSocket == NULL )
+    if ( m_pTcpSocket == nullptr )
     {
         QLOG_WARN() << QObject::tr("Connection with HS not yet initialized.");
         return;
@@ -273,7 +273,7 @@ void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QStri
 bool CTcpClient::initConnection()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( m_pTcpSocket == NULL )
+    if ( m_pTcpSocket == nullptr )
     {
         m_pTcpSocket = new QTcpSocket( this );
         connect( m_pTcpSocket, SIGNAL( readyRead()), this, SLOT( slot_startRead() ) );
@@ -341,7 +341,7 @@ bool CTcpClient::getGaXml()
 
     QString sWebRequest = "GET /hscl?sys/cobjects.xml HTTP/1.0\r\n\r\n";
 
-    if ( m_pWebRequestTcpSocket == NULL )
+    if ( m_pWebRequestTcpSocket == nullptr )
     {
         m_pWebRequestTcpSocket = new QTcpSocket( this );
         connect( m_pWebRequestTcpSocket, SIGNAL( readyRead()), this, SLOT( slot_webRequestReadFinished()) );

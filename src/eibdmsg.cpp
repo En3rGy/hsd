@@ -9,6 +9,7 @@
 #include <qmath.h>
 #include <QtEndian>
 #include <QBitArray>
+#include <QDataStream>
 
 CEibdMsg::CEibdMsg()
     : m_eMsgType( enuMsgType_undef )
@@ -25,6 +26,51 @@ CEibdMsg::CEibdMsg(const QByteArray & p_grByteArray)
     , m_nMsgSize( -1 )
 {
     setEibdMsg( p_grByteArray );
+}
+
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+QList<QByteArray> CEibdMsg::splitMessages(QByteArray &p_grMessages)
+{
+    // find start index of 0x0027
+    QList < int > grIdxList;
+    for ( int i = 0; i < p_grMessages.size(); ++i ) {
+
+        // split at 00 027; check for length byte before
+        if ( i < p_grMessages.size() - 1 ) {
+            if ( p_grMessages.at( i ) == 0x00 and p_grMessages.at( i + 1 ) == 0x27 ) {
+
+                // note 2 length byte if avialble
+                if ( i > 1 ) {
+                    grIdxList.append( i - 2 );
+                }
+                else {
+                    grIdxList.append( i );
+                }
+            }
+        }
+    }
+
+    // copy identified messages
+    QList<QByteArray> grRetList;
+    QByteArray grMsg;
+    for( int i = 0; i < grIdxList.size(); ++i ) {
+        int nIdx = grIdxList.at( i );
+        int nNextIdx;
+        if ( i < grIdxList.size() - 1 ) {
+            nNextIdx = grIdxList.at( i + 1 );
+        }
+        else {
+            nNextIdx = p_grMessages.size();
+        }
+        grMsg = p_grMessages.mid( nIdx, nNextIdx - nIdx );
+        grRetList.append( grMsg );
+    }
+
+    return grRetList;
 }
 
 //////////////////////////////////////////////////////////////
@@ -193,7 +239,7 @@ const QString &CEibdMsg::getDestAddressKnx() const
 const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( p_pHasValue != NULL )
+    if ( p_pHasValue != nullptr )
     {
         * p_pHasValue = ! m_grValue.isNull();
     }
@@ -362,6 +408,13 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         break;
     }
 
+    case CKoXml::enuDPT_DPT3: {
+        qint32 nVal = static_cast< qint32 >( fVal );
+        QDataStream in( & grMsg, QIODevice::ReadWrite );
+        in << nVal;
+        break;
+    }
+
     default: {
         QLOG_WARN() << QObject::tr("Requested DPT not supported. EIS / Value was").toStdString().c_str()
                     << CKoXml::getInstance()->getGaFormat( p_sDestAddr ).toStdString().c_str()
@@ -447,6 +500,18 @@ void CEibdMsg::setEib1(const uchar & p_szData)
     uchar szData = p_szData;
     szData = szData & 0x7f; // 0x7f = 0111 1111
     m_grValue.setValue( static_cast< int >( szData ) );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setDTP3(const QByteArray &p_grData)
+{
+    QDataStream out( p_grData );
+    qint32 nData;
+    out >> nData;;
+    m_grValue.setValue( nData );
 }
 
 //////////////////////////////////////////////////////////////
