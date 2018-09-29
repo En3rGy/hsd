@@ -4,12 +4,12 @@
 
 CKoXmlGC g_grKoXmlGarbageCollector;
 
-CKoXml * CKoXml::m_pInstance = NULL;
+CKoXml * CKoXml::m_pInstance = nullptr;
 
 CKoXml *CKoXml::getInstance()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( m_pInstance == NULL )
+    if ( m_pInstance == nullptr )
     {
         m_pInstance = new CKoXml();
     }
@@ -89,10 +89,10 @@ QString CKoXml::copy(QByteArray &p_grData, const QString & p_sTag, const int &p_
 CKoXmlGC::~CKoXmlGC()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
-    if ( CKoXml::m_pInstance != NULL )
+    if ( CKoXml::m_pInstance != nullptr )
     {
         delete CKoXml::m_pInstance;
-        CKoXml::m_pInstance = NULL;
+        CKoXml::m_pInstance = nullptr;
     }
 }
 
@@ -116,7 +116,7 @@ QString CKoXml::getGaFormat(const QString &p_sGA)
 
     if ( grValue.sFmt.isEmpty() == true )
     {
-        return QObject::tr( "Format of GA is unknown" ).toStdString().c_str();
+        return QString( QObject::tr( "Format of " ) + p_sGA + QObject::tr( " is unknown" ) ).toStdString().c_str();
     }
 
     return grValue.sFmt;

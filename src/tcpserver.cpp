@@ -189,7 +189,7 @@ void CTcpServer::slot_startRead()
                     QLOG_WARN() << tr( "Failure while trying to read GA state. Trying to read float. GA stat is" ) << grVal;
                 }
 
-                QByteArray grEibdMsg = CEibdMsg::getMessage( "", grFormerMsg.getDestAddressKnx(), fVal );
+                QByteArray grEibdMsg = CEibdMsg::getMessage( "", grFormerMsg.getDestAddressKnx(), fVal, grDataMsg );
                 write( m_pReplyTcpSocket, grEibdMsg );
             }
             else {

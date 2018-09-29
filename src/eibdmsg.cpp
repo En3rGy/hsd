@@ -350,7 +350,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 //
 //////////////////////////////////////////////////////////////
 
-QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData)
+QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData, const QByteArray &p_grByteMsg)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     // byte  0: 0x00
@@ -423,7 +423,8 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         QLOG_WARN() << QObject::tr("Requested DPT not supported. EIS / Value was").toStdString().c_str()
                     << CKoXml::getInstance()->getGaFormat( p_sDestAddr ).toStdString().c_str()
                     << " / "
-                    << p_grData;
+                    << p_grData << "\n"
+                    << "Original Message:" << printASCII( p_grByteMsg );
         break;
     }
     }

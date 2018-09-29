@@ -65,12 +65,12 @@ public:
 
     /// @brief Returns the value of the message
     /// @param[out] p_pHasValue True if value is available
-    const QVariant & getValue( bool * p_pHasValue = NULL ) const;
+    const QVariant & getValue( bool * p_pHasValue = nullptr ) const;
 
     /// @brief Returns the response to the given message.
     /// @param[out] p_pHasResponse True if response is available
     /// @return An empty byte array in case of no neccessary response .
-    QByteArray getResponse( bool * p_pHasResponse = NULL );
+    QByteArray getResponse( bool * p_pHasResponse = nullptr );
 
     /// @brief Converts a byte array to a string showing the hex values
     /// @param[in] p_grByteArray byte array to print
@@ -85,7 +85,7 @@ public:
      * @param p_grData Data to write to the destination address
      * @return Message as byte array
      */
-    static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData );
+    static QByteArray getMessage( const QString & p_sSrcAddr, const QString & p_sDestAddr, const QVariant & p_grData, const QByteArray & p_grByteMsg = QByteArray() );
 
     /**
      * @brief Returns the submitted size of the data package.
