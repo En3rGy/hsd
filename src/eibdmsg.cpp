@@ -408,14 +408,20 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         grMsg.append( char( 0x80 ) ); // index 8
         quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
         grMsg.append( unVal );
-        grMsg.replace(1, quint8( 0x09 )); // correction of msg length
+        grMsg[ 1 ] = 0x09; // correction of msg length
         break;
     }
 
     case CKoXml::enuDPT_DPT3: {
         qint32 nVal = static_cast< qint32 >( fVal );
-        QDataStream in( & grMsg, QIODevice::ReadWrite );
+        QByteArray grVal;
+        QDataStream in( & grVal, QIODevice::ReadWrite );
         in << nVal;
+        grMsg.append( grVal );
+
+        /// @todo check if 0x00 before value is required
+        grMsg[ 1 ] = 0x0B; // correction of msg length
+        qDebug() << printASCII( grMsg ) << Q_FUNC_INFO;
         break;
     }
 

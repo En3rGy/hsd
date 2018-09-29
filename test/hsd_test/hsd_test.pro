@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += testlib
+QT       += testlib network
 
 QT       -= gui
 
@@ -37,13 +37,15 @@ include( ../../3rd_party/QsLog/QsLog.pri )
 SOURCES += ../../src/eibdmsg.cpp \
 ../../src/model.cpp \
 ../../src/groupaddress.cpp \
-../../src/koxml.cpp
+../../src/koxml.cpp \
+../../src/tcpclient.cpp
 
 HEADERS += \
     ../../src/eibdmsg.h \
 ../../src/model.h \
 ../../src/groupaddress.h \
-../../src/koxml.h
+../../src/koxml.h \
+../../src/tcpclient.h
 
 
 SOURCES += \

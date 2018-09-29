@@ -17,7 +17,7 @@ CKoXml *CKoXml::getInstance()
     return m_pInstance;
 }
 
-void CKoXml::setXml(QByteArray & p_grKoXml)
+void CKoXml::setXml( const QByteArray & p_grKoXml)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     int     nIndex = 0;
@@ -66,7 +66,7 @@ CKoXml::CKoXml()
     QLOG_TRACE() << Q_FUNC_INFO;
 }
 
-QString CKoXml::copy(QByteArray &p_grData, const QString & p_sTag, const int &p_nStartIndex )
+QString CKoXml::copy( const QByteArray &p_grData, const QString & p_sTag, const int &p_nStartIndex )
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     QString sBeginStr = p_sTag + "=\"";

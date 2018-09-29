@@ -13,7 +13,7 @@ class CGroupAddress
 public:
     CGroupAddress();
 
-    /** @breif Returns the hex representation of an EIB/KNX address
+    /** @brief Returns the hex representation of an EIB/KNX address
       *
       * Conversion:<br>
       * Having a 2 byte sequence: aaaa abbb cccc cccc<br>

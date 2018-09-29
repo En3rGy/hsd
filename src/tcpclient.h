@@ -20,7 +20,7 @@ class CTcpClient : public QObject
 {
     Q_OBJECT
 public:
-    CTcpClient(QObject *parent = 0);
+    CTcpClient(QObject *parent = nullptr);
     ~CTcpClient();
 
     /**
@@ -53,6 +53,14 @@ public:
 
     void closeConnection( const QString & p_sDestAddr, const int & p_nPort, const QByteArray & p_grData );
 
+    /** @brief Splits the incomming string from HS to sub data.
+      * @param[in] p_sIncoming Incoming HS string.
+      * @param[out] p_sType Type of message
+      * @param[out] p_sGA Group adress
+      * @param[out] p_sValue value of GA.
+      */
+    static void splitString( const QString & p_sIncoming, QString & p_sType, QString & p_sGA, QString & p_sValue );
+
 signals:
     /**
      * @brief Signal emitted by incomming message
@@ -83,14 +91,6 @@ public slots:
     void slot_reconnect( void );
 
 private:
-    /** @brief Splits the incomming string from HS to sub data.
-      * @param[in] p_sIncoming Incoming HS string.
-      * @param[out] p_sType Type of message
-      * @param[out] p_sGA Group adress
-      * @param[out] p_sValue value of GA.
-      */
-    void splitString( const QString & p_sIncoming, QString & p_sType, QString & p_sGA, QString & p_sValue );
-
     QTcpSocket * m_pTcpSocket;
     QTcpSocket * m_pWebRequestTcpSocket;
     qint16       m_nPort;

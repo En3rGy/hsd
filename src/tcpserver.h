@@ -52,7 +52,7 @@ protected:
     inline qint64 write( QTcpSocket * p_pTcpSocket, const QByteArray & p_grData);
 
 private:
-    QMap< QTcpSocket *, CEibdMsg > m_grSocketMap;
+    QMap< QTcpSocket *, CEibdMsg > m_grConnectionMap;
     QTcpSocket * m_pReplyTcpSocket; ///< Socket to forward HS messages to eibd client.
     QTcpServer * m_pTcpServer;
     uint         m_nPort;

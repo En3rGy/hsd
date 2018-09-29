@@ -85,7 +85,7 @@ void CTcpServer::slot_newConnection()
 {
     QLOG_TRACE() << Q_FUNC_INFO;
     QTcpSocket * pTcpSocket = m_pTcpServer->nextPendingConnection();
-    m_grSocketMap.insert( pTcpSocket, CEibdMsg() );
+    m_grConnectionMap.insert( pTcpSocket, CEibdMsg() );
 
     QLOG_DEBUG() << tr( "New connection via eibd interface:" ).toStdString().c_str()
                  << pTcpSocket->peerAddress().toString().toStdString().c_str()
@@ -146,7 +146,7 @@ void CTcpServer::slot_startRead()
 
             write( pTcpSocket, grMsg.getResponse() );
 
-            m_grSocketMap[ pTcpSocket ] = grMsg;
+            m_grConnectionMap[ pTcpSocket ] = grMsg;
             m_pReplyTcpSocket = pTcpSocket;
             break;
         }
@@ -169,12 +169,12 @@ void CTcpServer::slot_startRead()
             QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_OPEN_T_GROUP ").toStdString().c_str() << grMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
             write( pTcpSocket, grMsg.getResponse() );
 
-            m_grSocketMap[ pTcpSocket ] = grMsg;
+            m_grConnectionMap[ pTcpSocket ] = grMsg;
             break;
         }
         case CEibdMsg::enuMsgType_EIB_APDU_PACKET:
         {
-            CEibdMsg grFormerMsg = m_grSocketMap.value( pTcpSocket );
+            CEibdMsg grFormerMsg = m_grConnectionMap.value( pTcpSocket );
             QLOG_INFO() << QObject::tr("Received via eibd interface: EIB_APDU_PACKET. Assigning it to ").toStdString().c_str() << grFormerMsg.getDestAddressKnx() << QObject::tr( ". Granted.").toStdString().c_str();
 
             if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Write_PDU ) {
@@ -247,7 +247,7 @@ void CTcpServer::slot_disconnected()
                  << pTcpSocket->peerAddress().toString().toStdString().c_str() << ":" << pTcpSocket->peerPort()
                  << tr( "Socket state is").toStdString().c_str() << pTcpSocket->state();
 
-    m_grSocketMap.remove( pTcpSocket );
+    m_grConnectionMap.remove( pTcpSocket );
     if ( m_pReplyTcpSocket == pTcpSocket ) {
         m_pReplyTcpSocket = nullptr;
     }
@@ -262,7 +262,7 @@ void CTcpServer::slot_sendToEibdClient(const QString &p_sEibGroup, const QString
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
-    if ( m_grSocketMap.isEmpty() == true ) {
+    if ( m_grConnectionMap.isEmpty() == true ) {
         QLOG_ERROR() << tr( "eibd interface not yet connected. Discarding message:" ).toStdString().c_str() << p_sEibGroup << p_sValue;
         return;
     }

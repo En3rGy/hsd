@@ -29,7 +29,7 @@ public:
         enuDPT_DPT14
     };
 
-    void setXml( QByteArray & p_grKoXml );
+    void setXml(const QByteArray &p_grKoXml );
     QString getGaName( const QString & p_sGA );
     QString getGaFormat( const QString & p_sGA );
     enuDPT getGaDPT( const QString & p_sGA );
@@ -62,7 +62,7 @@ public:
 protected:
     CKoXml();
 
-    QString copy(       QByteArray & p_grData,
+    QString copy(const QByteArray &p_grData,
                   const QString    & p_sTag,
                   const int        & p_nStartIndex );
 

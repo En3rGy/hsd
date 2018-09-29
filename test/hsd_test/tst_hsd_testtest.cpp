@@ -2,6 +2,9 @@
 #include <QtTest>
 #include <eibdmsg.h>
 #include <QsLog.h>
+#include <tcpclient.h>
+#include <groupaddress.h>
+#include <koxml.h>
 
 class Hsd_testTest : public QObject
 {
@@ -16,6 +19,8 @@ private Q_SLOTS:
     void testPrintBin();
     void testMultMsg();
     void testOpenGroupCon();
+    void testSplitHSString();
+    void testFromHS();
 };
 
 Hsd_testTest::Hsd_testTest()
@@ -145,6 +150,49 @@ void Hsd_testTest::testOpenGroupCon()
 
     QVERIFY( grMsg.getType() == CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON );
 
+}
+
+void Hsd_testTest::testSplitHSString()
+{
+    QString sHSStr = "1|12295|0.0";
+
+    QString sType;
+    QString sGA;
+    QString sValue;
+
+    CTcpClient grTcpClient;
+
+    grTcpClient.splitString( sHSStr, sType, sGA, sValue );
+
+    QVERIFY( sType == "1" );
+    QVERIFY( sGA == "12295" );
+    QVERIFY( sValue == "0.0" );
+
+}
+
+void Hsd_testTest::testFromHS()
+{
+    QString sGA  = "12295";
+    QString sVal = "0.0";
+
+    CGroupAddress grGA;
+    grGA.setHS( sGA.toInt() );
+    sGA = grGA.toKNXString();
+
+    QVERIFY( sGA == "6/0/7" );
+
+    // <cobject id="32988" used="1" type="eib" path="06 Tore\0 Au&#223;enanlage\" fmt="EIS2+EIS6_8BIT" fmtex="integer" name="G TargetDoorState" rem="0" init="0" min="0" max="255" step="0" list="" ga="6/0/7" ganum="12295" cogws="1" cogwr="1" scan="0"  sbc="0"  read="1"  transmit="1" />
+
+    QString sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS2+EIS6_8BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"6/0/7\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    CKoXml::getInstance()->setXml( sXml.toUtf8() );
+
+    // CKoXml::enuDPT_DPT3
+
+    QByteArray grMsg = CEibdMsg::getMessage( "", sGA, sVal.toFloat() );
+
+    qDebug() << "eibd msg:" << CEibdMsg::printASCII( grMsg );
+
+    QVERIFY2( false, "Test not implemented");
 }
 
 QTEST_APPLESS_MAIN(Hsd_testTest)
