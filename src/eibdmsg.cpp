@@ -87,8 +87,6 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
 
     QByteArray grMsg;
 
-    QLOG_DEBUG() << QObject::tr("Received message: ").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
-
     // check if 1st 2 byte contain package length
     if ( p_grByteArray.size() < 2 ) {
         QLOG_WARN() << QObject::tr("Received message too short. Message was").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
@@ -99,9 +97,9 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         m_eMsgType    = enuMsgType_msgSize;
         QString sSize = QString::number( p_grByteArray.at( 1 ) );
         m_nMsgSize    = ( int ) sSize.toDouble();
-        QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
 
         if ( p_grByteArray.size() == 2 ) {
+            QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
             return;
         }
     }
@@ -295,18 +293,18 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
         if ( m_eAPDUType == enuAPDUType_A_GroupValue_Read_PDU ) {
 
             // response
-            uchar szByte0 = 0x00;
-            uchar szByte1 = 0x40; // 0100 0000
+            char szByte0 = 0x00;
+            char szByte1 = 0x40; // 0100 0000
 
             bHasResponde       = true;
             bPrependLengthInfo = false; /// @todo check if correct
 
             uchar szData = 0x00;
             float fVal = m_grValue.toFloat();
-            if ( fVal == 1.0 ) {
+            if ( fVal == 1.0f ) {
                 szData = 0x01;
             }
-            else if ( fVal == 0.0 ) {
+            else if ( fVal == 0.0f ) {
                 szData = 0x00;
             }
             else {
@@ -330,7 +328,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
     }
     }
 
-    if ( p_pHasResponse != NULL ) {
+    if ( p_pHasResponse != nullptr ) {
         * p_pHasResponse = bHasResponde;
     }
 
@@ -338,7 +336,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
     if ( ( bPrependLengthInfo == true ) && ( nLength > 0 ) ) {
         char szLength0 = 0x00;
-        char szLength1 = nLength;
+        char szLength1 = static_cast< char >( nLength );
         grResponse.prepend( szLength1 );
         grResponse.prepend( szLength0 );
     }
@@ -396,8 +394,8 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
     switch( eDPT ) {
     case CKoXml::enuDPT_DPT1: {
-        int nVal = (int) fVal;
-        char szData = nVal;// QString::number( nVal ).toAscii();
+        int nVal = static_cast< int >( fVal );
+        char szData = static_cast< char >( nVal );// QString::number( nVal ).toAscii();
         szData = szData | 0x80;
         grMsg.append( szData ); // index 9 & 10
         break;

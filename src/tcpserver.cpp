@@ -238,12 +238,11 @@ void CTcpServer::slot_disconnected()
 
     QTcpSocket * pTcpSocket = dynamic_cast< QTcpSocket * >( sender() );
     if ( pTcpSocket == nullptr ) {
-        QLOG_INFO() << QObject::tr("Disconnected from eibd client.").toStdString().c_str();
+        QLOG_WARN() << QObject::tr("Disconnected from eibd client.").toStdString().c_str();
         return;
     }
 
-
-    QLOG_INFO() << QObject::tr("Disconnected from eibd client.").toStdString().c_str() << "\n"
+    QLOG_WARN() << QObject::tr("Disconnected from eibd client.").toStdString().c_str()
                 << tr( "Connection was:" ).toStdString().c_str()
                 << pTcpSocket->peerAddress().toString().toStdString().c_str() << ":" << pTcpSocket->peerPort();
 

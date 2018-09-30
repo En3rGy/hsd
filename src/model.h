@@ -28,13 +28,13 @@ public:
     static const QString g_sExitMessage;
     static const QString g_sLogLevelMessage;
 
-    static const uchar   g_uzEIB_OPEN_T_GROUP [2];
-    static const uchar   g_uzEIB_APDU_PACKET [2];
-    static const uchar   g_uzEIB_OPEN_GROUPCON [5];
-    static const uchar   g_uzEIB_GROUP_PACKET [2];
-    static const uchar   g_uzEibOn;
-    static const uchar   g_uzEibOff;
-    static const uchar   g_uzEibAck [2];
+    static const char   g_uzEIB_OPEN_T_GROUP [2];
+    static const char   g_uzEIB_APDU_PACKET [2];
+    static const char   g_uzEIB_OPEN_GROUPCON [5];
+    static const char   g_uzEIB_GROUP_PACKET [2];
+    static const char   g_uzEibOn;
+    static const char   g_uzEibOff;
+    static const char   g_uzEibAck [2];
 
     QVariant getValue( const QString & p_sKey, const QVariant & p_grDefaultValue = QVariant() );
     void     setValue( const QString & p_sKey, const QVariant & p_grValue );
