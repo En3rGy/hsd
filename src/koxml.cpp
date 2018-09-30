@@ -134,7 +134,7 @@ CKoXml::enuDPT CKoXml::getGaDPT(const QString &p_sGA)
         return enuDPT_DPT9;
     }
     else if ( sFmt == "EIS2+EIS6_8BIT" ) {
-        return enuDPT_DPT3;
+        return enuDPT_DPT5_DPT6;
     }
     else if ( ( sFmt == "EIS?_4BIT" ) ||
               ( sFmt == "EIS?_8BIT" ) ||
