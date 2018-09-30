@@ -14,18 +14,18 @@ const QString CModel::g_sExitMessage      = "Shutdown hsd please";
 const QString CModel::g_sLogLevelMessage  = "Set hsd log level please";
 const QString CModel::g_sKey_PauseTilHSReconnect = "TimeoutForReconnectHS_ms";
 
-const uchar   CModel::g_uzEIB_OPEN_T_GROUP [2]  = { 0x00, 0x22 };
-const uchar   CModel::g_uzEIB_APDU_PACKET [2]   = { 0x00, 0x25 };
-const uchar   CModel::g_uzEIB_OPEN_GROUPCON [5] = { 0x00, 0x26 }; // { 0x00, 0x26, 0x00, 0x00,0x00 };
-const uchar   CModel::g_uzEIB_GROUP_PACKET [2]  = { 0x00, 0x27 };
+const char   CModel::g_uzEIB_OPEN_T_GROUP [2]  = { 0x00, 0x22 };
+const char   CModel::g_uzEIB_APDU_PACKET [2]   = { 0x00, 0x25 };
+const char   CModel::g_uzEIB_OPEN_GROUPCON [5] = { 0x00, 0x26 }; // { 0x00, 0x26, 0x00, 0x00,0x00 };
+const char   CModel::g_uzEIB_GROUP_PACKET [2]  = { 0x00, 0x27 };
 
-const uchar   CModel::g_uzEibOn                 = 0x81;
-const uchar   CModel::g_uzEibOff                = 0x80;
-const uchar   CModel::g_uzEibAck [2]            = { 0x00, 0x05 };
+const char   CModel::g_uzEibOn                 = 0x81;
+const char   CModel::g_uzEibOff                = 0x80;
+const char   CModel::g_uzEibAck [2]            = { 0x00, 0x05 };
 
 CModelGC g_grCModelGarbageCollector;
 
-CModel * CModel::m_pInstance = NULL;
+CModel * CModel::m_pInstance = nullptr;
 
 CModel::CModel()
 {

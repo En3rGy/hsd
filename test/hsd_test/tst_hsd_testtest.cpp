@@ -193,6 +193,13 @@ void Hsd_testTest::testFromHS()
     qDebug() << "eibd msg:" << CEibdMsg::printASCII( grMsg );
 
     QVERIFY2( false, "Test not implemented");
+
+    ///////////
+
+    // Received via HS interface: 6/0/8 Value: 0.0 "2|12296|0.0"
+    // Sending to eibd client: 127.0.0.1 : 44780 "00 08 00 27 00 00 30 08 00 80" Bytes written: 10
+
+    //<cobject id="32995" used="1" type="eib" path="06 Tore\0 Au&#223;enanlage\" fmt="EIS1+EIS2+EIS7_1BIT" fmtex="integer" name="G RM ObstructionDetected" rem="0" init="0" min="0" max="1" step="0" list="" ga="6/0/8" ganum="12296" cogws="1" cogwr="1" scan="0"  sbc="0"  read="1"  transmit="1" />
 }
 
 QTEST_APPLESS_MAIN(Hsd_testTest)

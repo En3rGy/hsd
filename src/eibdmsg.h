@@ -115,7 +115,7 @@ protected:
      * @param p_nLength
      * @return
      */
-    bool equals( const QByteArray & p_grByteArray, const uchar * p_grCharArr, const int & p_nLength );
+    bool equals(const QByteArray & p_grByteArray, const char *p_grCharArr, const int & p_nLength );
 
     /**
      * @brief Interprets an Eib1 Dtp (1 bit) and stores the result

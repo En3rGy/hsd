@@ -490,7 +490,7 @@ bool CEibdMsg::isNatural(const float & p_fNumber)
 //
 //////////////////////////////////////////////////////////////
 
-bool CEibdMsg::equals(const QByteArray &p_grByteArray, const uchar * p_grCharArr, const int &p_nLength)
+bool CEibdMsg::equals(const QByteArray &p_grByteArray, const char * p_grCharArr, const int &p_nLength)
 {
     for ( int i = 0; i < p_nLength; ++ i) {
         if ( p_grByteArray.data()[ i ] != p_grCharArr[ i ] ) {
