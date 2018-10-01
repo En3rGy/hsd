@@ -134,17 +134,55 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         uchar szPayload0 = grMsg.data()[2] & 0x03; // 0000 0011
         uchar szPayload1 = grMsg.data()[3] & 0xC0; // 1100 0000
 
+        // GroupValue Write    = XXXX XX00 10VV VVVV (2 bytes)
+        // GroupValue Read     = XXXX XX00 00XX XXXX  (2 bytes)
+        // GroupValue Response = XXXX XX00 01VV VVVV  (2 bytes)
+
         if ( szPayload0 == 0x00 ) {
             // Check 2nd payload byte
             if ( szPayload1 == 0x00 ) {
+                /* A GroupValue Read  This APDU is sent, to tell a device, that it should send the
+                 * current values of the group object in a A GroupValue Response.  The format
+                 * it XXXX XX00 00XX XXXX  (2 bytes).
+                 */
                 m_eAPDUType = enuAPDUType_A_GroupValue_Read_PDU;
             }
             else if ( szPayload1 == 0x40 ) {
-                // A_GroupValue_Response_PDU
+                /* A GroupValue Response  This APDU is used to answer a A GroupValue Read
+                 * request.  The format is XXXX XX00 01VV VVVV  (2 bytes).  If the datatype
+                 * to transmit is between 1 and 6 bit longs,  the lower 6 bits (V ) contain the
+                 * value.  If the value is 1 (or more) bytes long, all V s are zero and the value is
+                 * appended after the two bytes.
+                 */
                 m_eAPDUType = enuAPDUType_undef;
             }
             else if ( szPayload1 == 0x80 ) {
-                setEib1( grMsg.data()[3] );
+                /*
+                A GroupValue Write  This APDU is used to update a group object (ie.  switch a
+                light on). The format is XXXX XX00 10VV VVVV (2 bytes). If the datatype
+                to transmit is between 1 and 6 bit longs,  the lower 6 bits (V ) contain the
+                value.  If the value is 1 (or more) bytes long, all V s are zero and the value is
+                appended after the two bytes.
+                */
+
+                if ( grMsgType.size() == 4 ) {
+                    setEib1( grMsg.data()[3] & 0x3F );
+                }
+                else {
+                    QByteArray grPayload = grMsg.mid( 4 );
+                    if ( grPayload.size() == 1 ) {
+                    setDTP5( grPayload );
+                    }
+                    else if ( grPayload.size() == 2 ) {
+                        setDTP9_001( grPayload );
+                    }
+                    else if ( grPayload.size() == 4 ) {
+                        setDTP3( grPayload );
+                    }
+                    else {
+                        QLOG_ERROR() << QObject::tr( "DTP of payload could not be identified.");
+                    }
+                }
                 m_eAPDUType = enuAPDUType_A_GroupValue_Write_PDU;
             }
             else if ( szPayload1 == 0xC0 ) {

@@ -188,8 +188,6 @@ void CTcpServer::slot_startRead()
         case CEibdMsg::enuMsgType_EIB_APDU_PACKET:
         {
             CEibdMsg grFormerMsg = m_grConnectionMap.value( pInEibdSocket );
-            QLOG_DEBUG() << sLogMsg.toStdString().c_str() << QObject::tr("EIB_APDU_PACKET. Assigning it to ")
-                         << grFormerMsg.getDestAddressKnx();
 
             if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Write_PDU ) {
                 QLOG_DEBUG() << sLogMsg.toStdString().c_str() << QObject::tr("EIB_APDU_PACKET. Writing.");
@@ -211,7 +209,8 @@ void CTcpServer::slot_startRead()
                 write( pInEibdSocket, grEibdMsg );
             }
             else {
-                QLOG_WARN() << QObject::tr("Unknown EIB_APDU_PACKET. Discarding.").toStdString().c_str();
+                QLOG_WARN() << sLogMsg.toStdString().c_str() << QObject::tr("Unknown EIB_APDU_PACKET. Discarding. ")
+                             << grFormerMsg.getDestAddressKnx();
             }
             break;
         }

@@ -21,6 +21,7 @@ private Q_SLOTS:
     void testOpenGroupCon();
     void testSplitHSString();
     void testFromHS();
+    void testAPDUMsgTest();
 };
 
 Hsd_testTest::Hsd_testTest()
@@ -202,6 +203,28 @@ void Hsd_testTest::testFromHS()
     // Sending to eibd client: 127.0.0.1 : 44780 "00 08 00 27 00 00 30 08 00 80" Bytes written: 10
 
     //<cobject id="32995" used="1" type="eib" path="06 Tore\0 Au&#223;enanlage\" fmt="EIS1+EIS2+EIS7_1BIT" fmtex="integer" name="G RM ObstructionDetected" rem="0" init="0" min="0" max="1" step="0" list="" ga="6/0/8" ganum="12296" cogws="1" cogwr="1" scan="0"  sbc="0"  read="1"  transmit="1" />
+}
+
+void Hsd_testTest::testAPDUMsgTest()
+{
+    // Message: 00 05 00 25 00 80 84 "EIB_APDU_PACKET. Assigning it to " "9/0/5"
+
+    QByteArray grTestData;
+    QDataStream in( & grTestData, QIODevice::ReadWrite);
+
+    in << 0x00050025;
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x80 );
+    grTestData.append( (char) 0x84 );
+
+    qDebug() << CEibdMsg::printASCII( grTestData );
+
+    CEibdMsg grMsg( grTestData );
+
+    qDebug() << grMsg.getValue();
+
+    QVERIFY( grMsg.getValue().toInt() == 0x84 );
+
 }
 
 QTEST_APPLESS_MAIN(Hsd_testTest)
