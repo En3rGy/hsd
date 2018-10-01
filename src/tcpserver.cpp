@@ -118,11 +118,10 @@ void CTcpServer::slot_startRead()
 
     QString sLogMsg;
 
-    sLogMsg = tr( "Eibd in: From:" )
+    sLogMsg = tr( "Eibd in: From: " )
             + pInEibdSocket->peerAddress().toString()
             + ":" + QString::number( pInEibdSocket->peerPort() )
-            +  tr( "Message:" ) + CEibdMsg::printASCII( grDatagram );
-    ;
+            +  tr( " Message: " ) + CEibdMsg::printASCII( grDatagram );
 
     if ( ( m_nSizeOfNextMsg > 0 ) && ( grDatagram.size() < m_nSizeOfNextMsg ) ) {
         QLOG_DEBUG() << "Shortening message to previous submitted length. Loosing:" << CEibdMsg::printASCII( grDatagram.mid( m_nSizeOfNextMsg, grDatagram.size() - m_nSizeOfNextMsg ) );
@@ -132,6 +131,11 @@ void CTcpServer::slot_startRead()
     QList< QByteArray > grDatagrammList = CEibdMsg::splitMessages( grDatagram );
 
     foreach( QByteArray grDataMsg, grDatagrammList ) {
+
+        sLogMsg = tr( "Eibd in: From: " )
+                + pInEibdSocket->peerAddress().toString()
+                + ":" + QString::number( pInEibdSocket->peerPort() )
+                +  tr( " Message: " ) + CEibdMsg::printASCII( grDataMsg );
 
         CEibdMsg grMsg( grDataMsg );
 
@@ -233,7 +237,7 @@ void CTcpServer::slot_startRead()
                 QLOG_DEBUG() << QObject::tr( "New log level is" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
             }
             else {
-                QLOG_WARN() << QObject::tr("Received via eibd interface: Unknown request:").toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
+                QLOG_WARN() << QObject::tr("Eibd in: Unknown request:").toStdString().c_str() << CEibdMsg::printASCII( grDatagram );
             }
         }
         }

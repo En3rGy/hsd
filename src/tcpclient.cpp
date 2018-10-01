@@ -95,7 +95,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
     }
     else
     {
-        QLOG_DEBUG() << QObject::tr("Send message to HS:").toStdString().c_str() << grArray << QObject::tr("Message size in byte:").toStdString().c_str() << nRet;
+        QLOG_DEBUG() << QObject::tr("HS out:").toStdString().c_str() << grArray << QObject::tr("Message size in byte:").toStdString().c_str() << nRet;
     }
 }
 
@@ -140,7 +140,7 @@ void CTcpClient::slot_startRead()
 
         if ( sType == "99" ) // HS ping --> ignore
         {
-            QLOG_DEBUG() << QObject::tr( "Received HS ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
+            QLOG_DEBUG() << QObject::tr( "HS in: Ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
         }
         else  {
             /// @todo Respect different HS message types
@@ -150,11 +150,11 @@ void CTcpClient::slot_startRead()
 
             sGA = grGA.toKNXString();
 
-            QLOG_DEBUG() << QObject::tr("Received via HS interface:").toStdString().c_str()
+            QLOG_DEBUG() << QObject::tr("HS in:").toStdString().c_str()
+                         << grMsgArray
                          << sGA.toStdString().c_str()
                          << QObject::tr("Value:").toStdString().c_str()
-                         << sValue.toStdString().c_str()
-                         << grMsgArray;
+                         << sValue.toStdString().c_str();
 
             if ( grGA.isValid() == true ) {
                 CModel::getInstance()->m_grGAState.insert( sGA, sValue.toFloat());
@@ -298,7 +298,7 @@ bool CTcpClient::initConnection()
         grArray.append( sPass );
         grArray.append( m_sMsgEndChar );
 
-        QLOG_DEBUG() << QObject::tr("Sending to HS: Initialization message.").toStdString().c_str();
+        QLOG_DEBUG() << QObject::tr("HS out: Initialization message.").toStdString().c_str();
         int nRet = m_pTcpSocket->write( grArray );
 
         if ( nRet == -1 )
