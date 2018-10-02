@@ -87,7 +87,7 @@ void CTcpServer::slot_newConnection()
     QTcpSocket * pInEibdSocket = m_pTcpServer->nextPendingConnection();
     m_grConnectionMap.insert( pInEibdSocket, CEibdMsg() );
 
-    QString sFrom = "eibd " + QString( pInEibdSocket->peerAddress().toString() + ":" + QString::number( pInEibdSocket->peerPort() ) );
+    QString sFrom = "eibd://" + QString( pInEibdSocket->peerAddress().toString() + ":" + QString::number( pInEibdSocket->peerPort() ) );
     QsLogging::Logger::logCSV( "hsd", sFrom, "", "", "New connection", "");
 
     connect( pInEibdSocket, SIGNAL( readyRead() ), this, SLOT( slot_startRead() ) );
@@ -115,13 +115,6 @@ void CTcpServer::slot_startRead()
         return;
     }
 
-    QString sLogMsg;
-
-    sLogMsg = tr( "Eibd in: From: " )
-            + pInEibdSocket->peerAddress().toString()
-            + ":" + QString::number( pInEibdSocket->peerPort() )
-            +  tr( " Message: " ) + CEibdMsg::printASCII( grDatagram );
-
     if ( ( m_nSizeOfNextMsg > 0 ) && ( grDatagram.size() < m_nSizeOfNextMsg ) ) {
         QLOG_DEBUG() << "Shortening message to previous submitted length. Loosing:" << CEibdMsg::printASCII( grDatagram.mid( m_nSizeOfNextMsg, grDatagram.size() - m_nSizeOfNextMsg ) );
         grDatagram = grDatagram.mid( 0, m_nSizeOfNextMsg );
@@ -129,20 +122,20 @@ void CTcpServer::slot_startRead()
 
     QList< QByteArray > grDatagrammList = CEibdMsg::splitMessages( grDatagram );
 
-    QString sEibdCon = "eibd " + QString( pInEibdSocket->peerAddress().toString() + ":" + QString::number( pInEibdSocket->peerPort() ) );
+    QString sEibdCon = "eibd://" + QString( pInEibdSocket->peerAddress().toString() + ":" + QString::number( pInEibdSocket->peerPort() ) );
 
     foreach( QByteArray grDataMsg, grDatagrammList ) {
         CEibdMsg grMsg( grDataMsg );
 
         switch ( grMsg.getType() ) {
         case CEibdMsg::enuMsgType_connect: {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "Connection request.", grDataMsg);
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "Connection request.", CEibdMsg::printASCII( grDataMsg ));
             write( pInEibdSocket, grMsg.getResponse() );
             break;
         }
 
         case CEibdMsg::enuMsgType_EIB_OPEN_GROUPCON: {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_OPEN_GROUPCON", grDataMsg);
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_OPEN_GROUPCON", CEibdMsg::printASCII( grDataMsg ));
             write( pInEibdSocket, grMsg.getResponse() );
 
             m_grConnectionMap[ pInEibdSocket ] = grMsg;
@@ -152,20 +145,20 @@ void CTcpServer::slot_startRead()
 
         case CEibdMsg::enuMsgType_EIB_GROUP_PACKET:
         {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_GROUP_PACKET", grDataMsg);
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_GROUP_PACKET", CEibdMsg::printASCII( grDataMsg ));
             emit signal_sendToHs( grMsg.getDestAddressKnx(), grMsg.getValue() );
             break;
         }
 
         case CEibdMsg::enuMsgType_msgSize:
         {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "MSG SIZE Package", grDataMsg);
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "MSG SIZE Package", CEibdMsg::printASCII( grDataMsg ));
             m_nSizeOfNextMsg = grMsg.getMsgDataSize();
             break;
         }
         case CEibdMsg::enuMsgType_EIB_OPEN_T_GROUP:
         {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_OPEN_T_GROUP", grDataMsg);
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_OPEN_T_GROUP", CEibdMsg::printASCII( grDataMsg ) );
             write( pInEibdSocket, grMsg.getResponse() );
 
             m_grConnectionMap[ pInEibdSocket ] = grMsg;
@@ -176,7 +169,7 @@ void CTcpServer::slot_startRead()
             CEibdMsg grFormerMsg = m_grConnectionMap.value( pInEibdSocket );
 
             if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Write_PDU ) {
-                QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_APDU_PACKET WRITE", grDataMsg);
+                QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_APDU_PACKET WRITE", CEibdMsg::printASCII( grDataMsg ));
                 emit signal_sendToHs( grFormerMsg.getDestAddressKnx(), grMsg.getValue() );
             }
             else if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Read_PDU ) {
@@ -191,18 +184,25 @@ void CTcpServer::slot_startRead()
                 /// @todo Implement read from HS.
 
                 QByteArray grEibdMsg = CEibdMsg::getMessage( "", grFormerMsg.getDestAddressKnx(), fVal, grDataMsg );
-                QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_APDU_PACKET READ", grDataMsg);
+                QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_APDU_PACKET READ", CEibdMsg::printASCII( grDataMsg ));
 
                 write( pInEibdSocket, grEibdMsg );
             }
             else {
+                QString sLogMsg;
+
+                sLogMsg = tr( "Eibd in: From: " )
+                        + pInEibdSocket->peerAddress().toString()
+                        + ":" + QString::number( pInEibdSocket->peerPort() )
+                        +  tr( " Message: " ) + CEibdMsg::printASCII( grDatagram );
+
                 QLOG_WARN() << sLogMsg.toStdString().c_str() << QObject::tr("Unknown EIB_APDU_PACKET. Discarding. ")
                              << grFormerMsg.getDestAddressKnx();
             }
             break;
         }
         case CEibdMsg::enuMsgType_EIB_RESET_CONNECTION: {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_RESET_CONNECTION", grDataMsg);
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_RESET_CONNECTION", CEibdMsg::printASCII( grDataMsg) );
 
             break;
         }
@@ -243,13 +243,18 @@ void CTcpServer::slot_disconnected()
 
     QTcpSocket * pTcpSocket = dynamic_cast< QTcpSocket * >( sender() );
     if ( pTcpSocket == nullptr ) {
-        QLOG_WARN() << QObject::tr("Eibd in: Disconnected from eibd client.").toStdString().c_str();
+        QsLogging::Logger::logCSV( "hsd", "", "", "",
+                                   QObject::tr("Disconnected from eibd client."),
+                                   "" );
         return;
     }
 
-    QLOG_WARN() << QObject::tr("Eibd in: Disconnected from eibd client.").toStdString().c_str()
-                << tr( "Connection was" ).toStdString().c_str()
-                << pTcpSocket->peerAddress().toString().toStdString().c_str() << ":" << pTcpSocket->peerPort();
+    QsLogging::Logger::logCSV( "hsd",
+                               QString( pTcpSocket->peerAddress().toString() + ":" + QString::number( pTcpSocket->peerPort() ) ),
+                               "",
+                               "",
+                               QObject::tr("Disconnected from eibd client."),
+                               "" );
 
     m_grConnectionMap.remove( pTcpSocket );
     if ( m_pReplyTcpSocket == pTcpSocket ) {

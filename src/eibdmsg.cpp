@@ -99,7 +99,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         m_nMsgSize    = ( int ) sSize.toDouble();
 
         if ( p_grByteArray.size() == 2 ) {
-            QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
+            //QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
             return;
         }
     }
