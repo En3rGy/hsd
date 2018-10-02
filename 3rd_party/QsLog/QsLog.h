@@ -54,6 +54,8 @@ public:
     //! The default level is INFO
     Level loggingLevel() const;
 
+    static void logCSV( const QString & p_sTo, const QString & p_sFrom, const QString & p_sGA, const QString & p_sVal, const QString & p_sMsg, const QString & p_sRawMsg );
+
     //! The helper forwards the streaming to QDebug and builds the final
     //! log message.
     class QSLOG_SHARED_OBJECT Helper

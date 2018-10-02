@@ -95,7 +95,7 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
     }
     else
     {
-        QLOG_DEBUG() << QObject::tr("HS out:").toStdString().c_str() << grArray << QObject::tr("Message size in byte:").toStdString().c_str() << nRet;
+        QsLogging::Logger::logCSV( "HS", "hsd", grGA.toKNXString(), "", "", sMessage );
     }
 }
 
@@ -140,7 +140,7 @@ void CTcpClient::slot_startRead()
 
         if ( sType == "99" ) // HS ping --> ignore
         {
-            QLOG_DEBUG() << QObject::tr( "HS in: Ping. No action required. HS message was" ).toStdString().c_str() << grDatagram;
+            QsLogging::Logger::logCSV( "hsd", "HS", "", "", "Ping. No action required", grDatagram );
         }
         else  {
             /// @todo Respect different HS message types
@@ -150,11 +150,7 @@ void CTcpClient::slot_startRead()
 
             sGA = grGA.toKNXString();
 
-            QLOG_DEBUG() << QObject::tr("HS in:").toStdString().c_str()
-                         << grMsgArray
-                         << sGA.toStdString().c_str()
-                         << QObject::tr("Value:").toStdString().c_str()
-                         << sValue.toStdString().c_str();
+            QsLogging::Logger::logCSV( "hsd", "HS", sGA, sValue, "", grMsgArray );
 
             if ( grGA.isValid() == true ) {
                 CModel::getInstance()->m_grGAState.insert( sGA, sValue.toFloat());
