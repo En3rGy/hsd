@@ -158,7 +158,7 @@ void CTcpServer::slot_startRead()
         }
         case CEibdMsg::enuMsgType_EIB_OPEN_T_GROUP:
         {
-            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), QString::number ( grMsg.getMsgDataSize() ), "EIB_OPEN_T_GROUP", CEibdMsg::printASCII( grDataMsg ) );
+            QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_OPEN_T_GROUP", CEibdMsg::printASCII( grDataMsg ) );
             write( pInEibdSocket, grMsg.getResponse() );
 
             m_grConnectionMap[ pInEibdSocket ] = grMsg;
@@ -250,7 +250,7 @@ void CTcpServer::slot_disconnected()
     }
 
     QsLogging::Logger::logCSV( "hsd",
-                               QString( pTcpSocket->peerAddress().toString() + ":" + QString::number( pTcpSocket->peerPort() ) ),
+                               QString( "eibd://" + pTcpSocket->peerAddress().toString() + ":" + QString::number( pTcpSocket->peerPort() ) ),
                                "",
                                "",
                                QObject::tr("Disconnected from eibd client."),
@@ -319,8 +319,8 @@ qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData 
 
     qint64 nDataWritten = p_pTcpSocket->write( p_grData );
 
-    QString sEibdCon = p_pTcpSocket->peerAddress().toString() + ":" + QString::number( p_pTcpSocket->peerPort() );
-    QsLogging::Logger::logCSV( "hsd", sEibdCon, "", "", "", CEibdMsg::printASCII( p_grData ));
+    QString sEibdCon = "eibd://" + p_pTcpSocket->peerAddress().toString() + ":" + QString::number( p_pTcpSocket->peerPort() );
+    QsLogging::Logger::logCSV( sEibdCon, "hsd", "", "", "", CEibdMsg::printASCII( p_grData ));
 
     return nDataWritten;
 }

@@ -225,6 +225,18 @@ void Hsd_testTest::testAPDUMsgTest()
 
     QVERIFY( grMsg.getValue().toInt() == 0x84 );
 
+    grTestData.clear();
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x25 );
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x81 );
+
+    CEibdMsg grMsg2( grTestData );
+
+    qDebug() << grMsg2.getValue();
+
+    QVERIFY( grMsg2.getValue().toInt() == 1 );
+
 }
 
 QTEST_APPLESS_MAIN(Hsd_testTest)

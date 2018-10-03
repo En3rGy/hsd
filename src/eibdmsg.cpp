@@ -165,11 +165,12 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
                 appended after the two bytes.
                 */
 
-                if ( grMsgType.size() == 4 ) {
+                if ( grMsg.size() == 4 ) {
                     setEib1( grMsg.data()[3] & 0x3F );
                 }
                 else {
                     QByteArray grPayload = grMsg.mid( 4 );
+
                     if ( grPayload.size() == 1 ) {
                     setDTP5( grPayload );
                     }
@@ -180,7 +181,9 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
                         setDTP3( grPayload );
                     }
                     else {
-                        QLOG_ERROR() << QObject::tr( "DTP of payload could not be identified.");
+                        QLOG_ERROR() << QObject::tr( "DTP of payload could not be identified.")
+                                     << "Msg:" << CEibdMsg::printASCII( p_grByteArray )
+                                     << "Payload:" << CEibdMsg::printASCII( grPayload );
                     }
                 }
                 m_eAPDUType = enuAPDUType_A_GroupValue_Write_PDU;
