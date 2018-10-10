@@ -193,16 +193,46 @@ void Hsd_testTest::testFromHS()
 
     qDebug() << "eibd msg:" << CEibdMsg::printASCII( grMsg );
 
-    qWarning() << "Test not implemented";
-
-    QVERIFY( true );
-
     ///////////
 
     // Received via HS interface: 6/0/8 Value: 0.0 "2|12296|0.0"
     // Sending to eibd client: 127.0.0.1 : 44780 "00 08 00 27 00 00 30 08 00 80" Bytes written: 10
 
     //<cobject id="32995" used="1" type="eib" path="06 Tore\0 Au&#223;enanlage\" fmt="EIS1+EIS2+EIS7_1BIT" fmtex="integer" name="G RM ObstructionDetected" rem="0" init="0" min="0" max="1" step="0" list="" ga="6/0/8" ganum="12296" cogws="1" cogwr="1" scan="0"  sbc="0"  read="1"  transmit="1" />
+
+    /// 2nd run
+
+    sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS2+EIS6_8BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"6/0/6\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    CKoXml::getInstance()->setXml( sXml.toUtf8() );
+
+    //DEBUG 2018-10-10T21:47:26.057 " ; " hsd " ; " HS " ; " 6/0/6 " ; " 3.0 " ; "  " ; " 1|12294|3.0
+
+    QString sHsMsg = "1|12294|3.0";
+
+    QString sType;
+    QString sIntGA;
+    QString sGA2;
+    QString sValue;
+
+    CTcpClient::splitString( sHsMsg, sType, sIntGA, sValue );
+
+    CGroupAddress grGA2;
+    grGA2.setHS( sIntGA.toInt() );
+
+    sGA2 = grGA2.toKNXString();
+
+    QVERIFY( sGA2 == "6/0/6" );
+    QVERIFY( sValue == "3.0" );
+    QVERIFY( sValue.toFloat() == 3.0f );
+
+    QByteArray grMsg2 = CEibdMsg::getMessage( "", sGA2, sValue.toFloat() );
+
+    // 00 09 00 27 00 00 30 06 00 80 07
+
+    qDebug() << CEibdMsg::printASCII( grMsg2 );
+
+    QVERIFY2( false, "Not implemented" );
+
 }
 
 void Hsd_testTest::testAPDUMsgTest()
@@ -223,7 +253,7 @@ void Hsd_testTest::testAPDUMsgTest()
 
     qDebug() << grMsg.getValue();
 
-    QVERIFY( grMsg.getValue().toInt() == 0x84 );
+    QVERIFY( grMsg.getValue().toInt() == 51 );
 
     grTestData.clear();
     grTestData.append( (char) 0x00 );

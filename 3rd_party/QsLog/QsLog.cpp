@@ -202,12 +202,12 @@ Level Logger::loggingLevel() const
 void Logger::logCSV(const QString &p_sTo, const QString &p_sFrom, const QString &p_sGA, const QString & p_sVal, const QString &p_sMsg, const QString &p_sRawMsg)
 {
     QString sSep = " ; ";
-    QLOG_DEBUG() << sSep
-                 << p_sTo.toStdString().c_str()     << sSep
-                 << p_sFrom.toStdString().c_str()   << sSep
-                 << p_sGA.toStdString().c_str()     << sSep
-                 << p_sVal.toStdString().c_str()    << sSep
-                 << p_sMsg.toStdString().c_str()    << sSep
+    QLOG_DEBUG() << sSep.toStdString().c_str()
+                 << p_sTo.toStdString().c_str()     << sSep.toStdString().c_str()
+                 << p_sFrom.toStdString().c_str()   << sSep.toStdString().c_str()
+                 << p_sGA.toStdString().c_str()     << sSep.toStdString().c_str()
+                 << p_sVal.toStdString().c_str()    << sSep.toStdString().c_str()
+                 << p_sMsg.toStdString().c_str()    << sSep.toStdString().c_str()
                  << p_sRawMsg.toStdString().c_str();
 }
 

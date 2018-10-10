@@ -445,11 +445,20 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     case CKoXml::enuDPT_DPT5_DPT6: {
         // e.g. "00 27 1a 10 00 80 ff"
         grMsg.append( char( 0x80 ) ); // index 8
-        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
-        grMsg.append( unVal );
+        quint8 nVal = static_cast< quint8 >( fVal );
+        grMsg.append( nVal );
         grMsg[ 1 ] = 0x09; // correction of msg length
         break;
     }
+
+//    case CKoXml::enuDPT_DPT5_DPT6: {
+//        // e.g. "00 27 1a 10 00 80 ff"
+//        grMsg.append( char( 0x80 ) ); // index 8
+//        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
+//        grMsg.append( unVal );
+//        grMsg[ 1 ] = 0x09; // correction of msg length
+//        break;
+//    }
 
     case CKoXml::enuDPT_DPT3: {
         qint32 nVal = static_cast< qint32 >( fVal );
