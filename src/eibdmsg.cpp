@@ -172,7 +172,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
                     QByteArray grPayload = grMsg.mid( 4 );
 
                     if ( grPayload.size() == 1 ) {
-                    setDTP5( grPayload );
+                        setDTP5( grPayload );
                     }
                     else if ( grPayload.size() == 2 ) {
                         setDTP9_001( grPayload );
@@ -451,14 +451,15 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         break;
     }
 
-//    case CKoXml::enuDPT_DPT5_DPT6: {
-//        // e.g. "00 27 1a 10 00 80 ff"
-//        grMsg.append( char( 0x80 ) ); // index 8
-//        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
-//        grMsg.append( unVal );
-//        grMsg[ 1 ] = 0x09; // correction of msg length
-//        break;
-//    }
+        /// @todo check when to span 100% on 255 values.
+        //    case CKoXml::enuDPT_DPT5_DPT6: {
+        //        // e.g. "00 27 1a 10 00 80 ff"
+        //        grMsg.append( char( 0x80 ) ); // index 8
+        //        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
+        //        grMsg.append( unVal );
+        //        grMsg[ 1 ] = 0x09; // correction of msg length
+        //        break;
+        //    }
 
     case CKoXml::enuDPT_DPT3: {
         qint32 nVal = static_cast< qint32 >( fVal );
@@ -470,6 +471,92 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         /// @todo check if 0x00 before value is required
         grMsg[ 1 ] = 0x0B; // correction of msg length
         qDebug() << printASCII( grMsg ) << Q_FUNC_INFO;
+        break;
+    }
+
+    case CKoXml::enuDPT_DPT9: {
+
+        // 00 08 00 27 25 00 00 80 8A 24
+
+        grMsg.append( char( 0x80 ) ); // index 8
+
+        qint16 nRes = 0;
+
+        //        Implement  FloatValue = (0,01*M)*2^(E) with MEEE EMMM MMMM MMMM
+
+        //        Step 1: Calculate the mantissa
+        //        Due to the resolution of 0.01, the value to be coded must be multiplied by 100: 30 x 100 =
+        //        3000
+
+        qint16 nE = 0;
+        qint16 nM = static_cast< qint16 >( fVal * 100.0f );
+
+        //        Step 2: Check if exponent is required
+
+        //        Mantissa is 11 bits, range is from + 2047 to -2048.
+        //        3000 is larger, therefore exponent is required.
+        //        Which exponent? 21 = 2 is sufficient as 3000 : 2 = 1500, and this number can be coded in
+        //        the mantissa.
+
+        if ( nM < -2048 and nM > 2048 ) {
+            /// @todo get exponent
+            QLOG_WARN() << "Values nM < -2048 and nM > 2048 not supported for DTP9 yet.";
+        }
+
+        //        Step 3: Code the mantissa:
+
+        //        Value:       1024     512      256      128       64       32      16       8        4        2        1
+        //        Number:        1         0          1         1          1         0        1        1        1        0        0
+
+
+        //        If the number is negative, then create a two’s complement!
+
+        //        Output value:  101 1101 1100
+
+        //        Invert:              010 0010 0011
+        //        +1                                         1
+        //        -------------------------------------------------
+        //                                010 0010 0100
+
+        if ( nM < 0 ) {
+            /// @todo get two's complement
+
+            nRes |= 0x01;
+            nRes = nRes << 7;
+
+            QLOG_WARN() << "Values nM < 0 not supported for DTP9 yet.";
+        }
+
+        //        Step 4: Code sign and exponent
+        //        Number is negative, therefore the S bit = 1
+        //        Exponent = 1, coded in four bits = 0001
+
+        //        Step 5: Final result
+
+        //        -30 = 1   0001   010 0010 0100
+
+        //       MEEE EMMM MMMM MMMM
+
+        nE = nE & 0x000F;
+        nE = nE << 11;
+
+        nRes |= nE;
+
+        nM = nM & 0x07FF;
+
+        nRes |= nM;
+
+        QByteArray grVal;
+        QDataStream in( & grVal, QIODevice::ReadWrite );
+        in << nRes;
+        grMsg.append( grVal );
+
+        grMsg.remove( 4, 2 ); // remove src address
+
+        /// @todo check if 0x00 before value is required
+        grMsg[ 1 ] = 0x08; // correction of msg length
+        qDebug() << printASCII( grMsg ) << Q_FUNC_INFO;
+
         break;
     }
 

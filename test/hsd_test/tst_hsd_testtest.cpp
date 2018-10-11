@@ -31,6 +31,7 @@ Hsd_testTest::Hsd_testTest()
 
 void Hsd_testTest::testDtp9()
 {
+    // 00 08 00 27 25 00 00 80 8A 24
     QByteArray grBtMsg;
     grBtMsg.append( (char) 0x00 );
     grBtMsg.append( 0x08 );
@@ -56,6 +57,23 @@ void Hsd_testTest::testDtp9()
     QVERIFY( grMsg2.getDestAddressKnx() == "4/5/0" );
     sMsg = "Value was " + QString::number(grMsg2.getValue().toFloat());
     QVERIFY2( grMsg2.getValue().toFloat() == 25.36f, sMsg.toStdString().c_str() );
+
+    /// vice versa
+
+    QString sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS5_16BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"0/4/5\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    CKoXml::getInstance()->setXml( sXml.toUtf8() );
+
+    // CKoXml::enuDPT_DPT9
+
+    QByteArray grMsg3 = CEibdMsg::getMessage( "", "0/4/5", "8.3" );
+
+    qDebug() << "eibd msg:" << CEibdMsg::printASCII( grMsg3 );
+
+    CEibdMsg grMsg4( grMsg3 );
+    qDebug() << grMsg4.getDestAddressKnx() << grMsg4.getValue().toFloat();
+
+    QVERIFY( grMsg4.getDestAddressKnx() == "0/4/5" );
+    QVERIFY( grMsg4.getValue().toFloat() == 8.3f );
 }
 
 void Hsd_testTest::testBinDecr()
