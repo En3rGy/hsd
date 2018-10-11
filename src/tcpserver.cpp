@@ -11,6 +11,7 @@
 #include "QsLog.h"
 #include <QTime>
 #include <QCoreApplication>
+#include <groupaddress.h>
 
 //////////////////////////////////////////////////////////////
 //
@@ -319,9 +320,10 @@ qint64 CTcpServer::write( QTcpSocket * p_pTcpSocket, const QByteArray &p_grData 
 
     qint64 nDataWritten = p_pTcpSocket->write( p_grData );
 
-    CEibdMsg grEibMsg( p_grData );
+    CGroupAddress grAddr;
+    grAddr.setHex( p_grData.mid(6, 2) );
     QString  sEibdCon = "eibd://" + p_pTcpSocket->peerAddress().toString() + ":" + QString::number( p_pTcpSocket->peerPort() );
-    QsLogging::Logger::logCSV( sEibdCon, "hsd", grEibMsg.getDestAddressKnx(), grEibMsg.getValue().toString(), "", CEibdMsg::printASCII( p_grData ));
+    QsLogging::Logger::logCSV( sEibdCon, "hsd", grAddr.toKNXString(), "", "", CEibdMsg::printASCII( p_grData ));
 
     return nDataWritten;
 }
