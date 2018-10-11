@@ -216,31 +216,29 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         QByteArray grData;
         grData.append( grMsg.mid( 5, grMsg.size() - 5 ) ); // skipping byte 4 which is 00
 
-        // e.g. EIS1 = 1 Bit
-        if ( grData.size() == 1 ) {
+        CKoXml::enuDPT eDpt = CKoXml::getInstance()->getGaDPT( getDestAddressKnx() );
+
+        switch( eDpt ) {
+        case CKoXml::enuDPT_undef: {
+            QLOG_WARN() << QObject::tr("DPT/EIS of GA unknown").toStdString().c_str() << getDestAddressKnx();
+        }
+        case CKoXml::enuDPT_DPT1: {
             setEib1( grMsg.at( 5 ) );
+            break;
         }
-
-        //
-        else if ( grData.size() == 2 ) {
-            //    ERROR 2016-12-31T14:49:55.283 Unknown DTP of data bytes in EIB message: "00 27 13 0c 00 80 cc"
-            //    ERROR 2016-12-31T16:29:33.342 Unknown DTP of data bytes in EIB message: "00 27 1a 10 00 80 00"
-            //    ERROR 2016-12-31T20:58:45.778 Unknown DTP of data bytes in EIB message: "00 27 12 02 00 81 00 06 00 27 12 03 00 81"
-            //    ERROR 2016-12-31T20:58:55.018 Unknown DTP of data bytes in EIB message: "00 27 12 02 00 81 00 06 00 27 12 03 00 81"
-            //    ERROR 2016-12-31T23:11:50.557 Unknown DTP of data bytes in EIB message: "00 27 1a 10 00 80 ff"
-            //    ERROR 2016-12-31T23:11:51.847 Unknown DTP of data bytes in EIB message: "00 27 1a 10 00 80 00"
-
+        case CKoXml::enuDPT_DPT5_DPT6: {
             setDTP5( grData.mid( 1, 1 ) ); // skipping 80 byte
+            break;
         }
-
-        // 00 08 # 00 27 # 25 00 # 00 # 80 86 52 = -4.3
-        // F_16 = DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
-        else if ( grData.size() == 3 ) {
+        //case CKoXml::enuDPT_DPT3: {break;}
+        case CKoXml::enuDPT_DPT9: {
             setDTP9_001( grData.mid( 1, 2 ) ); // skipping 1st byte
+            break;
         }
-        else {
+        default: {
             QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
         }
+        } // switch
     } // else if ( grMsgType == QByteArray( * CModel::g_uzEIB_GROUP_PACKET, 2 ) )
     else {
         QLOG_WARN() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );

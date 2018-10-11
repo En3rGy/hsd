@@ -31,6 +31,9 @@ Hsd_testTest::Hsd_testTest()
 
 void Hsd_testTest::testDtp9()
 {
+    QString sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS5_16BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"4/5/0\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    CKoXml::getInstance()->setXml( sXml.toUtf8() );
+
     // 00 08 00 27 25 00 00 80 8A 24
     QByteArray grBtMsg;
     grBtMsg.append( (char) 0x00 );
@@ -60,7 +63,7 @@ void Hsd_testTest::testDtp9()
 
     /// vice versa
 
-    QString sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS5_16BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"0/4/5\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS5_16BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"0/4/5\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
     CKoXml::getInstance()->setXml( sXml.toUtf8() );
 
     // CKoXml::enuDPT_DPT9
@@ -245,11 +248,11 @@ void Hsd_testTest::testFromHS()
 
     QByteArray grMsg2 = CEibdMsg::getMessage( "", sGA2, sValue.toFloat() );
 
-    // 00 09 00 27 00 00 30 06 00 80 07
+    // 00 09 00 27 00 00 30 06 00 80 03
 
     qDebug() << CEibdMsg::printASCII( grMsg2 );
 
-    QVERIFY2( false, "Not implemented" );
+    QVERIFY( CEibdMsg::printASCII( grMsg2 ) == "00 09 00 27 00 00 30 06 00 80 03" );
 
 }
 
