@@ -549,10 +549,10 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         in << nRes;
         grMsg.append( grVal );
 
-        grMsg.remove( 4, 2 ); // remove src address
+        //grMsg.remove( 4, 2 ); // remove src address
 
         /// @todo check if 0x00 before value is required
-        grMsg[ 1 ] = 0x08; // correction of msg length
+        grMsg[ 1 ] = 0x0A; // correction of msg length
         qDebug() << printASCII( grMsg ) << Q_FUNC_INFO;
 
         break;

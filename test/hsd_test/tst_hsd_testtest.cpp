@@ -72,11 +72,17 @@ void Hsd_testTest::testDtp9()
 
     qDebug() << "eibd msg:" << CEibdMsg::printASCII( grMsg3 );
 
-    CEibdMsg grMsg4( grMsg3 );
-    qDebug() << grMsg4.getDestAddressKnx() << grMsg4.getValue().toFloat();
+    CGroupAddress grAddr;
+    grAddr.setHex( grMsg3.mid(6,2) );
+    qDebug() << grAddr.toKNXString();
 
-    QVERIFY( grMsg4.getDestAddressKnx() == "0/4/5" );
-    QVERIFY( grMsg4.getValue().toFloat() == 8.3f );
+    QVERIFY( grAddr.toKNXString() == "0/4/5" );
+
+    QByteArray grRes;
+    grRes.append( 0x03 );
+    grRes.append( 0x3e );
+
+    QVERIFY( grMsg3.mid(10, 2) == grRes );
 }
 
 void Hsd_testTest::testBinDecr()
