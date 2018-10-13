@@ -14,7 +14,6 @@ public:
     Hsd_testTest();
 
 private Q_SLOTS:
-    void testDtp9();
     void testBinDecr();
     void testPrintBin();
     void testMultMsg();
@@ -22,6 +21,7 @@ private Q_SLOTS:
     void testSplitHSString();
     void testFromHS();
     void testAPDUMsgTest();
+    void testDtp9();
 };
 
 Hsd_testTest::Hsd_testTest()

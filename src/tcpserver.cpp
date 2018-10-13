@@ -141,6 +141,16 @@ void CTcpServer::slot_startRead()
 
             m_grConnectionMap[ pInEibdSocket ] = grMsg;
             m_pReplyTcpSocket = pInEibdSocket;
+
+            // Provide history data
+            foreach( QString sGA, CModel::getInstance()->m_grGAState.keys() ) {
+                bool bSuccess = false;
+                float fVal = CModel::getInstance()->m_grGAState.value( sGA ).toFloat( & bSuccess );
+                if ( bSuccess ) {
+                    QByteArray grHistMsg = CEibdMsg::getMessage( "", sGA, fVal );
+                    write( pInEibdSocket, grHistMsg );
+                }
+            }
             break;
         }
 
@@ -198,7 +208,7 @@ void CTcpServer::slot_startRead()
                         +  tr( " Message: " ) + CEibdMsg::printASCII( grDatagram );
 
                 QLOG_WARN() << sLogMsg.toStdString().c_str() << QObject::tr("Unknown EIB_APDU_PACKET. Discarding. ")
-                             << grFormerMsg.getDestAddressKnx();
+                            << grFormerMsg.getDestAddressKnx();
             }
             break;
         }

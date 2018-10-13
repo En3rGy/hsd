@@ -9,6 +9,7 @@ const QString CModel::g_sKey_HSGwPort     = "HSGwPort";
 const QString CModel::g_sKey_HsdPort      = "HsdPort";
 const QString CModel::g_sKey_LogLevel     = "LogLevel";
 const QString CModel::g_sKey_HSGwPassword = "HSGwPass";
+const QString CModel::g_sKey_LogPerDate   = "LogPerDate";
 const QString CModel::g_sSettingsPath     = "../etc/hsd.ini";
 const QString CModel::g_sExitMessage      = "Shutdown hsd please";
 const QString CModel::g_sLogLevelMessage  = "Set hsd log level please";

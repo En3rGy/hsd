@@ -12,8 +12,8 @@
 
 CHsd::CHsd(QObject *parent) :
     QObject(parent)
-  , m_pTcpServer( NULL )
-  , m_pTcpClient( NULL )
+  , m_pTcpServer( nullptr )
+  , m_pTcpClient( nullptr )
 {
     m_pTcpServer = new CTcpServer( this );
     m_pTcpClient = new CTcpClient( this );
@@ -29,7 +29,10 @@ CHsd::CHsd(QObject *parent) :
         grLogPath.mkdir( grLogPath.absolutePath() );
     }
 
-    QString sFileName = "hsd_" + QDateTime::currentDateTime().toString( "yyyy-MM-dd_hhmmss" /*Qt::ISODate*/ ) + ".log";
+    QString sFileName = "hsd.log";
+    if ( CModel::getInstance()->getValue( CModel::g_sKey_LogPerDate, false ).toBool() ) {
+        sFileName = "hsd_" + QDateTime::currentDateTime().toString( "yyyy-MM-dd_hhmmss" /*Qt::ISODate*/ ) + ".log";
+    }
     sFileName.replace( ":", "" );
 
     QsLogging::Logger & grLogger = QsLogging::Logger::instance();
@@ -39,7 +42,7 @@ CHsd::CHsd(QObject *parent) :
 
     grLogger.addDestination( m_pFileDestPtr );
     grLogger.addDestination( m_pDebugDestPtr );
-    grLogger.setLoggingLevel( ( QsLogging::Level ) unLogLevel );
+    grLogger.setLoggingLevel( static_cast< QsLogging::Level >( unLogLevel ) );
 
     qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
     QLOG_INFO() << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
@@ -64,7 +67,7 @@ CHsd::~CHsd()
 void CHsd::setLogLevel(const uint &p_unLogLevel)
 {
     QsLogging::Logger & grLogger = QsLogging::Logger::instance();
-    grLogger.setLoggingLevel( ( QsLogging::Level ) p_unLogLevel );
+    grLogger.setLoggingLevel( static_cast< QsLogging::Level >( p_unLogLevel ) );
 }
 
 void CHsd::startService()
@@ -117,7 +120,7 @@ void CHsd::setRemoteLogLevel(const int &p_nLogLevel)
     QString sData     = CModel::g_sLogLevelMessage;
     QByteArray grData;
     grData.append( sData );
-    grData.append( p_nLogLevel );
+    grData.append( static_cast< char > ( p_nLogLevel ) );
 
     CTcpClient::sendData( sDestAddr, nPort, grData );
 }
