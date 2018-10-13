@@ -269,6 +269,9 @@ void Hsd_testTest::testAPDUMsgTest()
     QByteArray grTestData;
     QDataStream in( & grTestData, QIODevice::ReadWrite);
 
+    QString sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS6_8BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"6/0/6\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    CKoXml::getInstance()->setXml( sXml.toUtf8() );
+
     in << 0x00050025;
     grTestData.append( (char) 0x00 );
     grTestData.append( (char) 0x80 );
@@ -276,11 +279,19 @@ void Hsd_testTest::testAPDUMsgTest()
 
     qDebug() << CEibdMsg::printASCII( grTestData );
 
-    CEibdMsg grMsg( grTestData );
+    CEibdMsg grMsg;
+    grMsg.setEibdMsg( grTestData, "6/0/6" );
 
     qDebug() << grMsg.getValue();
 
     QVERIFY( grMsg.getValue().toInt() == 51 );
+
+
+    // check different dpt
+
+
+    sXml = "<cobject id=\"32988\" used=\"1\" type=\"eib\" path=\"06 Tore\\\\0 Au&#223;enanlage\\\\\" fmt=\"EIS2+EIS6_8BIT\" fmtex=\"integer\" name=\"G TargetDoorState\" rem=\"0\" init=\"0\" min=\"0\" max=\"255\" step=\"0\" list=\"\" ga=\"6/0/7\" ganum=\"12295\" cogws=\"1\" cogwr=\"1\" scan=\"0\"  sbc=\"0\"  read=\"1\"  transmit=\"1\" />";
+    CKoXml::getInstance()->setXml( sXml.toUtf8() );
 
     grTestData.clear();
     grTestData.append( (char) 0x00 );
@@ -288,11 +299,31 @@ void Hsd_testTest::testAPDUMsgTest()
     grTestData.append( (char) 0x00 );
     grTestData.append( (char) 0x81 );
 
-    CEibdMsg grMsg2( grTestData );
+    CEibdMsg grMsg2;
+    grMsg2.setEibdMsg( grTestData, "6/0/7" );
 
     qDebug() << grMsg2.getValue();
-
     QVERIFY( grMsg2.getValue().toInt() == 1 );
+
+//    hsd                     ;  eibd://127.0.0.1:41318  ;         ;     ;  New connection         ;
+//    hsd                     ;  eibd://127.0.0.1:41318  ;  6/0/7  ;     ;  EIB_OPEN_T_GROUP       ;  00 05 00 22 30 07 ff
+//    ERROR 2018-10-13T18:26:44.063 Length of hex address not equals 2 byte. Length in byte was 0
+//    eibd://127.0.0.1:41318  ;  hsd                     ;  0/0/0  ;     ;                         ;  00 02 00 22
+//    hsd                     ;  eibd://127.0.0.1:41318  ;         ;  0  ;  EIB_APDU_PACKET WRITE  ;  00 05 00 25 00 80 01
+//    HS                      ;  hsd                     ;  6/0/7  ;     ;                         ;  1|12295|0
+
+    grTestData.clear();
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x05 );
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x25 );
+    grTestData.append( (char) 0x00 );
+    grTestData.append( (char) 0x80 );
+    grTestData.append( (char) 0x01 );
+    CEibdMsg grMsg3;
+    grMsg3.setEibdMsg( grTestData, "6/0/7" );
+
+    QVERIFY( grMsg3.getValue().toInt() == 1 );
 
 }
 

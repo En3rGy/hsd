@@ -81,7 +81,7 @@ QList<QByteArray> CEibdMsg::splitMessages(QByteArray &p_grMessages)
 //
 //////////////////////////////////////////////////////////////
 
-void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
+void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
 {
     QLOG_TRACE() << Q_FUNC_INFO;
 
@@ -96,7 +96,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     if ( p_grByteArray.at( 1 ) < char( 0x20 ) ) { // size info
         m_eMsgType    = enuMsgType_msgSize;
         QString sSize = QString::number( p_grByteArray.at( 1 ) );
-        m_nMsgSize    = ( int ) sSize.toDouble();
+        m_nMsgSize    = static_cast< int >( sSize.toDouble() );
 
         if ( p_grByteArray.size() == 2 ) {
             //QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
@@ -124,7 +124,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
     }
     else if ( ( grMsg.length() == 2 ) && ( equals( grMsgType, CModel::g_uzEibAck, 2 )) == false ) {
         m_eMsgType = enuMsgType_msgSize;
-        m_nMsgSize = ( int ) QString::number( p_grByteArray.at( 1 ) ).toDouble();
+        m_nMsgSize = static_cast< int >( QString::number( p_grByteArray.at( 1 ) ).toDouble() );
     }
     else if ( equals( grMsgType, CModel::g_uzEIB_APDU_PACKET, 2 ) ) {
         m_eMsgType = enuMsgType_EIB_APDU_PACKET;
@@ -172,7 +172,19 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
                     QByteArray grPayload = grMsg.mid( 4 );
 
                     if ( grPayload.size() == 1 ) {
-                        setDTP5( grPayload );
+                        switch ( CKoXml::getInstance()->getGaDPT( p_sGA ) ) {
+                        case CKoXml::enuDPT_DPT5_001: {
+                            setDTP5_001( grPayload );
+                            break;
+                        }
+                        case CKoXml::enuDPT_DPT5_004: {
+                            setDTP5_004( grPayload );
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                        }
                     }
                     else if ( grPayload.size() == 2 ) {
                         setDTP9_001( grPayload );
@@ -221,16 +233,21 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray)
         switch( eDpt ) {
         case CKoXml::enuDPT_undef: {
             QLOG_WARN() << QObject::tr("DPT/EIS of GA unknown").toStdString().c_str() << getDestAddressKnx();
+            break;
         }
         case CKoXml::enuDPT_DPT1: {
             setEib1( grMsg.at( 5 ) );
             break;
         }
-        case CKoXml::enuDPT_DPT5_DPT6: {
-            setDTP5( grData.mid( 1, 1 ) ); // skipping 80 byte
+        case CKoXml::enuDPT_DPT5_001: {
+            setDTP5_001( grData.mid( 1, 1 ) ); // skipping 80 byte
             break;
         }
-        //case CKoXml::enuDPT_DPT3: {break;}
+        case CKoXml::enuDPT_DPT5_004: {
+            setDTP5_004( grData.mid( 1, 1 ) ); // skipping 80 byte
+            break;
+        }
+            //case CKoXml::enuDPT_DPT3: {break;}
         case CKoXml::enuDPT_DPT9: {
             setDTP9_001( grData.mid( 1, 2 ) ); // skipping 1st byte
             break;
@@ -440,7 +457,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         break;
     }
 
-    case CKoXml::enuDPT_DPT5_DPT6: {
+    case CKoXml::enuDPT_DPT5_004: {
         // e.g. "00 27 1a 10 00 80 ff"
         grMsg.append( char( 0x80 ) ); // index 8
         quint8 nVal = static_cast< quint8 >( fVal );
@@ -449,15 +466,14 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         break;
     }
 
-        /// @todo check when to span 100% on 255 values.
-        //    case CKoXml::enuDPT_DPT5_DPT6: {
-        //        // e.g. "00 27 1a 10 00 80 ff"
-        //        grMsg.append( char( 0x80 ) ); // index 8
-        //        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
-        //        grMsg.append( unVal );
-        //        grMsg[ 1 ] = 0x09; // correction of msg length
-        //        break;
-        //    }
+    case CKoXml::enuDPT_DPT5_001: {
+        // e.g. "00 27 1a 10 00 80 ff"
+        grMsg.append( char( 0x80 ) ); // index 8
+        quint8 unVal = static_cast< quint8 >( fVal * 2.55f );
+        grMsg.append( unVal );
+        grMsg[ 1 ] = 0x09; // correction of msg length
+        break;
+    }
 
     case CKoXml::enuDPT_DPT3: {
         qint32 nVal = static_cast< qint32 >( fVal );
@@ -662,10 +678,20 @@ void CEibdMsg::setDTP3(const QByteArray &p_grData)
 //
 //////////////////////////////////////////////////////////////
 
-void CEibdMsg::setDTP5(const QByteArray &p_grData)
+void CEibdMsg::setDTP5_001(const QByteArray &p_grData)
 {
     quint8 unData = static_cast< quint8 >( p_grData.at( 0 ) );
     m_grValue.setValue( static_cast< int >( unData * 100.0f / 255.0f ) );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setDTP5_004(const QByteArray &p_grData)
+{
+    quint8 unData = static_cast< quint8 >( p_grData.at( 0 ) );
+    m_grValue.setValue( static_cast< int >( unData ) );
 }
 
 //////////////////////////////////////////////////////////////

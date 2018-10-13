@@ -47,7 +47,7 @@ public:
      * @brief Set for an incomming message via the Eib Interface
      * @param p_grByteArray
      */
-    void setEibdMsg( const QByteArray & p_grByteArray );
+    void setEibdMsg( const QByteArray & p_grByteArray, const QString & p_sGA = QString() );
 
     /// @brief Type of message
     /// @return enuMsgType
@@ -125,7 +125,9 @@ protected:
 
     void setDTP3( const QByteArray &p_grData );
 
-    void setDTP5( const QByteArray &p_grData );
+    void setDTP5_001( const QByteArray &p_grData );
+
+    void setDTP5_004( const QByteArray &p_grData );
 
     /**
      * @brief Interprets an 2 byte DTP9.001 message and stores the result

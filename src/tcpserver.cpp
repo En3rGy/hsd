@@ -180,6 +180,7 @@ void CTcpServer::slot_startRead()
             CEibdMsg grFormerMsg = m_grConnectionMap.value( pInEibdSocket );
 
             if ( grMsg.getAPDUType() == CEibdMsg::enuAPDUType_A_GroupValue_Write_PDU ) {
+                grMsg.setEibdMsg( grDataMsg, grFormerMsg.getDestAddressKnx() );
                 QsLogging::Logger::logCSV( "hsd", sEibdCon, grMsg.getDestAddressKnx(), grMsg.getValue().toString(), "EIB_APDU_PACKET WRITE", CEibdMsg::printASCII( grDataMsg ));
                 emit signal_sendToHs( grFormerMsg.getDestAddressKnx(), grMsg.getValue() );
             }

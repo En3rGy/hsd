@@ -20,7 +20,9 @@ public:
         enuDPT_DPT1,
         enuDPT_DPT2,
         enuDPT_DPT3,
-        enuDPT_DPT5_DPT6,
+        enuDPT_DPT5_001,  // 0...100
+        enuDPT_DPT5_004,  // 0...255
+        enuDPT_DPT5_DPT6, // 0..255
         enuDPT_DPT7_DPT8,
         enuDPT_DPT9,
         enuDPT_DPT10,
