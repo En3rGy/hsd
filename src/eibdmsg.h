@@ -135,6 +135,8 @@ protected:
      */
     void setDTP9_001( const QByteArray &p_grData );
 
+    void setDtp16( const QByteArray &p_grData );
+
     void setEibAddress( const QByteArray &p_grData );
 
     enuMsgType  m_eMsgType;

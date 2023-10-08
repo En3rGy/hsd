@@ -28,7 +28,8 @@ public:
         enuDPT_DPT10,
         enuDPT_DPT11,
         enuDPT_DPT12_DPT13,
-        enuDPT_DPT14
+        enuDPT_DPT14,
+        enuDPT_DPT16      // 14-byte Text
     };
 
     void setXml(const QByteArray &p_grKoXml );

@@ -138,7 +138,6 @@ CKoXml::enuDPT CKoXml::getGaDPT(const QString &p_sGA)
     }
     else if ( ( sFmt == "EIS?_4BIT" ) ||
               ( sFmt == "EIS?_8BIT" ) ||
-              ( sFmt == "EIS?_14BYTE" ) ||
               ( sFmt == "EIS?_DALI" ) ||
               ( sFmt == "EIS?_SRO" ) ) {
         return enuDPT_undef;
@@ -165,6 +164,10 @@ CKoXml::enuDPT CKoXml::getGaDPT(const QString &p_sGA)
     }
     else if ( sFmt == "EIS1+EIS2+EIS7_1BIT" ) {
         return enuDPT_DPT1;
+    }
+    else if ( ( sFmt == "EIS?_14BYTE" ) ||
+              ( sFmt == "EIS&#63;_14BYTE" ) ){
+        return enuDPT_DPT16;
     }
     else {
         return enuDPT_undef;

@@ -252,6 +252,10 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
             setDTP9_001( grData.mid( 1, 2 ) ); // skipping 1st byte
             break;
         }
+        case CKoXml::enuDPT_DPT16 : {
+            setDtp16( grData.mid( 1, 14 ) ); ///@todo skipping 1st byte is ok?
+            break;
+        }
         default: {
             QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
         }
@@ -574,11 +578,17 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         break;
     }
 
+    case CKoXml::enuDPT_DPT16: {
+        /// @todo
+        QLOG_ERROR() << QObject::tr( "DPT14 14-byte text not implemented yet!" );
+        break;
+    }
+
     default: {
-        QLOG_WARN() << QObject::tr("Requested DPT not supported. EIS / Value was").toStdString().c_str()
+        QLOG_WARN() << QObject::tr("Requested DPT not supported. EIS / Value: \"").toStdString().c_str()
                     << CKoXml::getInstance()->getGaFormat( p_sDestAddr ).toStdString().c_str()
                     << " / "
-                    << p_grData << "\n"
+                    << p_grData << "\"\n"
                     << "Original Message:" << printASCII( p_grByteMsg );
         break;
     }
@@ -797,6 +807,16 @@ void CEibdMsg::setDTP9_001(const QByteArray & p_grData)
     // Calculate DPT 9.001 resp. DPT_Value_Temp resp. 2-octet float value
     float fValue = 0.01 * nM * qPow( 2, nE );
     m_grValue.setValue( fValue );
+}
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
+
+void CEibdMsg::setDtp16(const QByteArray &p_grData)
+{
+    QString sMsg =  QString::fromUtf8( p_grData );
+    m_grValue.setValue( sMsg );
 }
 
 //////////////////////////////////////////////////////////////

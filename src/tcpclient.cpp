@@ -112,7 +112,7 @@ void CTcpClient::slot_startRead()
 
     QList< QByteArray > grArrayList = grDatagram.split( '\0' );
 
-    // remove las list entry inidaciting list end from hs
+    // remove last list entry indicating list end from hs
     if ( grArrayList.last() == QByteArray( '\000' ) )
     {
         grArrayList.removeLast();
