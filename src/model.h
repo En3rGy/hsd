@@ -42,6 +42,8 @@ public:
 
     QMap< QString, QVariant > m_grGAState;
 
+    static void logCSV( const QString & p_sTo, const QString & p_sFrom, const QString & p_sGA, const QString & p_sVal, const QString & p_sMsg, const QString & p_sRawMsg );
+
 protected:
     CModel( void );
 	CModel( const CModel & p_grModel );

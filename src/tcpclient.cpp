@@ -3,14 +3,16 @@
 #include <QTcpServer>
 #include <QVector>
 #include <QHostAddress>
-#include <QTextCodec>
+// #include <QTextCodec>
 #include <koxml.h>
 #include <model.h>
-#include "QsLog.h"
+#include <QtLogging>
 #include <QCoreApplication>
 #include <QTimer>
 #include "groupaddress.h"
 #include <QStringList>
+#include <QtLogging>
+#include <QtDebug>
 
 const QChar   CTcpClient::m_sMsgEndChar    = '\0';
 const QString CTcpClient::m_sSeperatorChar = "|";
@@ -26,8 +28,7 @@ CTcpClient::CTcpClient(QObject *parent) :
   , m_pWebRequestTcpSocket( nullptr )
   , m_bReceviedXML( false )
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-    //QTextCodec::setCodecForCStrings( QTextCodec::codecForName( "Windows-1252" ) );
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +37,6 @@ CTcpClient::CTcpClient(QObject *parent) :
 
 CTcpClient::~CTcpClient()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket != nullptr )
     {
         m_pTcpSocket->close();
@@ -49,20 +49,19 @@ CTcpClient::~CTcpClient()
 
 void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QVariant & p_grValue)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == nullptr )
     {
-        QLOG_WARN() << QObject::tr("Connection with HS not yet initialized.");
+        qWarning() << QObject::tr("Connection with HS not yet initialized.");
         return;
     }
 
     if ( m_pTcpSocket->state() != QAbstractSocket::ConnectedState )
     {
-        QLOG_WARN() << QObject::tr("Not connected with HS.").toStdString().c_str();
+        qWarning() << QObject::tr("Not connected with HS.");
 
         if ( initConnection() == false )
         {
-            QLOG_WARN() << QObject::tr("Connection could not re-establish. Discarding message.").toStdString().c_str();
+            qWarning() << QObject::tr("Connection could not re-establish. Discarding message.");
             return;
         }
     }
@@ -79,23 +78,23 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
             + m_sMsgEndChar;
 
     QByteArray grArray;
-    grArray.append( sMessage );
+    grArray.append( sMessage.toLatin1() );
     //grArray.append( m_sMsgEndChar ); ///< @todo check if necessary
 
     int nRet = m_pTcpSocket->write( grArray );
     if ( m_pTcpSocket->waitForBytesWritten() == false )
     {
-        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.").toStdString().c_str();
+        qCritical() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.");
         return;
     }
 
     if ( nRet == -1 )
     {
-        QLOG_ERROR() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.").toStdString().c_str();
+        qCritical() << m_pTcpSocket->errorString() << QObject::tr("while communicating with HS.");
     }
     else
     {
-        QsLogging::Logger::logCSV( "HS", "hsd", grGA.toKNXString(), "", "", sMessage );
+        CModel::getInstance()->logCSV( "HS", "hsd", grGA.toKNXString(), "", "", sMessage );
     }
 }
 
@@ -105,7 +104,6 @@ void CTcpClient::send(const QString & p_sAction , const QString &p_sGA, const QV
 
 void CTcpClient::slot_startRead()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grDatagram;
 
     grDatagram = m_pTcpSocket->readAll();
@@ -113,7 +111,7 @@ void CTcpClient::slot_startRead()
     QList< QByteArray > grArrayList = grDatagram.split( '\0' );
 
     // remove last list entry indicating list end from hs
-    if ( grArrayList.last() == QByteArray( '\000' ) )
+    if (grArrayList.last() == QByteArray(1, '\000'))
     {
         grArrayList.removeLast();
     }
@@ -140,7 +138,7 @@ void CTcpClient::slot_startRead()
 
         if ( sType == "99" ) // HS ping --> ignore
         {
-            QsLogging::Logger::logCSV( "hsd", "HS", "", "", "Ping. No action required", grDatagram );
+            CModel::getInstance()->logCSV( "hsd", "HS", "", "", "Ping. No action required", grDatagram );
         }
         else  {
             /// @todo Respect different HS message types
@@ -150,7 +148,7 @@ void CTcpClient::slot_startRead()
 
             sGA = grGA.toKNXString();
 
-            QsLogging::Logger::logCSV( "hsd", "HS", sGA, sValue, "", grMsgArray );
+            CModel::getInstance()->logCSV( "hsd", "HS", sGA, sValue, "", grMsgArray );
 
             if ( grGA.isValid() == true ) {
                 CModel::getInstance()->m_grGAState.insert( sGA, sValue.toFloat());
@@ -161,7 +159,7 @@ void CTcpClient::slot_startRead()
                 if ( m_grInvlGAList.contains( grGA.toKNXString() ) == false ) {
                     m_grInvlGAList.push_back( grGA.toKNXString() );
 
-                    QLOG_ERROR() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ).toStdString().c_str() << sGA;
+                    qCritical() << QObject::tr( "GA is not valid. Message is not processed further. GA was:" ) << sGA;
                 }
             }
         } //else
@@ -174,7 +172,6 @@ void CTcpClient::slot_startRead()
 
 void CTcpClient::slot_webRequestReadFinished()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     m_grWebRequestData.append( m_pWebRequestTcpSocket->readAll() );
 }
 
@@ -184,11 +181,9 @@ void CTcpClient::slot_webRequestReadFinished()
 
 void CTcpClient::slot_gaXmlWebRequestClosed()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     m_pWebRequestTcpSocket->close();
 
-    QLOG_DEBUG() << tr("Web request asking HS for existing GAs is closed.").toStdString().c_str();
+    qDebug() << tr("Web request asking HS for existing GAs is closed.");
 
     // Interprete XmlFile
     CKoXml::getInstance()->setXml( m_grWebRequestData );
@@ -204,8 +199,6 @@ void CTcpClient::slot_gaXmlWebRequestClosed()
 
 void CTcpClient::slot_sendToHs(const QString &p_sEibAddrKnx, const QVariant &p_grVal )
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     send( "1", p_sEibAddrKnx, p_grVal );
 }
 
@@ -215,7 +208,7 @@ void CTcpClient::slot_sendToHs(const QString &p_sEibAddrKnx, const QVariant &p_g
 
 void CTcpClient::slot_disconnected()
 {
-    QLOG_WARN() << tr("Disconnected from Homeserver.").toStdString().c_str();
+    qWarning() << tr("Disconnected from Homeserver.");
 
     initConnection();
 }
@@ -226,7 +219,7 @@ void CTcpClient::slot_disconnected()
 
 void CTcpClient::slot_reconnect()
 {
-    QLOG_INFO() << tr( "Trying to reconnect to HS." ).toStdString().c_str();
+    qInfo() << tr( "Trying to reconnect to HS." );
     initConnection();
 }
 
@@ -236,7 +229,6 @@ void CTcpClient::slot_reconnect()
 
 void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QString &p_sGA, QString &p_sValue)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QVector<QString> grGAVec;
     QString sTemp;
 
@@ -268,7 +260,6 @@ void CTcpClient::splitString(const QString &p_sIncoming, QString &p_sType, QStri
 
 bool CTcpClient::initConnection()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pTcpSocket == nullptr )
     {
         m_pTcpSocket = new QTcpSocket( this );
@@ -291,27 +282,27 @@ bool CTcpClient::initConnection()
         QVariant grHsGwPass = CModel::getInstance()->getValue( CModel::g_sKey_HSGwPassword, QString( "" ) );
         QString sPass = grHsGwPass.toString();
 
-        grArray.append( sPass );
-        grArray.append( m_sMsgEndChar );
+        grArray.append(sPass.toLatin1());
+        grArray.append(m_sMsgEndChar.toLatin1());
 
-        QLOG_DEBUG() << QObject::tr("HS out: Initialization message.").toStdString().c_str();
+        qDebug() << QObject::tr("HS out: Initialization message.");
         int nRet = m_pTcpSocket->write( grArray );
 
         if ( nRet == -1 )
         {
-            QLOG_ERROR() << m_pTcpSocket->errorString();
+            qCritical() << m_pTcpSocket->errorString();
             int nTimeout_ms = CModel::getInstance()->getValue( CModel::g_sKey_PauseTilHSReconnect, 30000 ).toInt();
             QTimer::singleShot( nTimeout_ms, this, SLOT( slot_reconnect()) );
             return false;
         }
         else
         {
-            QLOG_INFO() << QObject::tr("Connection with HS established").toStdString().c_str();
+            qInfo() << QObject::tr("Connection with HS established");
         }
     }
     else
     {
-        QLOG_ERROR() << m_pTcpSocket->errorString() << tr( "trying to init communication with HS." ).toStdString().c_str();
+        qCritical() << m_pTcpSocket->errorString() << tr( "trying to init communication with HS." );
         int nTimeout_ms = CModel::getInstance()->getValue( CModel::g_sKey_PauseTilHSReconnect, 30000 ).toInt();
         QTimer::singleShot( nTimeout_ms, this, SLOT( slot_reconnect()) );
         return false;
@@ -326,7 +317,6 @@ bool CTcpClient::initConnection()
 
 bool CTcpClient::getGaXml()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     // Load Xml file form HS
     QVariant grHsIp = CModel::getInstance()->getValue( CModel::g_sKey_HSIP, QString( "192.168.143.11" ) );
     QString  sHsIp  = grHsIp.toString();
@@ -346,7 +336,7 @@ bool CTcpClient::getGaXml()
 
     if ( m_pWebRequestTcpSocket->state() == QTcpSocket::ConnectedState )
     {
-        QLOG_WARN() << QObject::tr("HS web request already ongoing").toStdString().c_str();
+        qWarning() << QObject::tr("HS web request already ongoing");
         return false;
     }
 
@@ -357,7 +347,7 @@ bool CTcpClient::getGaXml()
 
         if ( m_pWebRequestTcpSocket->waitForBytesWritten() == true )
         {
-            QLOG_DEBUG() << tr("Asked HS for existing GAs by sending: ").toStdString().c_str() << sWebRequest;
+            qDebug() << tr("Asked HS for existing GAs by sending: ") << sWebRequest;
 
             m_bReceviedXML = false;
 
@@ -368,13 +358,13 @@ bool CTcpClient::getGaXml()
         }
         else
         {
-            QLOG_ERROR() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
+            qCritical() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
             return false;
         }
     }
     else
     {
-        QLOG_ERROR() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
+        qCritical() << m_pWebRequestTcpSocket->errorString() << Q_FUNC_INFO;
         return false;
     }
 
@@ -387,8 +377,6 @@ bool CTcpClient::getGaXml()
 
 void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const QByteArray &p_grData)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     QTcpSocket grSocket;
 
     QHostAddress grHostAddress( p_sDestAddr );
@@ -400,16 +388,16 @@ void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const 
 
         if ( grSocket.waitForBytesWritten( 2000 ) )
         {
-            QLOG_DEBUG() << tr( "Send" ) << nRet <<tr( "byte:" ).toStdString().c_str() << p_grData << " = " << QString( p_grData ) << tr("to").toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
+            qDebug() << tr( "Send" ) << nRet <<tr( "byte:" ) << p_grData << " = " << QString( p_grData ) << tr("to") << p_sDestAddr << ":" << p_nPort;
         }
         else
         {
-            QLOG_ERROR() << grSocket.errorString() << tr( "while trying to send" ).toStdString().c_str() << p_grData << tr( "to").toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
+            qCritical() << grSocket.errorString() << tr( "while trying to send" ) << p_grData << tr( "to") << p_sDestAddr << ":" << p_nPort;
         }
     }
     else
     {
-        QLOG_ERROR() << grSocket.errorString() << tr( "while trying to connect to" ).toStdString().c_str() << p_sDestAddr << ":" << p_nPort;
+        qCritical() << grSocket.errorString() << tr( "while trying to connect to" ) << p_sDestAddr << ":" << p_nPort;
     }
 }
 
@@ -419,8 +407,6 @@ void CTcpClient::sendData(const QString &p_sDestAddr, const int &p_nPort, const 
 
 void CTcpClient::closeConnection(const QString &p_sDestAddr, const int &p_nPort, const QByteArray &p_grData)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     // avoid reconnecting
     m_pTcpSocket->disconnect( SLOT( slot_disconnected()) );
 

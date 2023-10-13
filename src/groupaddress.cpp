@@ -1,20 +1,20 @@
 #include <QStringList>
 #include <QDebug>
 #include "groupaddress.h"
-#include "QsLog.h"
-#include "koxml.h"
+#include "qobject.h"
+#include <QtLogging>
+#include <QtDebug>
+// #include "koxml.h"
 
 CGroupAddress::CGroupAddress()
     : m_unMainAddr( 0 )
     , m_unMiddAddr( 0 )
     , m_unLowAddr( 0 )
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
 }
 
 QByteArray CGroupAddress::toHex() const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
     // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
     // 0hhh hmmm
@@ -45,7 +45,6 @@ QByteArray CGroupAddress::toHex() const
 
 QString CGroupAddress::toKNXString(const QString &p_sSeparator) const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QString sRetStr;
 
     sRetStr = QString::number( m_unMainAddr )
@@ -59,14 +58,12 @@ QString CGroupAddress::toKNXString(const QString &p_sSeparator) const
 
 int CGroupAddress::toHSRepresentation() const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     int nConvert = m_unMainAddr * 2048 + m_unMiddAddr * 256 + m_unLowAddr;
     return nConvert;
 }
 
 void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     // eib 2 hex: The most significant Bit is always zero, followed by 4 bits for the
     // maingroup, 3 bits for the middlegroup and 8 bits for the subgrou
 
@@ -74,7 +71,7 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 
     if ( p_grHexAddr.length() != 2 )
     {
-        QLOG_ERROR() << QObject::tr( "Length of hex address not equals 2 byte. Length in byte was" ).toStdString().c_str() << p_grHexAddr.length();
+        qCritical() << QObject::tr( "Length of hex address not equals 2 byte. Length in byte was" ) << p_grHexAddr.length();
         return;
     }
 
@@ -98,11 +95,9 @@ void CGroupAddress::setHex(const QByteArray & p_grHexAddr)
 
 void CGroupAddress::setPlainHex(const QByteArray &p_grHexAddr)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     if ( p_grHexAddr.length() != 2 )
     {
-        QLOG_ERROR() << QObject::tr( "Length of hex address not equals 2 byte. Length in byte was" ).toStdString().c_str() << p_grHexAddr.length();
+        qCritical() << QObject::tr( "Length of hex address not equals 2 byte. Length in byte was" ) << p_grHexAddr.length();
         return;
     }
 
@@ -111,7 +106,6 @@ void CGroupAddress::setPlainHex(const QByteArray &p_grHexAddr)
 
 void CGroupAddress::setKNXString(const QString &p_sStrAddr)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QString     sSep;
     QStringList grAddrList;
 
@@ -128,11 +122,11 @@ void CGroupAddress::setKNXString(const QString &p_sStrAddr)
         return;
     }
 
-    grAddrList = p_sStrAddr.split( sSep, QString::SkipEmptyParts );
+    grAddrList = p_sStrAddr.split( sSep, Qt::SkipEmptyParts );
 
     if ( grAddrList.size() != 3 )
     {
-        QLOG_ERROR() << QObject::tr("GA not of kind a/b/c, aborting. GA was").toStdString().c_str() << p_sStrAddr;
+        qCritical() << QObject::tr("GA not of kind a/b/c, aborting. GA was") << p_sStrAddr;
         return;
     }
 
@@ -146,7 +140,7 @@ void CGroupAddress::setHS(const int & p_nHSAddr)
 
     /// @bug 4104 instead A104
 
-    QLOG_TRACE() << Q_FUNC_INFO;
+    qInfo() << Q_FUNC_INFO;
     // int nConvert = nX * 2048 + nY * 256 + nZ;
 
     //m_unMainAddr = p_nHSAddr / 2048; /// @bug conversion hs adress vice versa does not match
@@ -163,13 +157,13 @@ void CGroupAddress::setAddress(const QString &p_sAddress)
 {
     if ( p_sAddress.contains( "/" ) ) // EIB/KNX representation
     {
-        qDebug() << QObject::tr( "Input is EIB/KNX representation" ).toStdString().c_str();
+        qDebug() << QObject::tr( "Input is EIB/KNX representation" );
 
         setKNXString( p_sAddress );
     }
     else if ( p_sAddress.length() == 4 ) // HEX representation
     {
-        qDebug() << QObject::tr( "Input is HEX representation" ).toStdString().c_str();
+        qDebug() << QObject::tr( "Input is HEX representation" );
 
         QByteArray grHexAddr;
 
@@ -179,7 +173,7 @@ void CGroupAddress::setAddress(const QString &p_sAddress)
     }
     else // HS representation
     {
-        qDebug() << QObject::tr( "Input is HS representation" ).toStdString().c_str();
+        qDebug() << QObject::tr( "Input is HS representation" );
 
         setHS( p_sAddress.toInt() );
     }
@@ -187,19 +181,12 @@ void CGroupAddress::setAddress(const QString &p_sAddress)
 
 bool CGroupAddress::isValid() const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_unMainAddr > 15 )
-    {
         return false;
-    }
     if ( m_unMiddAddr > 15 )
-    {
         return false;
-    }
     if ( m_unLowAddr > 256 )
-    {
         return false;
-    }
 
     return true;
 }

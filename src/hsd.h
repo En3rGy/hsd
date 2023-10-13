@@ -2,7 +2,6 @@
 #define HSD_H
 
 #include <QObject>
-#include <QsLogDest.h>
 
 class CTcpServer;
 class CTcpClient;
@@ -40,9 +39,6 @@ public slots:
 private:
     CTcpServer * m_pTcpServer;
     CTcpClient * m_pTcpClient; 
-
-    QsLogging::DestinationPtr m_pFileDestPtr;
-    QsLogging::DestinationPtr m_pDebugDestPtr;
 };
 
 #endif // HSD_H

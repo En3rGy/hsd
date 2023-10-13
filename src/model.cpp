@@ -1,5 +1,6 @@
 #include "model.h"
-#include <QsLog.h>
+#include <QtLogging>
+#include <QtDebug>
 #include <QDir>
 #include <QCoreApplication>
 
@@ -30,52 +31,43 @@ CModel * CModel::m_pInstance = nullptr;
 
 CModel::CModel()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
 
     QDir grSettingsPath = QCoreApplication::applicationDirPath();
 
     m_pSettings = new QSettings( grSettingsPath.absoluteFilePath( CModel::g_sSettingsPath ), QSettings::IniFormat );
 
-    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": "
-             << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
-    QLOG_INFO() << QObject::tr( "Settings file used:" ).toStdString().c_str() << m_pSettings->fileName();
+    qDebug() << QCoreApplication::applicationName() << ": "
+             << QObject::tr( "Settings file used:" ) << m_pSettings->fileName();
+    qInfo() << QObject::tr( "Settings file used:" ) << m_pSettings->fileName();
 }
 
 CModel::CModel(const CModel &p_grModel)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     m_pSettings = p_grModel.m_pSettings;
 }
 
 CModel *CModel::getInstance()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pInstance == NULL )
-    {
         m_pInstance = new CModel();
-    }
 
     return m_pInstance;
 }
 
 CModel::~CModel()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     m_pSettings->sync();
     delete m_pSettings;
 }
 
 QVariant CModel::getValue(const QString &p_sKey, const QVariant &p_grDefaultValue)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     if ( m_pSettings->contains( p_sKey ) == false )
     {
         m_pSettings->setValue( p_sKey, p_grDefaultValue );
-        QLOG_WARN() << QObject::tr( "Requested settings key not found in config file. Using default value." ).toStdString().c_str()
-                    << QObject::tr( "Key was:" ).toStdString().c_str() << p_sKey
-                    << QObject::tr( "Default value is:" ).toStdString().c_str() << p_grDefaultValue;
+        qWarning() << QObject::tr( "Requested settings key not found in config file. Using default value." )
+                   << QObject::tr( "Key was:" ) << p_sKey
+                   << QObject::tr( "Default value is:" ) << p_grDefaultValue;
         return p_grDefaultValue;
     }
     else
@@ -86,14 +78,24 @@ QVariant CModel::getValue(const QString &p_sKey, const QVariant &p_grDefaultValu
 
 void CModel::setValue(const QString &p_sKey, const QVariant &p_grValue)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     m_pSettings->setValue( p_sKey, p_grValue );
+}
+
+void CModel::logCSV(const QString &p_sTo, const QString &p_sFrom, const QString &p_sGA, const QString & p_sVal, const QString &p_sMsg, const QString &p_sRawMsg)
+{
+    QString sSep = " ; ";
+    qDebug() << sSep
+             << p_sTo << sSep
+             << p_sFrom << sSep
+             << p_sGA << sSep
+             << p_sVal << sSep
+             << p_sMsg << sSep
+             << p_sRawMsg;
 }
 
 
 CModelGC::~CModelGC()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( CModel::m_pInstance != NULL )
     {
         delete CModel::m_pInstance;

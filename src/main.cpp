@@ -2,13 +2,16 @@
 #include <QDebug>
 #include <QSettings>
 #include "hsd.h"
-#include "QsLog.h"
 #include "model.h"
 #include <QTranslator>
+#include <QtLogging>
+#include <QtDebug>
 #include <QList>
+#include <iostream>
 #include "groupaddress.h"
-#include "eibdmsg.h"
 #include "model.h"
+#include "qdir.h"
+#include "qlocale.h"
 
 /** @mainpage
   * <p>The programm provides parts of the eibd TCP/IP interface to communicate
@@ -26,40 +29,68 @@
   */
 
 
+void logMsgOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    const char *file = context.file ? context.file : "";
+    const char *function = context.function ? context.function : "";
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stdout, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        break;
+    case QtInfoMsg:
+        fprintf(stdout, "Info: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        break;
+    case QtWarningMsg:
+        fprintf(stdout, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        break;
+    case QtCriticalMsg:
+        fprintf(stdout, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        break;
+    case QtFatalMsg:
+        fprintf(stdout, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        break;
+    }
+}
+
+
 /// @todo move args to model as static string
 ///
 void printHelpPage( void )
 {
-    qDebug() << QObject::tr( "hsd provides the eibd TCP/IP interface to access the KNX bus via the GIRA Homeserver KO-Gateway." ).toStdString().c_str()
-             << "\n\n" << QObject::tr( "Configure settings in [hsd]/etc/hsd.ini.").toStdString().c_str()
-             << "\n"   << QObject::tr( "Log file is written to [hsd]/var/hsd.log").toStdString().c_str()
+    qDebug() << QObject::tr( "hsd provides the eibd TCP/IP interface to access the KNX bus via the GIRA Homeserver KO-Gateway." )
+             << "\n\n" << QObject::tr( "Configure settings in [hsd]/etc/hsd.ini.")
+             << "\n"   << QObject::tr( "Log file is written to [hsd]/var/hsd.log")
              << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-             << "\n" << QObject::tr( "Settings file options:").toStdString().c_str()
-             << "\n" << CModel::g_sKey_HsdPort   << "\t" << QObject::tr( "Port, where hsd listens for eibd messages.").toStdString().c_str()
-             << "\n" << CModel::g_sKey_HSGwPort  << "\t" << QObject::tr( "GIRA Homeserver KO-Gateway port").toStdString().c_str()
-             << "\n" << CModel::g_sKey_HSIP      << "\t" << QObject::tr( "IP address of GIRA Homeserver").toStdString().c_str()
-             << "\n" << CModel::g_sKey_HSWebPort << "\t" << QObject::tr( "Port of GIRA Homeserver web server").toStdString().c_str()
-             << "\n" << CModel::g_sKey_LogLevel  << "\t" << QObject::tr( "Hsd log level (see below)").toStdString().c_str()
+             << "\n" << QObject::tr( "Settings file options:")
+             << "\n" << CModel::g_sKey_HsdPort   << "\t" << QObject::tr( "Port, where hsd listens for eibd messages.")
+             << "\n" << CModel::g_sKey_HSGwPort  << "\t" << QObject::tr( "GIRA Homeserver KO-Gateway port")
+             << "\n" << CModel::g_sKey_HSIP      << "\t" << QObject::tr( "IP address of GIRA Homeserver")
+             << "\n" << CModel::g_sKey_HSWebPort << "\t" << QObject::tr( "Port of GIRA Homeserver web server")
+             << "\n" << CModel::g_sKey_LogLevel  << "\t" << QObject::tr( "Hsd log level (see below)")
              << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-             << "\n" << QObject::tr( "Command line options:" ).toStdString().c_str()
+             << "\n" << QObject::tr( "Command line options:" )
              << "\n\nhsd [option]"
-             << "\n"   << "-?\t" << QObject::tr( "This help page").toStdString().c_str()
-             << "\n"   << "-l x\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),").toStdString().c_str()
-             << "\n\t" << QObject::tr( "=1 (DebugLevel),").toStdString().c_str()
-             << "\n\t" << QObject::tr( "=2 (InfoLevel),").toStdString().c_str()
-             << "\n\t" << QObject::tr( "=3 (WarnLevel),").toStdString().c_str()
-             << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),").toStdString().c_str()
-             << "\n\t" << QObject::tr( "=5 (FatalLevel)" ).toStdString().c_str()
-             << "\n"   << "-rl x\t" << QObject::tr( "Setting the log level remotely for a running hsd service").toStdString().c_str()
-             << "\n"   << "-v\t" << QObject::tr( "Printing program version" ).toStdString().c_str()
-             << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" ).toStdString().c_str()
+             << "\n"   << "-?\t" << QObject::tr( "This help page")
+             << "\n"   << "-l x\t" << QObject::tr( "Setting the log level x=0 (TraceLevel),")
+             << "\n\t" << QObject::tr( "=1 (DebugLevel),")
+             << "\n\t" << QObject::tr( "=2 (InfoLevel),")
+             << "\n\t" << QObject::tr( "=3 (WarnLevel),")
+             << "\n\t" << QObject::tr( "=4 (ErrorLevel, default),")
+             << "\n\t" << QObject::tr( "=5 (FatalLevel)" )
+             << "\n"   << "-rl x\t" << QObject::tr( "Setting the log level remotely for a running hsd service")
+             << "\n"   << "-v\t" << QObject::tr( "Printing program version" )
+             << "\n"   << "-c [a]\t" << QObject::tr( "Printing adress convertion, e.g. hsd -c 4200 returns:" )
              << "\n\t" << "\"KNX: 8/2/0, HEX: 4200, HS: 16896\""
              << "\n\t" << QObject::tr( "HS adress representation requires to be given with at least 5 digits, e.g. by a leading zero: 01234" )
-             << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." ).toStdString().c_str();
+             << "\n"   << "-E\t" << QObject::tr( "Exit running hsd instances." );
 }
 
 int main(int argc, char *argv[])
 {
+    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}");
+    qInstallMessageHandler(logMsgOutput);
+
     try
     {
         QCoreApplication a(argc, argv);
@@ -67,10 +98,14 @@ int main(int argc, char *argv[])
         a.setApplicationName( "hsd" );
         a.setApplicationVersion( "0.6.0" );
 
-        QString sLocale = QLocale::system().name();
-
         QTranslator grTranslator;
-        grTranslator.load( QString(":hsd_") + sLocale);
+        QString sTranslation = QString("hsd_") + QLocale::system().name();
+        QDir grDir = QDir::current();
+
+        if (!grTranslator.load(sTranslation)) {
+            std::cout << "Did not find translation data. Exit!";
+            return EXIT_FAILURE;
+        }
         a.installTranslator( & grTranslator);
 
         int nLogLevel = -1;
@@ -93,8 +128,8 @@ int main(int argc, char *argv[])
         if ( grArgsList.contains( "-v") == true )
         {
             grArgsList.removeAt( grArgsList.indexOf( "-v" ) );
-            qDebug() << QCoreApplication::applicationName().toStdString().c_str()
-                     << QCoreApplication::applicationVersion().toStdString().c_str();
+            qDebug() << QCoreApplication::applicationName()
+                     << QCoreApplication::applicationVersion();
             return EXIT_SUCCESS;
         }
 
@@ -108,7 +143,7 @@ int main(int argc, char *argv[])
 
                 CGroupAddress grAddr;
                 grAddr.setAddress( sAddr );
-                qDebug() << grAddr.toString().toStdString().c_str();
+                qDebug() << grAddr.toString();
                 return EXIT_SUCCESS;
             }
         }
@@ -140,13 +175,13 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    qDebug() << QObject::tr( "Received set log level command line argument but the passed log level is not correct:" ).toStdString().c_str()
+                    qDebug() << QObject::tr( "Received set log level command line argument but the passed log level is not correct:" )
                              << grArgsList.at( nIndex + 1);
                 }
             }
             else
             {
-                qDebug() << QObject::tr( "Received set log level command line argument (\"-l\") but the level was missing" ).toStdString().c_str()
+                qDebug() << QObject::tr( "Received set log level command line argument (\"-l\") but the level was missing" )
                          << grArgsList.at( nIndex + 1);
             }
         }
@@ -184,9 +219,7 @@ int main(int argc, char *argv[])
             grHsd.setLogLevel( nLogLevel );
         }
 
-        QLOG_INFO() << a.applicationName().toStdString().c_str()
-                    << a.applicationVersion().toStdString().c_str()
-                    << a.applicationFilePath().toStdString().c_str();
+        qInfo() << a.applicationName() << a.applicationVersion() << a.applicationFilePath();
 
         grHsd.startService();
 
@@ -195,6 +228,6 @@ int main(int argc, char *argv[])
 
     catch( ... )
     {
-        QLOG_FATAL() << QObject::tr( "Uncought Exception" ).toStdString().c_str() << Q_FUNC_INFO;
+        qCritical() << QObject::tr( "Uncought Exception" ) << Q_FUNC_INFO;
     }
 }

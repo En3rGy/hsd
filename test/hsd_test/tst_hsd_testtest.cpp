@@ -1,7 +1,7 @@
 #include <QString>
 #include <QtTest>
 #include <eibdmsg.h>
-#include <QsLog.h>
+// #include <QsLog.h>
 #include <tcpclient.h>
 #include <groupaddress.h>
 #include <koxml.h>

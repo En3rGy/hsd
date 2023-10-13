@@ -1,6 +1,7 @@
 #include "koxml.h"
 #include <QDebug>
-#include "QsLog.h"
+#include <QtLogging>
+#include "qobject.h"
 
 CKoXmlGC g_grKoXmlGarbageCollector;
 
@@ -8,18 +9,14 @@ CKoXml * CKoXml::m_pInstance = nullptr;
 
 CKoXml *CKoXml::getInstance()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( m_pInstance == nullptr )
-    {
         m_pInstance = new CKoXml();
-    }
 
     return m_pInstance;
 }
 
 void CKoXml::setXml( const QByteArray & p_grKoXml)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     int     nIndex = 0;
     cobject grCobject;
 
@@ -51,44 +48,37 @@ void CKoXml::setXml( const QByteArray & p_grKoXml)
 
         m_ssGA2NameMap.insert( grCobject.sGa, grCobject );
 
-        QLOG_DEBUG() << grCobject.sGa << "\t" << grCobject.sName << "\t" << grCobject.sFmt;
+        qDebug() << grCobject.sGa << "\t" << grCobject.sName << "\t" << grCobject.sFmt;
     }
 
-    QLOG_INFO() << QObject::tr("Received available GAs from HS. No of received elements:").toStdString().c_str() << m_ssGA2NameMap.size();
+    qInfo() << QObject::tr("Received available GAs from HS. No of received elements:") << m_ssGA2NameMap.size();
 
     if ( m_ssGA2NameMap.size() == 0 ) {
-        QLOG_WARN() << QObject::tr( "NO GAs were received. Remeber to transfer your project via Data+Images+Sounds to transfer XML also." );
+        qWarning() << QObject::tr( "NO GAs were received. Remeber to transfer your project via Data+Images+Sounds to transfer XML also." );
     }
 }
 
 CKoXml::CKoXml()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
 }
 
 QString CKoXml::copy( const QByteArray &p_grData, const QString & p_sTag, const int &p_nStartIndex )
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QString sBeginStr = p_sTag + "=\"";
-    int nStartIndex = p_grData.indexOf( sBeginStr, p_nStartIndex ) + sBeginStr.length();
+    int nStartIndex = p_grData.indexOf( sBeginStr.toLatin1(), p_nStartIndex ) + sBeginStr.length();
 
     if ( ( nStartIndex >= p_grData.length() ) || ( p_nStartIndex == -1 ) )
-    {
         return QString();
-    }
 
     int nEndIndex = p_grData.indexOf( "\" ", nStartIndex );
     if ( ( nEndIndex >= p_grData.length() ) || ( nEndIndex == -1 ) )
-    {
         return QString();
-    }
 
     return p_grData.mid( nStartIndex, nEndIndex - nStartIndex );
 }
 
 CKoXmlGC::~CKoXmlGC()
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( CKoXml::m_pInstance != nullptr )
     {
         delete CKoXml::m_pInstance;
@@ -98,12 +88,11 @@ CKoXmlGC::~CKoXmlGC()
 
 QString CKoXml::getGaName(const QString &p_sGA)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     cobject grValue = m_ssGA2NameMap.value( p_sGA );
 
     if ( grValue.sName.isEmpty() == true )
     {
-        return QObject::tr( "Name of GA is unknown" ).toStdString().c_str();
+        return QObject::tr( "Name of GA is unknown" );
     }
 
     return grValue.sName;
@@ -111,12 +100,11 @@ QString CKoXml::getGaName(const QString &p_sGA)
 
 QString CKoXml::getGaFormat(const QString &p_sGA)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     cobject grValue = m_ssGA2NameMap.value( p_sGA );
 
     if ( grValue.sFmt.isEmpty() == true )
     {
-        return QString( QObject::tr( "Format of " ) + p_sGA + QObject::tr( " is unknown" ) ).toStdString().c_str();
+        return QString( QObject::tr( "Format of " ) + p_sGA + QObject::tr( " is unknown" ) );
     }
 
     return grValue.sFmt;

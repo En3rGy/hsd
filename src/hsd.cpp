@@ -1,14 +1,14 @@
 #include "hsd.h"
+#include <QElapsedTimer>
 #include "tcpclient.h"
 #include "tcpserver.h"
 #include "model.h"
 #include <QSettings>
-#include "QsLog.h"
-#include <QsLogDest.h>
 #include <QDir>
 #include <QCoreApplication>
 #include <QSettings>
 #include <QDateTime>
+#include <QtLogging>
 
 CHsd::CHsd(QObject *parent) :
     QObject(parent)
@@ -19,9 +19,6 @@ CHsd::CHsd(QObject *parent) :
     m_pTcpClient = new CTcpClient( this );
 
     QVariant grLogLevel = CModel::getInstance()->getValue( CModel::g_sKey_LogLevel, uint( 2 ) );
-    uint unLogLevel = grLogLevel.toUInt();
-
-    //QDir grLogPath = QDir::currentPath() + "/../var";
     QDir grLogPath = QCoreApplication::applicationDirPath() + "/../var";
 
     if ( grLogPath.exists() == false )
@@ -35,17 +32,7 @@ CHsd::CHsd(QObject *parent) :
     }
     sFileName.replace( ":", "" );
 
-    QsLogging::Logger & grLogger = QsLogging::Logger::instance();
-
-    m_pFileDestPtr  = QsLogging::DestinationFactory::MakeFileDestination( grLogPath.absoluteFilePath( sFileName ) );
-    m_pDebugDestPtr = QsLogging::DestinationFactory::MakeDebugOutputDestination();
-
-    grLogger.addDestination( m_pFileDestPtr );
-    grLogger.addDestination( m_pDebugDestPtr );
-    grLogger.setLoggingLevel( static_cast< QsLogging::Level >( unLogLevel ) );
-
-    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
-    QLOG_INFO() << tr( "Writing Logfile to:" ).toStdString().c_str() << grLogPath.absoluteFilePath( sFileName );
+    qInfo() << tr( "Writing Logfile to:" ) << grLogPath.absoluteFilePath( sFileName ) << " with log leve " << grLogLevel;
 
     connect ( m_pTcpServer,
               SIGNAL(signal_sendToHs(QString,QVariant)),
@@ -66,18 +53,17 @@ CHsd::~CHsd()
 
 void CHsd::setLogLevel(const uint &p_unLogLevel)
 {
-    QsLogging::Logger & grLogger = QsLogging::Logger::instance();
-    grLogger.setLoggingLevel( static_cast< QsLogging::Level >( p_unLogLevel ) );
+    Q_UNUSED(p_unLogLevel)
 }
 
 void CHsd::startService()
 {
-    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
-    QLOG_INFO() << tr( "Log level is:" ).toStdString().c_str() << QsLogging::Logger::instance().loggingLevel();
+    qDebug() << QCoreApplication::applicationName() << ": " << tr( "Log level is:" );
+    qInfo() << tr( "Log level is:" );
 
     m_pTcpServer->listen();
 
-    QTime grInterval;
+    QElapsedTimer grInterval;
     grInterval.start();
     bool  bRes = false;
     while ( bRes == false ) {
@@ -98,29 +84,29 @@ void CHsd::callHsXML() const
 
 void CHsd::stopService()
 {
-    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Sending STOP signal." ).toStdString().c_str();
-    QLOG_INFO() << tr( "Sending STOP signal." ).toStdString().c_str();
+    qDebug() << QCoreApplication::applicationName() << ": " << tr( "Sending STOP signal." );
+    qInfo() << tr( "Sending STOP signal." );
 
     QString sDestAddr = "127.0.0.1";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
     QString sData     = CModel::g_sExitMessage;
     QByteArray grData;
-    grData.append( sData );
+    grData.append( sData.toLatin1() );
 
     CTcpClient::sendData( sDestAddr, nPort, grData );
 }
 
 void CHsd::setRemoteLogLevel(const int &p_nLogLevel)
 {
-    qDebug() << QCoreApplication::applicationName().toStdString().c_str() << ": " << tr( "Sending remote log level" ).toStdString().c_str() << p_nLogLevel;
-    QLOG_INFO() << tr( "Sending remote log level" ).toStdString().c_str() << p_nLogLevel;
+    qDebug() << QCoreApplication::applicationName() << ": " << tr( "Sending remote log level" ) << p_nLogLevel;
+    qInfo() << tr( "Sending remote log level" ) << p_nLogLevel;
 
     QString sDestAddr = "127.0.0.1";
     int     nPort     = CModel::getInstance()->getValue( CModel::g_sKey_HsdPort ).toInt();
     QString sData     = CModel::g_sLogLevelMessage;
     QByteArray grData;
-    grData.append( sData );
-    grData.append( static_cast< char > ( p_nLogLevel ) );
+    grData.append(sData.toLatin1());
+    grData.append(static_cast< char > ( p_nLogLevel ));
 
-    CTcpClient::sendData( sDestAddr, nPort, grData );
+    CTcpClient::sendData(sDestAddr, nPort, grData);
 }

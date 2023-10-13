@@ -14,8 +14,8 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-CONFIG += c++11
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++17
+# QMAKE_CXXFLAGS += -std=c++11
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -28,11 +28,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-INCLUDEPATH += ../../3rd_party/QsLog
+# INCLUDEPATH += ../../3rd_party/QsLog
 INCLUDEPATH += ../../src
 
 
-include( ../../3rd_party/QsLog/QsLog.pri )
+# include( ../../3rd_party/QsLog/QsLog.pri )
 
 SOURCES += ../../src/eibdmsg.cpp \
 ../../src/model.cpp \

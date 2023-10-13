@@ -4,7 +4,7 @@
 #include "model.h"
 #include <QStringList>
 #include "groupaddress.h"
-#include "QsLog.h"
+#include <QtLogging>
 #include "koxml.h"
 #include <qmath.h>
 #include <QtEndian>
@@ -83,13 +83,11 @@ QList<QByteArray> CEibdMsg::splitMessages(QByteArray &p_grMessages)
 
 void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
-
     QByteArray grMsg;
 
     // check if 1st 2 byte contain package length
     if ( p_grByteArray.size() < 2 ) {
-        QLOG_WARN() << QObject::tr("Received message too short. Message was").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
+        qWarning() << QObject::tr("Received message too short. Message was") << printASCII( p_grByteArray );
         return;
     }
 
@@ -99,7 +97,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
         m_nMsgSize    = static_cast< int >( sSize.toDouble() );
 
         if ( p_grByteArray.size() == 2 ) {
-            //QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size").toStdString().c_str() << m_nMsgSize;
+            //QLOG_DEBUG() << QObject::tr("Msg interpreted as size info. Awaiting message with size") << m_nMsgSize;
             return;
         }
     }
@@ -108,7 +106,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
         grMsg.append( p_grByteArray.mid( 2, m_nMsgSize ) ); // removing size info
 
         if ( grMsg.size() > m_nMsgSize ) {
-            QLOG_WARN() << QObject::tr("Message longer than indicated; truncating. Msg was:").toStdString().c_str() << printASCII( p_grByteArray ).toStdString().c_str();
+            qWarning() << QObject::tr("Message longer than indicated; truncating. Msg was:") << printASCII( p_grByteArray );
         }
     }
     else {
@@ -193,7 +191,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
                         setDTP3( grPayload );
                     }
                     else {
-                        QLOG_ERROR() << QObject::tr( "DTP of payload could not be identified.")
+                        qCritical() << QObject::tr( "DTP of payload could not be identified.")
                                      << "Msg:" << CEibdMsg::printASCII( p_grByteArray )
                                      << "Payload:" << CEibdMsg::printASCII( grPayload );
                     }
@@ -232,7 +230,7 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
 
         switch( eDpt ) {
         case CKoXml::enuDPT_undef: {
-            QLOG_WARN() << QObject::tr("DPT/EIS of GA unknown").toStdString().c_str() << getDestAddressKnx();
+            qWarning() << QObject::tr("DPT/EIS of GA unknown") << getDestAddressKnx();
             break;
         }
         case CKoXml::enuDPT_DPT1: {
@@ -257,12 +255,12 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
             break;
         }
         default: {
-            QLOG_ERROR() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ).toStdString().c_str() << printASCII( grMsg );
+            qCritical() << QObject::tr( "Unknown DTP of data bytes in EIB message:" ) << printASCII( grMsg );
         }
         } // switch
     } // else if ( grMsgType == QByteArray( * CModel::g_uzEIB_GROUP_PACKET, 2 ) )
     else {
-        QLOG_WARN() << QObject::tr("Received unknown message").toStdString().c_str() << printASCII( grMsg );
+        qWarning() << QObject::tr("Received unknown message") << printASCII( grMsg );
     }
 
     m_nMsgSize = -1; // reset info
@@ -274,13 +272,11 @@ void CEibdMsg::setEibdMsg(const QByteArray &p_grByteArray, const QString &p_sGA)
 
 const CEibdMsg::enuMsgType &CEibdMsg::getType() const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     return m_eMsgType;
 }
 
 const CEibdMsg::enuAPDUType &CEibdMsg::getAPDUType() const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     return m_eAPDUType;
 }
 
@@ -290,7 +286,6 @@ const CEibdMsg::enuAPDUType &CEibdMsg::getAPDUType() const
 
 const QString &CEibdMsg::getDestAddressKnx() const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     return m_sDstAddrKnx;
 }
 
@@ -300,7 +295,6 @@ const QString &CEibdMsg::getDestAddressKnx() const
 
 const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     if ( p_pHasValue != nullptr )
     {
         * p_pHasValue = ! m_grValue.isNull();
@@ -314,7 +308,6 @@ const QVariant & CEibdMsg::getValue( bool * p_pHasValue ) const
 
 QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QByteArray grResponse;
 
     bool bHasResponde = false;
@@ -368,7 +361,7 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
                 szData = 0x00;
             }
             else {
-                QLOG_WARN() << QObject::tr( "Value is not bool. Feature not implemented yet. Providing 0x00." ).toStdString().c_str();
+                qWarning() << QObject::tr( "Value is not bool. Feature not implemented yet. Providing 0x00." );
                 bHasResponde = true;
             }
 
@@ -410,7 +403,6 @@ QByteArray CEibdMsg::getResponse( bool * p_pHasResponse )
 
 QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDestAddr, const QVariant &p_grData, const QByteArray &p_grByteMsg)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     // byte  0: 0x00
     // byte  1: Length w/o byte 1 + 2
     // byte  2: 0x00
@@ -446,7 +438,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
     if ( bOk == false )
     {
-        QLOG_ERROR() << QObject::tr("Received non float value. Transmission aborted.").toStdString().c_str() << p_grData.toString();
+        qCritical() << QObject::tr("Received non float value. Transmission aborted.") << p_grData.toString();
         return QByteArray();
     }
 
@@ -482,7 +474,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
     case CKoXml::enuDPT_DPT3: {
         qint32 nVal = static_cast< qint32 >( fVal );
         QByteArray grVal;
-        QDataStream in( & grVal, QIODevice::ReadWrite );
+        QDataStream in( & grVal, QIODeviceBase::ReadWrite );
         in << nVal;
         grMsg.append( grVal );
 
@@ -516,9 +508,9 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         //        Which exponent? 21 = 2 is sufficient as 3000 : 2 = 1500, and this number can be coded in
         //        the mantissa.
 
-        if ( nM < -2048 and nM > 2048 ) {
+        if ( nM > -2048 and nM < 2048 ) {
             /// @todo get exponent
-            QLOG_WARN() << "Values nM < -2048 and nM > 2048 not supported for DTP9 yet.";
+            qWarning() << "Values nM < -2048 and nM > 2048 not supported for DTP9 yet.";
         }
 
         //        Step 3: Code the mantissa:
@@ -542,7 +534,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
             nRes |= 0x01;
             nRes = nRes << 7;
 
-            QLOG_WARN() << "Values nM < 0 not supported for DTP9 yet.";
+            qWarning() << "Values nM < 0 not supported for DTP9 yet.";
         }
 
         //        Step 4: Code sign and exponent
@@ -565,7 +557,7 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
         nRes |= nM;
 
         QByteArray grVal;
-        QDataStream in( & grVal, QIODevice::ReadWrite );
+        QDataStream in( & grVal, QIODeviceBase::ReadWrite );
         in << nRes;
         grMsg.append( grVal );
 
@@ -580,13 +572,13 @@ QByteArray CEibdMsg::getMessage(const QString &p_sSrcAddr, const QString &p_sDes
 
     case CKoXml::enuDPT_DPT16: {
         /// @todo
-        QLOG_ERROR() << QObject::tr( "DPT14 14-byte text not implemented yet!" );
+        qCritical() << QObject::tr( "DPT14 14-byte text not implemented yet!" );
         break;
     }
 
     default: {
-        QLOG_WARN() << QObject::tr("Requested DPT not supported. EIS / Value: \"").toStdString().c_str()
-                    << CKoXml::getInstance()->getGaFormat( p_sDestAddr ).toStdString().c_str()
+        qWarning() << QObject::tr("Requested DPT not supported. EIS / Value: \"")
+                    << CKoXml::getInstance()->getGaFormat( p_sDestAddr )
                     << " / "
                     << p_grData << "\"\n"
                     << "Original Message:" << printASCII( p_grByteMsg );
@@ -617,14 +609,13 @@ void CEibdMsg::setValue(const float &p_fVal)
 
 bool CEibdMsg::isNatural(const float & p_fNumber)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QStringList grStringList;
 
     QString sNumer = QString::number( p_fNumber );
 
     if ( sNumer.contains( "." ) == true )
     {
-        grStringList = sNumer.split( '.', QString::SkipEmptyParts );
+        grStringList = sNumer.split( '.', Qt::SkipEmptyParts );
 
         if ( grStringList.size() != 2 )
         {
@@ -760,7 +751,7 @@ void CEibdMsg::setDTP9_001(const QByteArray & p_grData)
     }
 
     if ( bLE == false ) {
-        QLOG_ERROR() << "Big Endian not supported!" << Q_FUNC_INFO;
+        qCritical() << "Big Endian not supported!" << Q_FUNC_INFO;
         return;
     }
 
@@ -908,7 +899,6 @@ QString CEibdMsg::printBin(qint16 p_nNo)
 
 QString CEibdMsg::printASCII( const QByteArray & p_grByteArray)
 {
-    QLOG_TRACE() << Q_FUNC_INFO;
     QString sResult;
     QString sBuffer;
     for ( int i = 0; i < p_grByteArray.length(); i++ )

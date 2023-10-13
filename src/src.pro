@@ -1,11 +1,11 @@
 message( Run Qt < lrelease > before qmake. )
 
 QT       += core network
-
 QT       -= gui
 
-CONFIG += c++11
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++17
+
+# QMAKE_CXXFLAGS += -std=c++17
 
 DESTDIR = ../bin
 
@@ -16,13 +16,9 @@ TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
 
-TRANSLATIONS = hsd_de.ts \
-
-INCLUDEPATH += ../3rd_party/QsLog
+TRANSLATIONS = hsd_de_DE.ts
 
 TEMPLATE = app
-
-include( ../3rd_party/QsLog/QsLog.pri )
 
 SOURCES += main.cpp \
     tcpclient.cpp \
@@ -44,3 +40,9 @@ HEADERS += \
 
 RESOURCES += \
     ressources.qrc
+
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
