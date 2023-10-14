@@ -4,19 +4,20 @@ QT       += core network
 QT       -= gui
 
 CONFIG += c++17
+CONFIG += lrelease
 
 # QMAKE_CXXFLAGS += -std=c++17
 
 DESTDIR = ../bin
 
-unix:target.path = /opt/hsd/bin
-unix:INSTALLS += target
+# unix:target.path = /opt/hsd/bin
+# unix:INSTALLS += target
 
 TARGET = hsd
 CONFIG   += console
 CONFIG   -= app_bundle
 
-TRANSLATIONS = hsd_de_DE.ts
+TRANSLATIONS = hsd_de.ts
 
 TEMPLATE = app
 
@@ -43,6 +44,6 @@ RESOURCES += \
 
 
 # Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+# qnx: target.path = /tmp/$${TARGET}/bin
+# else: unix:!android: target.path = /opt/$${TARGET}/bin
+# !isEmpty(target.path): INSTALLS += target
