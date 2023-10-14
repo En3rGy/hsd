@@ -10,8 +10,8 @@
 #include <iostream>
 #include "groupaddress.h"
 #include "model.h"
-#include "qdir.h"
 #include "qlocale.h"
+#include <QFile>
 
 /** @mainpage
   * <p>The programm provides parts of the eibd TCP/IP interface to communicate
@@ -29,28 +29,36 @@
   */
 
 
+QTextStream * g_pLogFile;
+
 void logMsgOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
-    const char *file = context.file ? context.file : "";
-    const char *function = context.function ? context.function : "";
+    QString file = context.file ? context.file : "";
+    QString function = context.function ? context.function : "";
+
+    QString sLogMsg = QString("%1 (%2:%3, %4)").arg(localMsg, file, QString::number(context.line), function);
     switch (type) {
     case QtDebugMsg:
-        fprintf(stdout, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        sLogMsg = "Debug: " + sLogMsg;
         break;
     case QtInfoMsg:
-        fprintf(stdout, "Info: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        sLogMsg = "Info: " + sLogMsg;
         break;
     case QtWarningMsg:
-        fprintf(stdout, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        sLogMsg = "Warning: " + sLogMsg;
         break;
     case QtCriticalMsg:
-        fprintf(stdout, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        sLogMsg = "Critical: " + sLogMsg;
         break;
     case QtFatalMsg:
-        fprintf(stdout, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+        sLogMsg = "Fatal: " + sLogMsg;
         break;
     }
+
+    std::cout << sLogMsg.toStdString() << std::endl;
+    * g_pLogFile << sLogMsg << "\n";
+    g_pLogFile->flush();
 }
 
 
@@ -88,22 +96,30 @@ void printHelpPage( void )
 
 int main(int argc, char *argv[])
 {
-    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}");
+    QCoreApplication a(argc, argv);
+    a.setOrganizationName( "PImp" );
+    a.setApplicationName( "hsd" );
+    a.setApplicationVersion( "0.6.0" );
+
+    QString sLogFile = CModel::getInstance()->g_sLogFilePath;
+    // Open the log file in write mode with unbuffered I/O
+    QFile logFile(sLogFile);
+    if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Unbuffered)) {
+        std::cout << "Failed to open log file " << sLogFile.toStdString() << std::endl;
+        return EXIT_FAILURE;
+    }
+    QTextStream grLogFile(&logFile);
+    g_pLogFile = & grLogFile;
+
     qInstallMessageHandler(logMsgOutput);
 
     try
     {
-        QCoreApplication a(argc, argv);
-        a.setOrganizationName( "PImp" );
-        a.setApplicationName( "hsd" );
-        a.setApplicationVersion( "0.6.0" );
-
         QTranslator grTranslator;
         QString sTranslation = QString("hsd_") + QLocale::system().name();
-        QDir grDir = QDir::current();
 
         if (!grTranslator.load(sTranslation)) {
-            std::cout << "Did not find translation data. Exit!";
+            qFatal() << "Did not find translation data. Exit!";
             return EXIT_FAILURE;
         }
         a.installTranslator( & grTranslator);

@@ -9,6 +9,7 @@
 #include <QSettings>
 #include <QDateTime>
 #include <QtLogging>
+#include <QStandardPaths>
 
 CHsd::CHsd(QObject *parent) :
     QObject(parent)
@@ -17,22 +18,6 @@ CHsd::CHsd(QObject *parent) :
 {
     m_pTcpServer = new CTcpServer( this );
     m_pTcpClient = new CTcpClient( this );
-
-    QVariant grLogLevel = CModel::getInstance()->getValue( CModel::g_sKey_LogLevel, uint( 2 ) );
-    QDir grLogPath = QCoreApplication::applicationDirPath() + "/../var";
-
-    if ( grLogPath.exists() == false )
-    {
-        grLogPath.mkdir( grLogPath.absolutePath() );
-    }
-
-    QString sFileName = "hsd.log";
-    if ( CModel::getInstance()->getValue( CModel::g_sKey_LogPerDate, false ).toBool() ) {
-        sFileName = "hsd_" + QDateTime::currentDateTime().toString( "yyyy-MM-dd_hhmmss" /*Qt::ISODate*/ ) + ".log";
-    }
-    sFileName.replace( ":", "" );
-
-    qInfo() << tr( "Writing Logfile to:" ) << grLogPath.absoluteFilePath( sFileName ) << " with log leve " << grLogLevel;
 
     connect ( m_pTcpServer,
               SIGNAL(signal_sendToHs(QString,QVariant)),

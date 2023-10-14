@@ -3,6 +3,7 @@
 #include <QtDebug>
 #include <QDir>
 #include <QCoreApplication>
+#include <QStandardPaths>
 
 const QString CModel::g_sKey_HSIP         = "HSIP";
 const QString CModel::g_sKey_HSWebPort    = "HSWebPort";
@@ -11,7 +12,6 @@ const QString CModel::g_sKey_HsdPort      = "HsdPort";
 const QString CModel::g_sKey_LogLevel     = "LogLevel";
 const QString CModel::g_sKey_HSGwPassword = "HSGwPass";
 const QString CModel::g_sKey_LogPerDate   = "LogPerDate";
-const QString CModel::g_sSettingsPath     = "../etc/hsd.ini";
 const QString CModel::g_sExitMessage      = "Shutdown hsd please";
 const QString CModel::g_sLogLevelMessage  = "Set hsd log level please";
 const QString CModel::g_sKey_PauseTilHSReconnect = "TimeoutForReconnectHS_ms";
@@ -25,20 +25,40 @@ const char   CModel::g_uzEibOn                 = 0x81;
 const char   CModel::g_uzEibOff                = 0x80;
 const char   CModel::g_uzEibAck [2]            = { 0x00, 0x05 };
 
+QString CModel::g_sSettingsPath     = "../etc/hsd.ini";
+QString CModel::g_sLogFilePath      = "../var/hsd.log";
+
 CModelGC g_grCModelGarbageCollector;
 
 CModel * CModel::m_pInstance = nullptr;
 
 CModel::CModel()
 {
+    QDir grSettingsPath= QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QString sSettingsPath = grSettingsPath.absoluteFilePath("hsd.ini");
+    if (! grSettingsPath.exists()) {
+        grSettingsPath.mkpath(grSettingsPath.absolutePath());
+    }
 
-    QDir grSettingsPath = QCoreApplication::applicationDirPath();
+    m_pSettings = new QSettings( sSettingsPath, QSettings::IniFormat );
 
-    m_pSettings = new QSettings( grSettingsPath.absoluteFilePath( CModel::g_sSettingsPath ), QSettings::IniFormat );
+    QVariant grLogLevel = getValue( g_sKey_LogLevel, uint( 2 ) );
+    QDir grLogPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 
-    qDebug() << QCoreApplication::applicationName() << ": "
-             << QObject::tr( "Settings file used:" ) << m_pSettings->fileName();
+    if ( grLogPath.exists() == false ) {
+        grLogPath.mkdir( grLogPath.absolutePath() );
+    }
+
+    QString sFileName = "hsd.log";
+    if ( getValue( CModel::g_sKey_LogPerDate, false ).toBool() ) {
+        sFileName = "hsd_" + QDateTime::currentDateTime().toString( "yyyy-MM-dd_hhmmss" /*Qt::ISODate*/ ) + ".log";
+    }
+    sFileName.replace( ":", "" );
+
+    CModel::g_sLogFilePath = grLogPath.absoluteFilePath(sFileName);
+
     qInfo() << QObject::tr( "Settings file used:" ) << m_pSettings->fileName();
+    qInfo() << QObject::tr( "Writing Logfile to:" ) << CModel::g_sLogFilePath << " with log level " << grLogLevel;
 }
 
 CModel::CModel(const CModel &p_grModel)

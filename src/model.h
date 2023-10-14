@@ -22,12 +22,14 @@ public:
     static const QString g_sKey_HSGwPort; ///< Settings key for port of HS KO-Gateway
     static const QString g_sKey_HsdPort;  ///< Settings key for port of HSD IP interface
     static const QString g_sKey_HSGwPassword;  ///< Setings key for password for HS KO-Gateway
-    static const QString g_sSettingsPath;
     static const QString g_sKey_LogLevel;
     static const QString g_sKey_LogPerDate;
     static const QString g_sKey_PauseTilHSReconnect; ///< Settings key for timeout until re-connection try to HS.
     static const QString g_sExitMessage;
     static const QString g_sLogLevelMessage;
+
+    static       QString g_sSettingsPath;
+    static       QString g_sLogFilePath;
 
     static const char   g_uzEIB_OPEN_T_GROUP [2];
     static const char   g_uzEIB_APDU_PACKET [2];
