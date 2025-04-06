@@ -1,3 +1,4 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 # HSD
 
 hsd provides part of the eibd (www.auto.tuwien.ac.at/~mkoegler/index.php/eibd) TCP/IP interface to communicate with EIB/KNX bus. eibd uses the EIBNet/IP protocol, while hsd uses the KO-Gateway provided by GIRA Homeserver.
